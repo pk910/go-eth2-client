@@ -51,6 +51,26 @@ type SuffixStateDiffJSON struct {
 	NewValue     *string `json:"newValue"`
 }
 
+func (s *SuffixStateDiff) MarshalJSON() ([]byte, error) {
+	var currentValue, newValue *string
+
+	if s.CurrentValue != nil {
+		currentValueStr := fmt.Sprintf("%x", s.CurrentValue)
+		currentValue = &currentValueStr
+	}
+
+	if s.NewValue != nil {
+		newValueStr := fmt.Sprintf("%x", s.NewValue)
+		newValue = &newValueStr
+	}
+
+	return json.Marshal(&SuffixStateDiffJSON{
+		Suffix:       fmt.Sprintf("%d", s.Suffix),
+		CurrentValue: currentValue,
+		NewValue:     newValue,
+	})
+}
+
 func (s *SuffixStateDiff) UnmarshalJSON(input []byte) error {
 	var (
 		ssd SuffixStateDiffJSON
@@ -104,6 +124,13 @@ type StemStateDiff struct {
 type stemStateDiffJSON struct {
 	Stem        string             `json:"stem"`
 	SuffixDiffs []*SuffixStateDiff `json:"suffixDiffs"`
+}
+
+func (s *StemStateDiff) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&stemStateDiffJSON{
+		Stem:        fmt.Sprintf("%x", s.Stem),
+		SuffixDiffs: s.SuffixDiffs,
+	})
 }
 
 func (s *StemStateDiff) UnmarshalJSON(input []byte) error {
