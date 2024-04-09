@@ -32,9 +32,9 @@ type IPAProof struct {
 }
 
 type VerkleProof struct {
-	OtherStems            [][]byte  `ssz-max:"65536,31"`
+	OtherStems            [][]byte  `ssz-size:"?,31" ssz-max:"65536,31"`
 	DepthExtensionPresent []byte    `ssz-max:"65536"`
-	CommitmentsByPath     [][]byte  `ssz-max:"65536,32"`
+	CommitmentsByPath     [][]byte  `ssz-size:"?,32" ssz-max:"65536,32"`
 	D                     [32]byte  `ssz-size:"32"`
 	IPAProof              *IPAProof `ssz-size:"544"`
 }
