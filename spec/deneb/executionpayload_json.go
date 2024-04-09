@@ -205,6 +205,9 @@ func (e *ExecutionPayload) UnmarshalJSON(input []byte) error {
 	if err := json.Unmarshal(raw["transactions"], &transactions); err != nil {
 		return errors.Wrap(err, "transactions")
 	}
+	if len(transactions) > bellatrix.MaxTransactionsPerPayload {
+		return errors.Wrap(err, "incorrect length for transactions")
+	}
 	e.Transactions = make([]bellatrix.Transaction, len(transactions))
 	for i := range transactions {
 		if len(transactions[i]) == 0 ||
@@ -216,10 +219,18 @@ func (e *ExecutionPayload) UnmarshalJSON(input []byte) error {
 		if err := json.Unmarshal(transactions[i], &e.Transactions[i]); err != nil {
 			return errors.Wrapf(err, "transaction %d", i)
 		}
+		if len(e.Transactions[i]) > bellatrix.MaxBytesPerTransaction {
+			return errors.Wrapf(err, "incorrect length for transaction %d", i)
+		}
 	}
 
 	if err := json.Unmarshal(raw["withdrawals"], &e.Withdrawals); err != nil {
 		return errors.Wrap(err, "withdrawals")
+	}
+	for i := range e.Withdrawals {
+		if e.Withdrawals[i] == nil {
+			return fmt.Errorf("withdrawals entry %d missing", i)
+		}
 	}
 
 	tmpUint, err = strconv.ParseUint(string(bytes.Trim(raw["blob_gas_used"], `"`)), 10, 64)

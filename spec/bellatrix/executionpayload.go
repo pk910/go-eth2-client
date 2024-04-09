@@ -277,6 +277,9 @@ func (e *ExecutionPayload) unpack(data *executionPayloadJSON) error {
 	if !ok {
 		return errors.New("invalid value for base fee per gas")
 	}
+	if baseFeePerGas.Sign() == -1 {
+		return errors.New("base fee per gas cannot be negative")
+	}
 	if baseFeePerGas.Cmp(maxBaseFeePerGas) > 0 {
 		return errors.New("overflow for base fee per gas")
 	}
@@ -305,16 +308,21 @@ func (e *ExecutionPayload) unpack(data *executionPayloadJSON) error {
 	if data.Transactions == nil {
 		return errors.New("transactions missing")
 	}
+	if len(data.Transactions) > MaxTransactionsPerPayload {
+		return errors.Wrap(err, "incorrect length for transactions")
+	}
 	transactions := make([]Transaction, len(data.Transactions))
 	for i := range data.Transactions {
 		if data.Transactions[i] == "" {
 			return errors.New("transaction missing")
 		}
-		tmp, err := hex.DecodeString(strings.TrimPrefix(data.Transactions[i], "0x"))
+		transactions[i], err = hex.DecodeString(strings.TrimPrefix(data.Transactions[i], "0x"))
 		if err != nil {
 			return errors.Wrap(err, "invalid value for transaction")
 		}
-		transactions[i] = Transaction(tmp)
+		if len(transactions[i]) > MaxBytesPerTransaction {
+			return errors.Wrap(err, "incorrect length for transaction")
+		}
 	}
 	e.Transactions = transactions
 

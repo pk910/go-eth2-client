@@ -1,4 +1,4 @@
-// Copyright © 2022 Attestant Limited.
+// Copyright © 2022, 2024 Attestant Limited.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -282,6 +282,9 @@ func (e *ExecutionPayload) unpack(data *executionPayloadJSON) error {
 	if !ok {
 		return errors.New("invalid value for base fee per gas")
 	}
+	if baseFeePerGas.Sign() == -1 {
+		return errors.New("base fee per gas cannot be negative")
+	}
 	if baseFeePerGas.Cmp(maxBaseFeePerGas) > 0 {
 		return errors.New("overflow for base fee per gas")
 	}
@@ -310,21 +313,31 @@ func (e *ExecutionPayload) unpack(data *executionPayloadJSON) error {
 	if data.Transactions == nil {
 		return errors.New("transactions missing")
 	}
+	if len(data.Transactions) > bellatrix.MaxTransactionsPerPayload {
+		return errors.Wrap(err, "incorrect length for transactions")
+	}
 	transactions := make([]bellatrix.Transaction, len(data.Transactions))
 	for i := range data.Transactions {
 		if data.Transactions[i] == "" {
 			return errors.New("transaction missing")
 		}
-		tmp, err := hex.DecodeString(strings.TrimPrefix(data.Transactions[i], "0x"))
+		transactions[i], err = hex.DecodeString(strings.TrimPrefix(data.Transactions[i], "0x"))
 		if err != nil {
 			return errors.Wrap(err, "invalid value for transaction")
 		}
-		transactions[i] = bellatrix.Transaction(tmp)
+		if len(transactions[i]) > bellatrix.MaxBytesPerTransaction {
+			return errors.Wrap(err, "incorrect length for transaction")
+		}
 	}
 	e.Transactions = transactions
 
 	if data.Withdrawals == nil {
 		return errors.New("withdrawals missing")
+	}
+	for i := range data.Withdrawals {
+		if data.Withdrawals[i] == nil {
+			return fmt.Errorf("withdrawals entry %d missing", i)
+		}
 	}
 	e.Withdrawals = data.Withdrawals
 

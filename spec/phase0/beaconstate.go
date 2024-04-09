@@ -1,4 +1,4 @@
-// Copyright © 2020, 2023 Attestant Limited.
+// Copyright © 2020 - 2024 Attestant Limited.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -33,16 +33,16 @@ type BeaconState struct {
 	Slot                        Slot
 	Fork                        *Fork
 	LatestBlockHeader           *BeaconBlockHeader
-	BlockRoots                  []Root `ssz-size:"8192,32"`
-	StateRoots                  []Root `ssz-size:"8192,32"`
-	HistoricalRoots             []Root `ssz-max:"16777216" ssz-size:"?,32"`
+	BlockRoots                  []Root `dynssz-size:"SLOTS_PER_HISTORICAL_ROOT,32" ssz-size:"8192,32"`
+	StateRoots                  []Root `dynssz-size:"SLOTS_PER_HISTORICAL_ROOT,32" ssz-size:"8192,32"`
+	HistoricalRoots             []Root `ssz-max:"16777216"                         ssz-size:"?,32"`
 	ETH1Data                    *ETH1Data
 	ETH1DataVotes               []*ETH1Data `ssz-max:"2048"`
 	ETH1DepositIndex            uint64
 	Validators                  []*Validator          `ssz-max:"1099511627776"`
 	Balances                    []Gwei                `ssz-max:"1099511627776"`
-	RANDAOMixes                 []Root                `ssz-size:"65536,32"`
-	Slashings                   []Gwei                `ssz-size:"8192"`
+	RANDAOMixes                 []Root                `dynssz-size:"EPOCHS_PER_HISTORICAL_VECTOR,32" ssz-size:"65536,32"`
+	Slashings                   []Gwei                `dynssz-size:"EPOCHS_PER_SLASHINGS_VECTOR"     ssz-size:"8192"`
 	PreviousEpochAttestations   []*PendingAttestation `ssz-max:"4096"`
 	CurrentEpochAttestations    []*PendingAttestation `ssz-max:"4096"`
 	JustificationBits           bitfield.Bitvector4   `ssz-size:"1"`
@@ -251,18 +251,30 @@ func (s *BeaconState) unpack(data *beaconStateJSON) error {
 		return errors.New("eth1 data missing")
 	}
 	s.ETH1Data = data.ETH1Data
-	// ETH1DataVotes can be empty.
+	// ETH1DataVotes can be empty, but if present the individual votes must not be null.
+	if data.ETH1DataVotes != nil {
+		for i := range data.Validators {
+			if data.Validators[i] == nil {
+				return fmt.Errorf("validators entry %d missing", i)
+			}
+		}
+	}
 	s.ETH1DataVotes = data.ETH1DataVotes
 	if data.Validators == nil {
 		return errors.New("validators missing")
 	}
+	for i := range data.Validators {
+		if data.Validators[i] == nil {
+			return fmt.Errorf("validators entry %d missing", i)
+		}
+	}
+	s.Validators = data.Validators
 	if data.ETH1DepositIndex == "" {
 		return errors.New("eth1 deposit index missing")
 	}
 	if s.ETH1DepositIndex, err = strconv.ParseUint(data.ETH1DepositIndex, 10, 64); err != nil {
 		return errors.Wrap(err, "invalid value for eth1 deposit index")
 	}
-	s.Validators = data.Validators
 	s.Balances = make([]Gwei, len(data.Balances))
 	for i := range data.Balances {
 		if data.Balances[i] == "" {
@@ -299,7 +311,17 @@ func (s *BeaconState) unpack(data *beaconStateJSON) error {
 		}
 		s.Slashings[i] = Gwei(slashings)
 	}
+	for i := range data.PreviousEpochAttestations {
+		if data.PreviousEpochAttestations[i] == nil {
+			return fmt.Errorf("previous epoch attestations entry %d missing", i)
+		}
+	}
 	s.PreviousEpochAttestations = data.PreviousEpochAttestations
+	for i := range data.CurrentEpochAttestations {
+		if data.CurrentEpochAttestations[i] == nil {
+			return fmt.Errorf("current epoch attestations entry %d missing", i)
+		}
+	}
 	s.CurrentEpochAttestations = data.CurrentEpochAttestations
 	if data.JustificationBits == "" {
 		return errors.New("justification bits missing")

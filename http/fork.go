@@ -1,4 +1,4 @@
-// Copyright © 2020 - 2023 Attestant Limited.
+// Copyright © 2020 - 2024 Attestant Limited.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -16,11 +16,12 @@ package http
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 
+	client "github.com/attestantio/go-eth2-client"
 	"github.com/attestantio/go-eth2-client/api"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
-	"github.com/pkg/errors"
 )
 
 // Fork fetches fork information for the given options.
@@ -30,15 +31,18 @@ func (s *Service) Fork(ctx context.Context,
 	*api.Response[*phase0.Fork],
 	error,
 ) {
+	if err := s.assertIsActive(ctx); err != nil {
+		return nil, err
+	}
 	if opts == nil {
-		return nil, errors.New("no options specified")
+		return nil, client.ErrNoOptions
 	}
 	if opts.State == "" {
-		return nil, errors.New("no state specified")
+		return nil, errors.Join(errors.New("no state specified"), client.ErrInvalidOptions)
 	}
 
-	url := fmt.Sprintf("/eth/v1/beacon/states/%s/fork", opts.State)
-	httpResponse, err := s.get(ctx, url, &opts.Common)
+	endpoint := fmt.Sprintf("/eth/v1/beacon/states/%s/fork", opts.State)
+	httpResponse, err := s.get(ctx, endpoint, "", &opts.Common)
 	if err != nil {
 		return nil, err
 	}

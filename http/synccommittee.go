@@ -1,4 +1,4 @@
-// Copyright © 2021 Attestant Limited.
+// Copyright © 2021, 2024 Attestant Limited.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -16,11 +16,12 @@ package http
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 
+	client "github.com/attestantio/go-eth2-client"
 	"github.com/attestantio/go-eth2-client/api"
 	apiv1 "github.com/attestantio/go-eth2-client/api/v1"
-	"github.com/pkg/errors"
 )
 
 // SyncCommittee fetches the sync committee for epoch at the given state.
@@ -30,19 +31,23 @@ func (s *Service) SyncCommittee(ctx context.Context,
 	*api.Response[*apiv1.SyncCommittee],
 	error,
 ) {
+	if err := s.assertIsActive(ctx); err != nil {
+		return nil, err
+	}
 	if opts == nil {
-		return nil, errors.New("no options specified")
+		return nil, client.ErrNoOptions
 	}
 	if opts.State == "" {
-		return nil, errors.New("no state specified")
+		return nil, errors.Join(errors.New("no state specified"), client.ErrInvalidOptions)
 	}
 
-	url := fmt.Sprintf("/eth/v1/beacon/states/%s/sync_committees", opts.State)
+	endpoint := fmt.Sprintf("/eth/v1/beacon/states/%s/sync_committees", opts.State)
+	query := ""
 	if opts.Epoch != nil {
-		url = fmt.Sprintf("%s?epoch=%d", url, *opts.Epoch)
+		query = fmt.Sprintf("epoch=%d", *opts.Epoch)
 	}
 
-	httpResponse, err := s.get(ctx, url, &opts.Common)
+	httpResponse, err := s.get(ctx, endpoint, query, &opts.Common)
 	if err != nil {
 		return nil, err
 	}

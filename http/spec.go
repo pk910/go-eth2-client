@@ -1,4 +1,4 @@
-// Copyright © 2020 - 2023 Attestant Limited.
+// Copyright © 2020 - 2024 Attestant Limited.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -21,9 +21,9 @@ import (
 	"strings"
 	"time"
 
+	client "github.com/attestantio/go-eth2-client"
 	"github.com/attestantio/go-eth2-client/api"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
-	"github.com/pkg/errors"
 )
 
 // Spec provides the spec information of the chain.
@@ -33,8 +33,11 @@ func (s *Service) Spec(ctx context.Context,
 	*api.Response[map[string]any],
 	error,
 ) {
+	if err := s.assertIsActive(ctx); err != nil {
+		return nil, err
+	}
 	if opts == nil {
-		return nil, errors.New("no options specified")
+		return nil, client.ErrNoOptions
 	}
 
 	s.specMutex.RLock()
@@ -59,8 +62,8 @@ func (s *Service) Spec(ctx context.Context,
 	}
 
 	// Up to us to fetch the information.
-	url := "/eth/v1/config/spec"
-	httpResponse, err := s.get(ctx, url, &opts.Common)
+	endpoint := "/eth/v1/config/spec"
+	httpResponse, err := s.get(ctx, endpoint, "", &opts.Common)
 	if err != nil {
 		return nil, err
 	}

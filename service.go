@@ -33,17 +33,27 @@ type Service interface {
 
 	// Address returns the address of the client.
 	Address() string
+
+	// IsActive returns true if the client is active.
+	IsActive() bool
+
+	// IsSynced returns true if the client is synced.
+	IsSynced() bool
 }
 
 // EpochFromStateIDProvider is the interface for providing epochs from state IDs.
 type EpochFromStateIDProvider interface {
 	// EpochFromStateID converts a state ID to its epoch.
+	//
+	// Deprecated: will be removed in a future release.
 	EpochFromStateID(ctx context.Context, stateID string) (phase0.Epoch, error)
 }
 
 // SlotFromStateIDProvider is the interface for providing slots from state IDs.
 type SlotFromStateIDProvider interface {
 	// SlotFromStateID converts a state ID to its slot.
+	//
+	// Deprecated: will be removed in a future release.
 	SlotFromStateID(ctx context.Context, stateID string) (phase0.Slot, error)
 }
 
@@ -246,7 +256,7 @@ type BeaconBlockSubmitter interface {
 // ProposalSubmitter is the interface for submitting proposals.
 type ProposalSubmitter interface {
 	// SubmitProposal submits a proposal.
-	SubmitProposal(ctx context.Context, block *api.VersionedSignedProposal) error
+	SubmitProposal(ctx context.Context, opts *api.SubmitProposalOpts) error
 }
 
 // BeaconCommitteeSubscriptionsSubmitter is the interface for submitting beacon committee subnet subscription requests.
@@ -273,12 +283,6 @@ type BeaconStateRootProvider interface {
 	BeaconStateRoot(ctx context.Context, opts *api.BeaconStateRootOpts) (*api.Response[*phase0.Root], error)
 }
 
-// BlindedProposalProvider is the interface for providing blinded beacon block proposals.
-type BlindedProposalProvider interface {
-	// BlindedProposal fetches a blinded proposed beacon block for signing.
-	BlindedProposal(ctx context.Context, opts *api.BlindedProposalOpts) (*api.Response[*api.VersionedBlindedProposal], error)
-}
-
 // BlindedBeaconBlockSubmitter is the interface for submitting blinded beacon blocks.
 type BlindedBeaconBlockSubmitter interface {
 	// SubmitBlindedBeaconBlock submits a beacon block.
@@ -290,7 +294,7 @@ type BlindedBeaconBlockSubmitter interface {
 // BlindedProposalSubmitter is the interface for submitting blinded proposals.
 type BlindedProposalSubmitter interface {
 	// SubmitBlindedProposal submits a beacon block.
-	SubmitBlindedProposal(ctx context.Context, block *api.VersionedSignedBlindedProposal) error
+	SubmitBlindedProposal(ctx context.Context, opts *api.SubmitBlindedProposalOpts) error
 }
 
 // ValidatorRegistrationsSubmitter is the interface for submitting validator registrations.

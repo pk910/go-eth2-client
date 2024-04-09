@@ -70,6 +70,16 @@ func (s *Erroring) Address() string {
 	return fmt.Sprintf("erroring:%v,%s", s.errorRate, nextAddress)
 }
 
+// IsActive returns true if the client is active.
+func (s *Erroring) IsActive() bool {
+	return true
+}
+
+// IsSynced returns true if the client is synced.
+func (s *Erroring) IsSynced() bool {
+	return true
+}
+
 // maybeError may return an error depending on the error arte.
 func (s *Erroring) maybeError(_ context.Context) error {
 	// #nosec G404
@@ -82,6 +92,8 @@ func (s *Erroring) maybeError(_ context.Context) error {
 }
 
 // EpochFromStateID converts a state ID to its epoch.
+//
+// Deprecated: use chaintime.
 func (s *Erroring) EpochFromStateID(ctx context.Context, stateID string) (phase0.Epoch, error) {
 	if err := s.maybeError(ctx); err != nil {
 		return 0, err
@@ -95,6 +107,8 @@ func (s *Erroring) EpochFromStateID(ctx context.Context, stateID string) (phase0
 }
 
 // SlotFromStateID converts a state ID to its slot.
+//
+// Deprecated: use chaintime.
 func (s *Erroring) SlotFromStateID(ctx context.Context, stateID string) (phase0.Slot, error) {
 	if err := s.maybeError(ctx); err != nil {
 		return 0, err

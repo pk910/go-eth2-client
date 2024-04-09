@@ -1,4 +1,4 @@
-// Copyright © 2020 - 2023 Attestant Limited.
+// Copyright © 2020 - 2024 Attestant Limited.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -16,16 +16,22 @@ package http
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
+	"math/big"
+	"strings"
 
+	client "github.com/attestantio/go-eth2-client"
 	"github.com/attestantio/go-eth2-client/api"
+	apiv1bellatrix "github.com/attestantio/go-eth2-client/api/v1/bellatrix"
+	apiv1capella "github.com/attestantio/go-eth2-client/api/v1/capella"
 	apiv1deneb "github.com/attestantio/go-eth2-client/api/v1/deneb"
 	"github.com/attestantio/go-eth2-client/spec"
 	"github.com/attestantio/go-eth2-client/spec/altair"
 	"github.com/attestantio/go-eth2-client/spec/bellatrix"
 	"github.com/attestantio/go-eth2-client/spec/capella"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
-	"github.com/pkg/errors"
+	dynssz "github.com/pk910/dynamic-ssz"
 	"go.opentelemetry.io/otel"
 )
 
@@ -39,31 +45,41 @@ func (s *Service) Proposal(ctx context.Context,
 	ctx, span := otel.Tracer("attestantio.go-eth2-client.http").Start(ctx, "Proposal")
 	defer span.End()
 
+	if err := s.assertIsSynced(ctx); err != nil {
+		return nil, err
+	}
 	if opts == nil {
-		return nil, errors.New("no options specified")
+		return nil, client.ErrNoOptions
 	}
 	if opts.Slot == 0 {
-		return nil, errors.New("no slot specified")
+		return nil, errors.Join(errors.New("no slot specified"), client.ErrInvalidOptions)
 	}
 
-	url := fmt.Sprintf("/eth/v2/validator/blocks/%d?randao_reveal=%#x&graffiti=%#x", opts.Slot, opts.RandaoReveal, opts.Graffiti)
+	endpoint := fmt.Sprintf("/eth/v3/validator/blocks/%d", opts.Slot)
+	query := fmt.Sprintf("randao_reveal=%#x&graffiti=%#x", opts.RandaoReveal, opts.Graffiti)
 
 	if opts.SkipRandaoVerification {
 		if !opts.RandaoReveal.IsInfinity() {
-			return nil, errors.New("randao reveal must be point at infinity if skip randao verification is set")
+			return nil, errors.Join(errors.New("randao reveal must be point at infinity if skip randao verification is set"), client.ErrInvalidOptions)
 		}
-		url = fmt.Sprintf("%s&skip_randao_verification", url)
+		query = fmt.Sprintf("%s&skip_randao_verification", query)
 	}
 
-	httpResponse, err := s.get(ctx, url, &opts.Common)
+	if opts.BuilderBoostFactor == nil {
+		query += "&builder_boost_factor=100"
+	} else {
+		query = fmt.Sprintf("%s&builder_boost_factor=%d", query, *opts.BuilderBoostFactor)
+	}
+
+	httpResponse, err := s.get(ctx, endpoint, query, &opts.Common)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to request beacon block proposal")
+		return nil, errors.Join(errors.New("failed to request beacon block proposal"), err)
 	}
 
 	var response *api.Response[*api.VersionedProposal]
 	switch httpResponse.contentType {
 	case ContentTypeSSZ:
-		response, err = s.beaconBlockProposalFromSSZ(httpResponse)
+		response, err = s.beaconBlockProposalFromSSZ(ctx, httpResponse)
 	case ContentTypeJSON:
 		response, err = s.beaconBlockProposalFromJSON(httpResponse)
 	default:
@@ -79,7 +95,7 @@ func (s *Service) Proposal(ctx context.Context,
 		return nil, err
 	}
 	if blockSlot != opts.Slot {
-		return nil, errors.New("beacon block proposal not for requested slot")
+		return nil, errors.Join(fmt.Errorf("beacon block proposal for slot %d; expected %d", blockSlot, opts.Slot), client.ErrInconsistentResult)
 	}
 
 	// Only check the RANDAO reveal and graffiti if we are not connected to DVT middleware,
@@ -90,7 +106,7 @@ func (s *Service) Proposal(ctx context.Context,
 			return nil, err
 		}
 		if !bytes.Equal(blockRandaoReveal[:], opts.RandaoReveal[:]) {
-			return nil, fmt.Errorf("beacon block proposal has RANDAO reveal %#x; expected %#x", blockRandaoReveal[:], opts.RandaoReveal[:])
+			return nil, errors.Join(fmt.Errorf("beacon block proposal has RANDAO reveal %#x; expected %#x", blockRandaoReveal[:], opts.RandaoReveal[:]), client.ErrInconsistentResult)
 		}
 
 		blockGraffiti, err := response.Data.Graffiti()
@@ -98,49 +114,107 @@ func (s *Service) Proposal(ctx context.Context,
 			return nil, err
 		}
 		if !bytes.Equal(blockGraffiti[:], opts.Graffiti[:]) {
-			return nil, fmt.Errorf("beacon block proposal has graffiti %#x; expected %#x", blockGraffiti[:], opts.Graffiti[:])
+			return nil, errors.Join(fmt.Errorf("beacon block proposal has graffiti %#x; expected %#x", blockGraffiti[:], opts.Graffiti[:]), client.ErrInconsistentResult)
 		}
 	}
 
 	return response, nil
 }
 
-func (s *Service) beaconBlockProposalFromSSZ(res *httpResponse) (*api.Response[*api.VersionedProposal], error) {
+//nolint:nestif
+func (s *Service) beaconBlockProposalFromSSZ(ctx context.Context, res *httpResponse) (*api.Response[*api.VersionedProposal], error) {
 	response := &api.Response[*api.VersionedProposal]{
 		Data: &api.VersionedProposal{
-			Version: res.consensusVersion,
+			Version:        res.consensusVersion,
+			ConsensusValue: big.NewInt(0),
+			ExecutionValue: big.NewInt(0),
 		},
 		Metadata: metadataFromHeaders(res.headers),
 	}
 
+	if err := s.populateProposalDataFromHeaders(response, res.headers); err != nil {
+		return nil, err
+	}
+
+	var dynSSZ *dynssz.DynSsz
+	if s.useDynamicSSZ {
+		spec, err := s.Spec(ctx, &api.SpecOpts{})
+		if err != nil {
+			return nil, errors.Join(errors.New("failed to request specs"), err)
+		}
+
+		dynSSZ = dynssz.NewDynSsz(spec.Data)
+	}
+
+	var err error
 	switch res.consensusVersion {
 	case spec.DataVersionPhase0:
 		response.Data.Phase0 = &phase0.BeaconBlock{}
-		if err := response.Data.Phase0.UnmarshalSSZ(res.body); err != nil {
-			return nil, errors.Wrap(err, "failed to decode phase0 beacon block proposal")
+		if s.useDynamicSSZ {
+			err = dynSSZ.UnmarshalSSZ(response.Data.Phase0, res.body)
+		} else {
+			err = response.Data.Phase0.UnmarshalSSZ(res.body)
 		}
 	case spec.DataVersionAltair:
 		response.Data.Altair = &altair.BeaconBlock{}
-		if err := response.Data.Altair.UnmarshalSSZ(res.body); err != nil {
-			return nil, errors.Wrap(err, "failed to decode altair beacon block proposal")
+		if s.useDynamicSSZ {
+			err = dynSSZ.UnmarshalSSZ(response.Data.Altair, res.body)
+		} else {
+			err = response.Data.Altair.UnmarshalSSZ(res.body)
 		}
 	case spec.DataVersionBellatrix:
-		response.Data.Bellatrix = &bellatrix.BeaconBlock{}
-		if err := response.Data.Bellatrix.UnmarshalSSZ(res.body); err != nil {
-			return nil, errors.Wrap(err, "failed to decode bellatrix beacon block proposal")
+		if response.Data.Blinded {
+			response.Data.BellatrixBlinded = &apiv1bellatrix.BlindedBeaconBlock{}
+			if s.useDynamicSSZ {
+				err = dynSSZ.UnmarshalSSZ(response.Data.BellatrixBlinded, res.body)
+			} else {
+				err = response.Data.BellatrixBlinded.UnmarshalSSZ(res.body)
+			}
+		} else {
+			response.Data.Bellatrix = &bellatrix.BeaconBlock{}
+			if s.useDynamicSSZ {
+				err = dynSSZ.UnmarshalSSZ(response.Data.Bellatrix, res.body)
+			} else {
+				err = response.Data.Bellatrix.UnmarshalSSZ(res.body)
+			}
 		}
 	case spec.DataVersionCapella:
-		response.Data.Capella = &capella.BeaconBlock{}
-		if err := response.Data.Capella.UnmarshalSSZ(res.body); err != nil {
-			return nil, errors.Wrap(err, "failed to decode capella beacon block proposal")
+		if response.Data.Blinded {
+			response.Data.CapellaBlinded = &apiv1capella.BlindedBeaconBlock{}
+			if s.useDynamicSSZ {
+				err = dynSSZ.UnmarshalSSZ(response.Data.CapellaBlinded, res.body)
+			} else {
+				err = response.Data.CapellaBlinded.UnmarshalSSZ(res.body)
+			}
+		} else {
+			response.Data.Capella = &capella.BeaconBlock{}
+			if s.useDynamicSSZ {
+				err = dynSSZ.UnmarshalSSZ(response.Data.Capella, res.body)
+			} else {
+				err = response.Data.Capella.UnmarshalSSZ(res.body)
+			}
 		}
 	case spec.DataVersionDeneb:
-		response.Data.Deneb = &apiv1deneb.BlockContents{}
-		if err := response.Data.Deneb.UnmarshalSSZ(res.body); err != nil {
-			return nil, errors.Wrap(err, "failed to decode deneb beacon block proposal")
+		if response.Data.Blinded {
+			response.Data.DenebBlinded = &apiv1deneb.BlindedBeaconBlock{}
+			if s.useDynamicSSZ {
+				err = dynSSZ.UnmarshalSSZ(response.Data.DenebBlinded, res.body)
+			} else {
+				err = response.Data.DenebBlinded.UnmarshalSSZ(res.body)
+			}
+		} else {
+			response.Data.Deneb = &apiv1deneb.BlockContents{}
+			if s.useDynamicSSZ {
+				err = dynSSZ.UnmarshalSSZ(response.Data.Deneb, res.body)
+			} else {
+				err = response.Data.Deneb.UnmarshalSSZ(res.body)
+			}
 		}
 	default:
 		return nil, fmt.Errorf("unhandled block proposal version %s", res.consensusVersion)
+	}
+	if err != nil {
+		return nil, errors.Join(fmt.Errorf("failed to decode %v SSZ beacon block (blinded: %v)", res.consensusVersion, response.Data.Blinded), err)
 	}
 
 	return response, nil
@@ -149,8 +223,15 @@ func (s *Service) beaconBlockProposalFromSSZ(res *httpResponse) (*api.Response[*
 func (s *Service) beaconBlockProposalFromJSON(res *httpResponse) (*api.Response[*api.VersionedProposal], error) {
 	response := &api.Response[*api.VersionedProposal]{
 		Data: &api.VersionedProposal{
-			Version: res.consensusVersion,
+			Version:        res.consensusVersion,
+			ConsensusValue: big.NewInt(0),
+			ExecutionValue: big.NewInt(0),
 		},
+		Metadata: metadataFromHeaders(res.headers),
+	}
+
+	if err := s.populateProposalDataFromHeaders(response, res.headers); err != nil {
+		return nil, err
 	}
 
 	var err error
@@ -160,17 +241,54 @@ func (s *Service) beaconBlockProposalFromJSON(res *httpResponse) (*api.Response[
 	case spec.DataVersionAltair:
 		response.Data.Altair, response.Metadata, err = decodeJSONResponse(bytes.NewReader(res.body), &altair.BeaconBlock{})
 	case spec.DataVersionBellatrix:
-		response.Data.Bellatrix, response.Metadata, err = decodeJSONResponse(bytes.NewReader(res.body), &bellatrix.BeaconBlock{})
+		if response.Data.Blinded {
+			response.Data.BellatrixBlinded, response.Metadata, err = decodeJSONResponse(bytes.NewReader(res.body), &apiv1bellatrix.BlindedBeaconBlock{})
+		} else {
+			response.Data.Bellatrix, response.Metadata, err = decodeJSONResponse(bytes.NewReader(res.body), &bellatrix.BeaconBlock{})
+		}
 	case spec.DataVersionCapella:
-		response.Data.Capella, response.Metadata, err = decodeJSONResponse(bytes.NewReader(res.body), &capella.BeaconBlock{})
+		if response.Data.Blinded {
+			response.Data.CapellaBlinded, response.Metadata, err = decodeJSONResponse(bytes.NewReader(res.body), &apiv1capella.BlindedBeaconBlock{})
+		} else {
+			response.Data.Capella, response.Metadata, err = decodeJSONResponse(bytes.NewReader(res.body), &capella.BeaconBlock{})
+		}
 	case spec.DataVersionDeneb:
-		response.Data.Deneb, response.Metadata, err = decodeJSONResponse(bytes.NewReader(res.body), &apiv1deneb.BlockContents{})
+		if response.Data.Blinded {
+			response.Data.DenebBlinded, response.Metadata, err = decodeJSONResponse(bytes.NewReader(res.body), &apiv1deneb.BlindedBeaconBlock{})
+		} else {
+			response.Data.Deneb, response.Metadata, err = decodeJSONResponse(bytes.NewReader(res.body), &apiv1deneb.BlockContents{})
+		}
 	default:
 		err = fmt.Errorf("unsupported version %s", res.consensusVersion)
 	}
 	if err != nil {
-		return nil, err
+		return nil, errors.Join(fmt.Errorf("failed to decode %v JSON beacon block (blinded: %v)", res.consensusVersion, response.Data.Blinded), err)
 	}
 
 	return response, nil
+}
+
+func (s *Service) populateProposalDataFromHeaders(response *api.Response[*api.VersionedProposal],
+	headers map[string]string,
+) error {
+	for k, v := range headers {
+		switch {
+		case strings.EqualFold(k, "Eth-Execution-Payload-Blinded"):
+			response.Data.Blinded = strings.EqualFold(v, "true")
+		case strings.EqualFold(k, "Eth-Execution-Payload-Value"):
+			var success bool
+			response.Data.ExecutionValue, success = new(big.Int).SetString(v, 10)
+			if !success {
+				return fmt.Errorf("proposal header Eth-Execution-Payload-Value %s not a valid integer", v)
+			}
+		case strings.EqualFold(k, "Eth-Consensus-Block-Value"):
+			var success bool
+			response.Data.ConsensusValue, success = new(big.Int).SetString(v, 10)
+			if !success {
+				return fmt.Errorf("proposal header Eth-Consensus-Block-Value %s not a valid integer", v)
+			}
+		}
+	}
+
+	return nil
 }

@@ -1,4 +1,4 @@
-// Copyright © 2020 - 2023 Attestant Limited.
+// Copyright © 2020 - 2024 Attestant Limited.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -17,9 +17,9 @@ import (
 	"bytes"
 	"context"
 
+	client "github.com/attestantio/go-eth2-client"
 	"github.com/attestantio/go-eth2-client/api"
 	apiv1 "github.com/attestantio/go-eth2-client/api/v1"
-	"github.com/pkg/errors"
 )
 
 // DepositContract provides details of the execution deposit contract for the chain.
@@ -29,8 +29,11 @@ func (s *Service) DepositContract(ctx context.Context,
 	*api.Response[*apiv1.DepositContract],
 	error,
 ) {
+	if err := s.assertIsActive(ctx); err != nil {
+		return nil, err
+	}
 	if opts == nil {
-		return nil, errors.New("no options specified")
+		return nil, client.ErrNoOptions
 	}
 
 	s.depositContractMutex.RLock()
@@ -55,8 +58,8 @@ func (s *Service) DepositContract(ctx context.Context,
 	}
 
 	// Up to us to fetch the information.
-	url := "/eth/v1/config/deposit_contract"
-	httpResponse, err := s.get(ctx, url, &opts.Common)
+	endpoint := "/eth/v1/config/deposit_contract"
+	httpResponse, err := s.get(ctx, endpoint, "", &opts.Common)
 	if err != nil {
 		return nil, err
 	}
