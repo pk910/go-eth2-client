@@ -7,132 +7,36 @@ import (
 	"github.com/attestantio/go-eth2-client/spec/bellatrix"
 	"github.com/attestantio/go-eth2-client/spec/capella"
 	ssz "github.com/ferranbt/fastssz"
+	dynssz "github.com/pk910/dynamic-ssz"
 )
 
 // MarshalSSZ ssz marshals the ExecutionWitness object
 func (e *ExecutionWitness) MarshalSSZ() ([]byte, error) {
-	return ssz.MarshalSSZ(e)
+	dynSSZ := dynssz.NewDynSsz(nil)
+	dynSSZ.NoFastSsz = true
+	return dynSSZ.MarshalSSZ(e)
 }
 
 // MarshalSSZTo ssz marshals the ExecutionWitness object to a target array
 func (e *ExecutionWitness) MarshalSSZTo(buf []byte) (dst []byte, err error) {
-	dst = buf
-	offset := int(8)
-
-	// Offset (0) 'StateDiff'
-	dst = ssz.WriteOffset(dst, offset)
-	for ii := 0; ii < len(e.StateDiff); ii++ {
-		offset += 4
-		offset += e.StateDiff[ii].SizeSSZ()
-	}
-
-	// Offset (1) 'VerkleProof'
-	dst = ssz.WriteOffset(dst, offset)
-	if e.VerkleProof == nil {
-		e.VerkleProof = new(VerkleProof)
-	}
-	offset += e.VerkleProof.SizeSSZ()
-
-	// Field (0) 'StateDiff'
-	if size := len(e.StateDiff); size > 1073741824 {
-		err = ssz.ErrListTooBigFn("ExecutionWitness.StateDiff", size, 1073741824)
-		return
-	}
-	{
-		offset = 4 * len(e.StateDiff)
-		for ii := 0; ii < len(e.StateDiff); ii++ {
-			dst = ssz.WriteOffset(dst, offset)
-			offset += e.StateDiff[ii].SizeSSZ()
-		}
-	}
-	for ii := 0; ii < len(e.StateDiff); ii++ {
-		if dst, err = e.StateDiff[ii].MarshalSSZTo(dst); err != nil {
-			return
-		}
-	}
-
-	// Field (1) 'VerkleProof'
-	if dst, err = e.VerkleProof.MarshalSSZTo(dst); err != nil {
-		return
-	}
-
-	return
+	dynSSZ := dynssz.NewDynSsz(nil)
+	dynSSZ.NoFastSsz = true
+	return dynSSZ.MarshalSSZTo(e, buf)
 }
 
 // UnmarshalSSZ ssz unmarshals the ExecutionWitness object
 func (e *ExecutionWitness) UnmarshalSSZ(buf []byte) error {
-	var err error
-	size := uint64(len(buf))
-	if size < 8 {
-		return ssz.ErrSize
-	}
-
-	tail := buf
-	var o0, o1 uint64
-
-	// Offset (0) 'StateDiff'
-	if o0 = ssz.ReadOffset(buf[0:4]); o0 > size {
-		return ssz.ErrOffset
-	}
-
-	if o0 < 8 {
-		return ssz.ErrInvalidVariableOffset
-	}
-
-	// Offset (1) 'VerkleProof'
-	if o1 = ssz.ReadOffset(buf[4:8]); o1 > size || o0 > o1 {
-		return ssz.ErrOffset
-	}
-
-	// Field (0) 'StateDiff'
-	{
-		buf = tail[o0:o1]
-		num, err := ssz.DecodeDynamicLength(buf, 1073741824)
-		if err != nil {
-			return err
-		}
-		e.StateDiff = make([]*StemStateDiff, num)
-		err = ssz.UnmarshalDynamic(buf, num, func(indx int, buf []byte) (err error) {
-			if err = e.StateDiff[indx].UnmarshalSSZ(buf); err != nil {
-				return err
-			}
-			return nil
-		})
-		if err != nil {
-			return err
-		}
-	}
-
-	// Field (1) 'VerkleProof'
-	{
-		buf = tail[o1:]
-		if e.VerkleProof == nil {
-			e.VerkleProof = new(VerkleProof)
-		}
-		if err = e.VerkleProof.UnmarshalSSZ(buf); err != nil {
-			return err
-		}
-	}
-	return err
+	dynSSZ := dynssz.NewDynSsz(nil)
+	dynSSZ.NoFastSsz = true
+	return dynSSZ.UnmarshalSSZ(e, buf)
 }
 
 // SizeSSZ returns the ssz encoded size in bytes for the ExecutionWitness object
 func (e *ExecutionWitness) SizeSSZ() (size int) {
-	size = 8
-
-	// Field (0) 'StateDiff'
-	for ii := 0; ii < len(e.StateDiff); ii++ {
-		size += 4
-		size += e.StateDiff[ii].SizeSSZ()
-	}
-
-	// Field (1) 'VerkleProof'
-	if e.VerkleProof == nil {
-		e.VerkleProof = new(VerkleProof)
-	}
-	size += e.VerkleProof.SizeSSZ()
-
-	return
+	dynSSZ := dynssz.NewDynSsz(nil)
+	dynSSZ.NoFastSsz = true
+	size, _ = dynSSZ.SizeSSZ(e)
+	return size
 }
 
 // HashTreeRoot ssz hashes the ExecutionWitness object
