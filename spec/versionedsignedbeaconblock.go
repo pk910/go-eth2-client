@@ -251,6 +251,87 @@ func (v *VersionedSignedBeaconBlock) ExecutionTransactions() ([]bellatrix.Transa
 	}
 }
 
+// ExecutionDepositRequests returs the execution deposit requests for the block.
+func (v *VersionedSignedBeaconBlock) ExecutionDepositRequests() ([]*electra.DepositRequest, error) {
+	switch v.Version {
+	case DataVersionPhase0:
+		return nil, errors.New("phase0 block does not have execution deposit requests")
+	case DataVersionAltair:
+		return nil, errors.New("altair block does not have execution deposit requests")
+	case DataVersionBellatrix:
+		return nil, errors.New("bellatrix block does not have execution deposit requests")
+	case DataVersionCapella:
+		return nil, errors.New("capella block does not have execution deposit requests")
+	case DataVersionDeneb:
+		return nil, errors.New("deneb block does not have execution deposit requests")
+	case DataVersionElectra:
+		if v.Electra == nil ||
+			v.Electra.Message == nil ||
+			v.Electra.Message.Body == nil ||
+			v.Electra.Message.Body.ExecutionPayload == nil {
+			return nil, errors.New("no electra block")
+		}
+
+		return v.Electra.Message.Body.ExecutionPayload.DepositRequests, nil
+	default:
+		return nil, errors.New("unknown version")
+	}
+}
+
+// ExecutionWithdrawalRequests returs the execution withdrawal requests for the block.
+func (v *VersionedSignedBeaconBlock) ExecutionWithdrawalRequests() ([]*electra.WithdrawalRequest, error) {
+	switch v.Version {
+	case DataVersionPhase0:
+		return nil, errors.New("phase0 block does not have execution withdrawal requests")
+	case DataVersionAltair:
+		return nil, errors.New("altair block does not have execution withdrawal requests")
+	case DataVersionBellatrix:
+		return nil, errors.New("bellatrix block does not have execution withdrawal requests")
+	case DataVersionCapella:
+		return nil, errors.New("capella block does not have execution withdrawal requests")
+	case DataVersionDeneb:
+		return nil, errors.New("deneb block does not have execution withdrawal requests")
+	case DataVersionElectra:
+		if v.Electra == nil ||
+			v.Electra.Message == nil ||
+			v.Electra.Message.Body == nil ||
+			v.Electra.Message.Body.ExecutionPayload == nil {
+			return nil, errors.New("no electra block")
+		}
+
+		return v.Electra.Message.Body.ExecutionPayload.WithdrawalRequests, nil
+	default:
+		return nil, errors.New("unknown version")
+	}
+}
+
+// ExecutionConsolidationRequests returs the execution consolidation requests for the block.
+func (v *VersionedSignedBeaconBlock) ExecutionConsolidationRequests() ([]*electra.ConsolidationRequest, error) {
+	switch v.Version {
+	case DataVersionPhase0:
+		return nil, errors.New("phase0 block does not have execution consolidation requests")
+	case DataVersionAltair:
+		return nil, errors.New("altair block does not have execution consolidation requests")
+	case DataVersionBellatrix:
+		return nil, errors.New("bellatrix block does not have execution consolidation requests")
+	case DataVersionCapella:
+		return nil, errors.New("capella block does not have execution consolidation requests")
+	case DataVersionDeneb:
+		return nil, errors.New("deneb block does not have execution consolidation requests")
+	case DataVersionElectra:
+		if v.Electra == nil ||
+			v.Electra.Message == nil ||
+			v.Electra.Message.Body == nil ||
+			v.Electra.Message.Body.ExecutionPayload == nil {
+			return nil, errors.New("no electra block")
+		}
+
+		return v.Electra.Message.Body.ExecutionPayload.ConsolidationRequests, nil
+	default:
+		return nil, errors.New("unknown version")
+	}
+}
+
 // Graffiti returns the graffiti for the block.
 func (v *VersionedSignedBeaconBlock) Graffiti() ([32]byte, error) {
 	switch v.Version {
