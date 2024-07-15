@@ -40,7 +40,7 @@ func (s *Service) AttestationData(ctx context.Context,
 
 	endpoint := "/eth/v1/validator/attestation_data"
 	query := fmt.Sprintf("slot=%d&committee_index=%d", opts.Slot, opts.CommitteeIndex)
-	httpResponse, err := s.get(ctx, endpoint, query, &opts.Common)
+	httpResponse, err := s.get(ctx, endpoint, query, &opts.Common, false)
 	if err != nil {
 		return nil, err
 	}
@@ -77,10 +77,16 @@ func (*Service) attestationDataFromJSON(_ context.Context,
 
 func verifyAttestationData(opts *api.AttestationDataOpts, data *phase0.AttestationData) error {
 	if data.Slot != opts.Slot {
-		return errors.Join(fmt.Errorf("attestation data for slot %d; expected %d", data.Slot, opts.Slot), client.ErrInconsistentResult)
+		return errors.Join(
+			fmt.Errorf("attestation data for slot %d; expected %d", data.Slot, opts.Slot),
+			client.ErrInconsistentResult,
+		)
 	}
 	if data.Index != opts.CommitteeIndex {
-		return errors.Join(fmt.Errorf("attestation data for committee index %d; expected %d", data.Index, opts.CommitteeIndex), client.ErrInconsistentResult)
+		return errors.Join(
+			fmt.Errorf("attestation data for committee index %d; expected %d", data.Index, opts.CommitteeIndex),
+			client.ErrInconsistentResult,
+		)
 	}
 
 	return nil
