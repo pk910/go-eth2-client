@@ -5,6 +5,7 @@ package phase0
 
 import (
 	ssz "github.com/ferranbt/fastssz"
+	"fmt"
 )
 
 // MarshalSSZ ssz marshals the Attestation object
@@ -124,6 +125,7 @@ func (a *Attestation) HashTreeRootWith(hh ssz.HashWalker) (err error) {
 	// Field (2) 'Signature'
 	hh.PutBytes(a.Signature[:])
 
+	fmt.Printf("Attestation  ")
 	hh.Merkleize(indx)
 	return
 }

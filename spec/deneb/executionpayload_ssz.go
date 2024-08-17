@@ -8,6 +8,7 @@ import (
 	"github.com/attestantio/go-eth2-client/spec/capella"
 	ssz "github.com/ferranbt/fastssz"
 	"github.com/holiman/uint256"
+	"fmt"
 )
 
 // MarshalSSZ ssz marshals the ExecutionPayload object
@@ -379,6 +380,7 @@ func (e *ExecutionPayload) HashTreeRootWith(hh ssz.HashWalker) (err error) {
 	// Field (16) 'ExcessBlobGas'
 	hh.PutUint64(e.ExcessBlobGas)
 
+	fmt.Printf("ExecutionPayload  ")
 	hh.Merkleize(indx)
 	return
 }

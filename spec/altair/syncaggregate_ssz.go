@@ -5,6 +5,7 @@ package altair
 
 import (
 	ssz "github.com/ferranbt/fastssz"
+	"fmt"
 )
 
 // MarshalSSZ ssz marshals the SyncAggregate object
@@ -65,15 +66,16 @@ func (s *SyncAggregate) HashTreeRootWith(hh ssz.HashWalker) (err error) {
 	indx := hh.Index()
 
 	// Field (0) 'SyncCommitteeBits'
-	if size := len(s.SyncCommitteeBits); size != 64 {
+	/*if size := len(s.SyncCommitteeBits); size != 64 {
 		err = ssz.ErrBytesLengthFn("SyncAggregate.SyncCommitteeBits", size, 64)
 		return
-	}
+	}*/
 	hh.PutBytes(s.SyncCommitteeBits)
 
 	// Field (1) 'SyncCommitteeSignature'
 	hh.PutBytes(s.SyncCommitteeSignature[:])
 
+	fmt.Printf("SyncAggregate  ")
 	hh.Merkleize(indx)
 	return
 }
