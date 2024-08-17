@@ -327,6 +327,7 @@ func (e *ExecutionPayload) HashTreeRootWith(hh ssz.HashWalker) (err error) {
 	// Field (11) 'BaseFeePerGas'
 	baseFeePerGas := make([]byte, 32)
 	baseFeePerGasBE := e.BaseFeePerGas.Bytes32()
+	e.BaseFeePerGas.HashTreeRoot()
 	for i := 0; i < 32; i++ {
 		baseFeePerGas[i] = baseFeePerGasBE[31-i]
 	}
