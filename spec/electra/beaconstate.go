@@ -25,7 +25,7 @@ import (
 
 // BeaconState represents a beacon state.
 type BeaconState struct {
-	GenesisTime                   uint64
+	GenesisTime                   uint64      `ssz-stable-max:"128"`
 	GenesisValidatorsRoot         phase0.Root `ssz-size:"32"`
 	Slot                          phase0.Slot
 	Fork                          *phase0.Fork

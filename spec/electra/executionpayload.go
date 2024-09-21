@@ -25,7 +25,7 @@ import (
 
 // ExecutionPayload represents an execution layer payload.
 type ExecutionPayload struct {
-	ParentHash            phase0.Hash32              `ssz-size:"32"`
+	ParentHash            phase0.Hash32              `ssz-size:"32" ssz-stable-max:"64"`
 	FeeRecipient          bellatrix.ExecutionAddress `ssz-size:"20"`
 	StateRoot             phase0.Root                `ssz-size:"32"`
 	ReceiptsRoot          phase0.Root                `ssz-size:"32"`

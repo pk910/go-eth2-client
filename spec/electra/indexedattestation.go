@@ -30,7 +30,7 @@ import (
 // IndexedAttestation provides a signed attestation with a list of attesting indices.
 type IndexedAttestation struct {
 	// Currently using primitives as sszgen does not handle []ValidatorIndex
-	AttestingIndices []uint64 `ssz-max:"131072"`
+	AttestingIndices []uint64 `ssz-max:"131072" ssz-stable-max:"8"`
 	Data             *phase0.AttestationData
 	Signature        phase0.BLSSignature `ssz-size:"96"`
 }
