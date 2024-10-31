@@ -116,12 +116,14 @@ func (s *VerkleProof) UnmarshalJSON(input []byte) error {
 }
 
 type ExecutionWitness struct {
-	StateDiff   []*StemStateDiff `ssz-max:"1048576,1073741824" ssz-size:"?,?" json:"stateDiff"`
-	VerkleProof *VerkleProof     `ssz-max:"1048576,1073741824" ssz-size:"?,?"`
+	StateDiff       []*StemStateDiff `ssz-max:"1048576,1073741824" ssz-size:"?,?" json:"stateDiff"`
+	VerkleProof     *VerkleProof     `ssz-max:"1048576,1073741824" ssz-size:"?,?"`
+	ParentStateRoot [32]byte         `ssz-size:"32"`
 }
 
 type executionWitnessJSON struct {
-	StateDiff []*StemStateDiff `json"stateDiff""`
+	StateDiff       []*StemStateDiff `json:"stateDiff""`
+	ParentStateRoot *string          `json:"parentStateRoot"`
 }
 
 func (ew *ExecutionWitness) UnmarshalJSON(input []byte) error {
@@ -133,6 +135,13 @@ func (ew *ExecutionWitness) UnmarshalJSON(input []byte) error {
 	ew.StateDiff = make([]*StemStateDiff, len(res.StateDiff))
 	for i, sd := range res.StateDiff {
 		ew.StateDiff[i] = sd
+	}
+	if res.ParentStateRoot != nil {
+		psr, err := hex.DecodeString(strings.TrimPrefix(*res.ParentStateRoot, "0x"))
+		if err != nil {
+			return fmt.Errorf("error decoding parent state root string: %w", err)
+		}
+		copy(ew.ParentStateRoot[:], psr)
 	}
 	return nil
 }
