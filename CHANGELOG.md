@@ -1,3 +1,16 @@
+dev:
+  - add attester_slashing, block_gossip, bls_to_execution_change and proposer_slashing events
+
+0.21.10:
+  - better validator state when balance not supplied
+
+0.21.9:
+  - enable custom timeouts for POSTs
+
+0.21.8:
+  - remove Lodestar proposals workaround
+  - add client headers for events stream
+
 0.21.7:
   - use POST for specific validator and validator balance information
 

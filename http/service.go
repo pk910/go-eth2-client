@@ -95,18 +95,21 @@ func New(ctx context.Context, params ...Parameter) (client.Service, error) {
 		}
 	}
 
-	httpClient := &http.Client{
-		Transport: &http.Transport{
-			DialContext: (&net.Dialer{
-				Timeout:   parameters.timeout,
-				KeepAlive: 30 * time.Second,
-				DualStack: true,
-			}).DialContext,
-			MaxIdleConns:        64,
-			MaxConnsPerHost:     64,
-			MaxIdleConnsPerHost: 64,
-			IdleConnTimeout:     600 * time.Second,
-		},
+	httpClient := parameters.client
+	if httpClient == nil {
+		httpClient = &http.Client{
+			Transport: &http.Transport{
+				DialContext: (&net.Dialer{
+					Timeout:   parameters.timeout,
+					KeepAlive: 30 * time.Second,
+					DualStack: true,
+				}).DialContext,
+				MaxIdleConns:        64,
+				MaxConnsPerHost:     64,
+				MaxIdleConnsPerHost: 64,
+				IdleConnTimeout:     600 * time.Second,
+			},
+		}
 	}
 
 	base, address, err := parseAddress(parameters.address)
@@ -402,17 +405,21 @@ func parseAddress(address string) (*url.URL, *url.URL, error) {
 	// Remove any trailing slash from the path.
 	base.Path = strings.TrimSuffix(base.Path, "/")
 
+	// Attempt to mask any sensitive information in the URL, for logging purposes.
 	baseAddress := *base
 	if _, pwExists := baseAddress.User.Password(); pwExists {
+		// Mask the password.
 		user := baseAddress.User.Username()
-		baseAddress.User = url.UserPassword(user, "***")
+		baseAddress.User = url.UserPassword(user, "xxxxx")
 	}
 	if baseAddress.Path != "" {
-		baseAddress.Path = "***"
+		// Mask the path.
+		baseAddress.Path = "xxxxx"
 	}
 	if baseAddress.RawQuery != "" {
+		// Mask all query values.
 		sensitiveRegex := regexp.MustCompile("=([^&]*)(&)?")
-		baseAddress.RawQuery = sensitiveRegex.ReplaceAllString(baseAddress.RawQuery, "=***$2")
+		baseAddress.RawQuery = sensitiveRegex.ReplaceAllString(baseAddress.RawQuery, "=xxxxx$2")
 	}
 
 	return base, &baseAddress, nil
