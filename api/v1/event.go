@@ -43,12 +43,14 @@ var SupportedEventTopics = map[string]bool{
 	"bls_to_execution_change": true,
 	"chain_reorg":             true,
 	"contribution_and_proof":  true,
+	"data_column_sidecar":     true,
 	"finalized_checkpoint":    true,
 	"head":                    true,
 	"payload_attributes":      true,
 	"proposer_slashing":       true,
 	"single_attestation":      true,
 	"voluntary_exit":          true,
+	"inclusion_list":          true,
 }
 
 // eventJSON is the spec representation of the struct.
@@ -108,6 +110,8 @@ func (e *Event) UnmarshalJSON(input []byte) error {
 		e.Data = &ChainReorgEvent{}
 	case "contribution_and_proof":
 		e.Data = &altair.SignedContributionAndProof{}
+	case "data_column_sidecar":
+		e.Data = &DataColumnSidecarEvent{}
 	case "finalized_checkpoint":
 		e.Data = &FinalizedCheckpointEvent{}
 	case "head":
@@ -120,6 +124,8 @@ func (e *Event) UnmarshalJSON(input []byte) error {
 		e.Data = &electra.SingleAttestation{}
 	case "voluntary_exit":
 		e.Data = &phase0.SignedVoluntaryExit{}
+	case "inclusion_list":
+		e.Data = &InclusionListEvent{}
 	default:
 		return fmt.Errorf("unsupported event topic %s", eventJSON.Topic)
 	}
