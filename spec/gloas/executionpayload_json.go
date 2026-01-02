@@ -249,12 +249,8 @@ func (e *ExecutionPayload) UnmarshalJSON(input []byte) error {
 
 	tmpBytes = bytes.Trim(raw["block_access_list"], `"`)
 	tmpBytes = bytes.TrimPrefix(tmpBytes, []byte{'0', 'x'})
-	if bytes.HasPrefix(tmpBytes, []byte{'0', 'x'}) {
-		e.BlockAccessList, err = hex.DecodeString(string(tmpBytes))
-		if err != nil {
-			return errors.Wrap(err, "block_access_list")
-		}
-	} else {
+	e.BlockAccessList, err = hex.DecodeString(string(tmpBytes))
+	if err != nil {
 		return errors.Wrap(err, "block_access_list")
 	}
 
