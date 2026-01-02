@@ -189,7 +189,6 @@ func (e *ExecutionPayload) UnmarshalJSON(input []byte) error {
 	}
 
 	tmpBytes = bytes.Trim(raw["base_fee_per_gas"], `"`)
-	tmpBytes = bytes.TrimPrefix(tmpBytes, []byte{'0', 'x'})
 	if bytes.HasPrefix(tmpBytes, []byte{'0', 'x'}) {
 		e.BaseFeePerGas, err = uint256.FromHex(string(tmpBytes))
 	} else {
