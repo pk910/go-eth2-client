@@ -350,7 +350,7 @@ func (e *ExecutionPayload) HashTreeRootWith(hh ssz.HashWalker) (err error) {
 			err = ssz.ErrIncorrectListSize
 			return
 		}
-		hh.Append(e.ExtraData)
+		hh.PutBytes(e.ExtraData)
 		hh.MerkleizeWithMixin(elemIndx, byteLen, (32+31)/32)
 	}
 
@@ -385,7 +385,7 @@ func (e *ExecutionPayload) HashTreeRootWith(hh ssz.HashWalker) (err error) {
 				hh.MerkleizeWithMixin(elemIndx, byteLen, (1073741824+31)/32)
 			}
 		}
-		hh.MerkleizeWithMixin(subIndx, num, 1073741824)
+		hh.MerkleizeWithMixin(subIndx, num, 1048576)
 	}
 
 	// Field (14) 'Withdrawals'
