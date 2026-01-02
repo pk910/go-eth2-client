@@ -1,3 +1,17 @@
+0.27.1:
+  - set max possible blob count to 72
+
+0.27.0:
+  - support fulu
+    - introduce data column sidecar event api and corresponding event handler
+    - add blockcontents and signedblockcontents for fulu api
+    - add beaconstate container updates as per spec
+    - add fulu cases for all versioned spec, versioned api and http functions
+
+0.26.0:
+  - refactor http.Spec to allow more complex types in the keys
+  - support pending consolidations and deposits
+
 0.25.2:
   - add multi/submitblindedproposal
 
