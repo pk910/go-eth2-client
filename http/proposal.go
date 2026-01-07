@@ -21,13 +21,12 @@ import (
 	"math/big"
 	"strings"
 
-	apiv1electra "github.com/attestantio/go-eth2-client/api/v1/electra"
-
 	client "github.com/attestantio/go-eth2-client"
 	"github.com/attestantio/go-eth2-client/api"
 	apiv1bellatrix "github.com/attestantio/go-eth2-client/api/v1/bellatrix"
 	apiv1capella "github.com/attestantio/go-eth2-client/api/v1/capella"
 	apiv1deneb "github.com/attestantio/go-eth2-client/api/v1/deneb"
+	apiv1electra "github.com/attestantio/go-eth2-client/api/v1/electra"
 	apiv1fulu "github.com/attestantio/go-eth2-client/api/v1/fulu"
 	"github.com/attestantio/go-eth2-client/spec"
 	"github.com/attestantio/go-eth2-client/spec/altair"
@@ -52,9 +51,11 @@ func (s *Service) Proposal(ctx context.Context,
 	if err := s.assertIsSynced(ctx); err != nil {
 		return nil, err
 	}
+
 	if opts == nil {
 		return nil, client.ErrNoOptions
 	}
+
 	if opts.Slot == 0 {
 		return nil, errors.Join(errors.New("no slot specified"), client.ErrInvalidOptions)
 	}
@@ -69,6 +70,7 @@ func (s *Service) Proposal(ctx context.Context,
 				client.ErrInvalidOptions,
 			)
 		}
+
 		query = fmt.Sprintf("%s&skip_randao_verification", query)
 	}
 
@@ -84,6 +86,7 @@ func (s *Service) Proposal(ctx context.Context,
 	}
 
 	var response *api.Response[*api.VersionedProposal]
+
 	switch httpResponse.contentType {
 	case ContentTypeSSZ:
 		response, err = s.beaconBlockProposalFromSSZ(ctx, httpResponse)
@@ -92,6 +95,7 @@ func (s *Service) Proposal(ctx context.Context,
 	default:
 		return nil, fmt.Errorf("unhandled content type %v", httpResponse.contentType)
 	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -101,6 +105,7 @@ func (s *Service) Proposal(ctx context.Context,
 	if err != nil {
 		return nil, err
 	}
+
 	if blockSlot != opts.Slot {
 		return nil, errors.Join(
 			fmt.Errorf("beacon block proposal for slot %d; expected %d", blockSlot, opts.Slot),
@@ -115,6 +120,7 @@ func (s *Service) Proposal(ctx context.Context,
 		if err != nil {
 			return nil, err
 		}
+
 		if !bytes.Equal(blockRandaoReveal[:], opts.RandaoReveal[:]) {
 			return nil, errors.Join(
 				fmt.Errorf("beacon block proposal has RANDAO reveal %#x; expected %#x", blockRandaoReveal[:], opts.RandaoReveal[:]),
@@ -147,6 +153,7 @@ func (s *Service) beaconBlockProposalFromSSZ(ctx context.Context,
 	}
 
 	var dynSSZ *dynssz.DynSsz
+
 	if s.customSpecSupport {
 		specs, err := s.Spec(ctx, &api.SpecOpts{})
 		if err != nil {
@@ -157,6 +164,7 @@ func (s *Service) beaconBlockProposalFromSSZ(ctx context.Context,
 	}
 
 	var err error
+
 	switch res.consensusVersion {
 	case spec.DataVersionPhase0:
 		response.Data.Phase0 = &phase0.BeaconBlock{}
@@ -271,6 +279,7 @@ func (s *Service) beaconBlockProposalFromSSZ(ctx context.Context,
 	default:
 		return nil, fmt.Errorf("unhandled block proposal version %s", res.consensusVersion)
 	}
+
 	if err != nil {
 		return nil, errors.Join(
 			fmt.Errorf("failed to decode %v SSZ beacon block (blinded: %v)", res.consensusVersion, response.Data.Blinded),
@@ -296,6 +305,7 @@ func (s *Service) beaconBlockProposalFromJSON(res *httpResponse) (*api.Response[
 	}
 
 	var err error
+
 	switch res.consensusVersion {
 	case spec.DataVersionPhase0:
 		response.Data.Phase0, response.Metadata, err = decodeJSONResponse(
@@ -382,6 +392,7 @@ func (s *Service) beaconBlockProposalFromJSON(res *httpResponse) (*api.Response[
 	default:
 		err = fmt.Errorf("unsupported version %s", res.consensusVersion)
 	}
+
 	if err != nil {
 		return nil, errors.Join(
 			fmt.Errorf("failed to decode %v JSON beacon block (blinded: %v)", res.consensusVersion, response.Data.Blinded),
@@ -401,16 +412,20 @@ func (*Service) populateProposalDataFromHeaders(response *api.Response[*api.Vers
 			response.Data.Blinded = strings.EqualFold(v, "true")
 		case strings.EqualFold(k, "Eth-Execution-Payload-Value"):
 			var success bool
+
 			response.Data.ExecutionValue, success = new(big.Int).SetString(v, 10)
 			if !success {
 				return fmt.Errorf("proposal header Eth-Execution-Payload-Value %s not a valid integer", v)
 			}
 		case strings.EqualFold(k, "Eth-Consensus-Block-Value"):
 			var success bool
+
 			response.Data.ConsensusValue, success = new(big.Int).SetString(v, 10)
 			if !success {
 				return fmt.Errorf("proposal header Eth-Consensus-Block-Value %s not a valid integer", v)
 			}
+		default:
+			// Unknown header, ignore
 		}
 	}
 

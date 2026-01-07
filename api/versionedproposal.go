@@ -912,6 +912,7 @@ func (v *VersionedProposal) Value() *big.Int {
 	if v.ConsensusValue != nil {
 		value = value.Add(value, v.ConsensusValue)
 	}
+
 	if v.ExecutionValue != nil {
 		value = value.Add(value, v.ExecutionValue)
 	}
@@ -1072,9 +1073,7 @@ func (v *VersionedProposal) bodyPresent() bool {
 //nolint:gocyclo // ignore
 func (v *VersionedProposal) payloadPresent() bool {
 	switch v.Version {
-	case spec.DataVersionPhase0:
-		return false
-	case spec.DataVersionAltair:
+	case spec.DataVersionPhase0, spec.DataVersionAltair:
 		return false
 	case spec.DataVersionBellatrix:
 		if v.Blinded {

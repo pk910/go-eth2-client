@@ -16,12 +16,11 @@ package spec
 import (
 	"errors"
 
-	"github.com/attestantio/go-eth2-client/spec/electra"
-
 	"github.com/attestantio/go-eth2-client/spec/altair"
 	"github.com/attestantio/go-eth2-client/spec/bellatrix"
 	"github.com/attestantio/go-eth2-client/spec/capella"
 	"github.com/attestantio/go-eth2-client/spec/deneb"
+	"github.com/attestantio/go-eth2-client/spec/electra"
 	"github.com/attestantio/go-eth2-client/spec/gloas"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 )
@@ -108,6 +107,7 @@ func (v *VersionedBeaconBlock) RandaoReveal() (phase0.BLSSignature, error) {
 		if v.Phase0 == nil {
 			return phase0.BLSSignature{}, errors.New("no phase0 block")
 		}
+
 		if v.Phase0.Body == nil {
 			return phase0.BLSSignature{}, errors.New("no phase0 block body")
 		}
@@ -117,6 +117,7 @@ func (v *VersionedBeaconBlock) RandaoReveal() (phase0.BLSSignature, error) {
 		if v.Altair == nil {
 			return phase0.BLSSignature{}, errors.New("no altair block")
 		}
+
 		if v.Altair.Body == nil {
 			return phase0.BLSSignature{}, errors.New("no altair block body")
 		}
@@ -126,6 +127,7 @@ func (v *VersionedBeaconBlock) RandaoReveal() (phase0.BLSSignature, error) {
 		if v.Bellatrix == nil {
 			return phase0.BLSSignature{}, errors.New("no bellatrix block")
 		}
+
 		if v.Bellatrix.Body == nil {
 			return phase0.BLSSignature{}, errors.New("no bellatrix block body")
 		}
@@ -135,6 +137,7 @@ func (v *VersionedBeaconBlock) RandaoReveal() (phase0.BLSSignature, error) {
 		if v.Capella == nil {
 			return phase0.BLSSignature{}, errors.New("no capella block")
 		}
+
 		if v.Capella.Body == nil {
 			return phase0.BLSSignature{}, errors.New("no capella block body")
 		}
@@ -144,6 +147,7 @@ func (v *VersionedBeaconBlock) RandaoReveal() (phase0.BLSSignature, error) {
 		if v.Deneb == nil {
 			return phase0.BLSSignature{}, errors.New("no deneb block")
 		}
+
 		if v.Deneb.Body == nil {
 			return phase0.BLSSignature{}, errors.New("no deneb block body")
 		}
@@ -153,6 +157,7 @@ func (v *VersionedBeaconBlock) RandaoReveal() (phase0.BLSSignature, error) {
 		if v.Electra == nil {
 			return phase0.BLSSignature{}, errors.New("no electra block")
 		}
+
 		if v.Electra.Body == nil {
 			return phase0.BLSSignature{}, errors.New("no electra block body")
 		}
@@ -162,6 +167,7 @@ func (v *VersionedBeaconBlock) RandaoReveal() (phase0.BLSSignature, error) {
 		if v.Fulu == nil {
 			return phase0.BLSSignature{}, errors.New("no fulu block")
 		}
+
 		if v.Fulu.Body == nil {
 			return phase0.BLSSignature{}, errors.New("no fulu block body")
 		}
@@ -179,6 +185,7 @@ func (v *VersionedBeaconBlock) Graffiti() ([32]byte, error) {
 		if v.Phase0 == nil {
 			return [32]byte{}, errors.New("no phase0 block")
 		}
+
 		if v.Phase0.Body == nil {
 			return [32]byte{}, errors.New("no phase0 block body")
 		}
@@ -188,6 +195,7 @@ func (v *VersionedBeaconBlock) Graffiti() ([32]byte, error) {
 		if v.Altair == nil {
 			return [32]byte{}, errors.New("no altair block")
 		}
+
 		if v.Altair.Body == nil {
 			return [32]byte{}, errors.New("no altair block body")
 		}
@@ -197,6 +205,7 @@ func (v *VersionedBeaconBlock) Graffiti() ([32]byte, error) {
 		if v.Bellatrix == nil {
 			return [32]byte{}, errors.New("no bellatrix block")
 		}
+
 		if v.Bellatrix.Body == nil {
 			return [32]byte{}, errors.New("no bellatrix block body")
 		}
@@ -206,6 +215,7 @@ func (v *VersionedBeaconBlock) Graffiti() ([32]byte, error) {
 		if v.Capella == nil {
 			return [32]byte{}, errors.New("no capella block")
 		}
+
 		if v.Capella.Body == nil {
 			return [32]byte{}, errors.New("no capella block body")
 		}
@@ -215,6 +225,7 @@ func (v *VersionedBeaconBlock) Graffiti() ([32]byte, error) {
 		if v.Deneb == nil {
 			return [32]byte{}, errors.New("no deneb block")
 		}
+
 		if v.Deneb.Body == nil {
 			return [32]byte{}, errors.New("no deneb block body")
 		}
@@ -224,6 +235,7 @@ func (v *VersionedBeaconBlock) Graffiti() ([32]byte, error) {
 		if v.Electra == nil {
 			return [32]byte{}, errors.New("no electra block")
 		}
+
 		if v.Electra.Body == nil {
 			return [32]byte{}, errors.New("no electra block body")
 		}
@@ -233,6 +245,7 @@ func (v *VersionedBeaconBlock) Graffiti() ([32]byte, error) {
 		if v.Fulu == nil {
 			return [32]byte{}, errors.New("no fulu block")
 		}
+
 		if v.Fulu.Body == nil {
 			return [32]byte{}, errors.New("no fulu block body")
 		}
@@ -350,6 +363,7 @@ func (v *VersionedBeaconBlock) BodyRoot() (phase0.Root, error) {
 		if v.Phase0 == nil {
 			return phase0.Root{}, errors.New("no phase0 block")
 		}
+
 		if v.Phase0.Body == nil {
 			return phase0.Root{}, errors.New("no phase0 block body")
 		}
@@ -359,6 +373,7 @@ func (v *VersionedBeaconBlock) BodyRoot() (phase0.Root, error) {
 		if v.Altair == nil {
 			return phase0.Root{}, errors.New("no altair block")
 		}
+
 		if v.Altair.Body == nil {
 			return phase0.Root{}, errors.New("no altair block body")
 		}
@@ -368,6 +383,7 @@ func (v *VersionedBeaconBlock) BodyRoot() (phase0.Root, error) {
 		if v.Bellatrix == nil {
 			return phase0.Root{}, errors.New("no bellatrix block")
 		}
+
 		if v.Bellatrix.Body == nil {
 			return phase0.Root{}, errors.New("no bellatrix block body")
 		}
@@ -377,6 +393,7 @@ func (v *VersionedBeaconBlock) BodyRoot() (phase0.Root, error) {
 		if v.Capella == nil {
 			return phase0.Root{}, errors.New("no capella block")
 		}
+
 		if v.Capella.Body == nil {
 			return phase0.Root{}, errors.New("no capella block body")
 		}
@@ -386,6 +403,7 @@ func (v *VersionedBeaconBlock) BodyRoot() (phase0.Root, error) {
 		if v.Deneb == nil {
 			return phase0.Root{}, errors.New("no deneb block")
 		}
+
 		if v.Deneb.Body == nil {
 			return phase0.Root{}, errors.New("no deneb block body")
 		}
@@ -395,6 +413,7 @@ func (v *VersionedBeaconBlock) BodyRoot() (phase0.Root, error) {
 		if v.Electra == nil {
 			return phase0.Root{}, errors.New("no electra block")
 		}
+
 		if v.Electra.Body == nil {
 			return phase0.Root{}, errors.New("no electra block body")
 		}
@@ -404,6 +423,7 @@ func (v *VersionedBeaconBlock) BodyRoot() (phase0.Root, error) {
 		if v.Fulu == nil {
 			return phase0.Root{}, errors.New("no fulu block")
 		}
+
 		if v.Fulu.Body == nil {
 			return phase0.Root{}, errors.New("no fulu block body")
 		}
