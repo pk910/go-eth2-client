@@ -20,22 +20,25 @@ import (
 
 // BlobSidecars is an API construct to allow decoding an array of blob sidecars.
 type BlobSidecars struct {
-	Sidecars []*deneb.BlobSidecar `ssz-max:"12"`
+	Sidecars []*deneb.BlobSidecar `ssz-max:"72"`
 }
 
 // UnmarshalSSZ ssz unmarshals the BlobSidecars object.
 // This is a hand-crafted function, as automatic generation does not support immediate arrays.
 func (b *BlobSidecars) UnmarshalSSZ(buf []byte) error {
-	num, err := ssz.DivideInt2(len(buf), 131928, 12)
+	num, err := ssz.DivideInt2(len(buf), 131928, 72)
 	if err != nil {
 		return err
 	}
+
 	b.Sidecars = make([]*deneb.BlobSidecar, num)
-	for ii := 0; ii < num; ii++ {
+	for ii := range num {
 		if b.Sidecars[ii] == nil {
 			b.Sidecars[ii] = new(deneb.BlobSidecar)
 		}
-		if err = b.Sidecars[ii].UnmarshalSSZ(buf[ii*131928 : (ii+1)*131928]); err != nil {
+
+		err = b.Sidecars[ii].UnmarshalSSZ(buf[ii*131928 : (ii+1)*131928])
+		if err != nil {
 			return err
 		}
 	}

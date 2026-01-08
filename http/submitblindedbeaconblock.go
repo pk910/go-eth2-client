@@ -32,8 +32,10 @@ func (s *Service) SubmitBlindedBeaconBlock(ctx context.Context, block *api.Versi
 		return err
 	}
 
-	var specJSON []byte
-	var err error
+	var (
+		specJSON []byte
+		err      error
+	)
 
 	if block == nil {
 		return errors.Join(errors.New("no blinded block supplied"), client.ErrInvalidOptions)
@@ -59,6 +61,7 @@ func (s *Service) SubmitBlindedBeaconBlock(ctx context.Context, block *api.Versi
 	default:
 		err = errors.New("unknown block version")
 	}
+
 	if err != nil {
 		return errors.Join(errors.New("failed to marshal JSON"), err)
 	}
