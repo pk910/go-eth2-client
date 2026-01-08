@@ -23,6 +23,7 @@ type BlobSidecars struct {
 	Sidecars []*deneb.BlobSidecar
 }
 
+// blobSidecarsSSZ is the SSZ wrapper for the BlobSidecars object.
 type blobSidecarsSSZ = dynssz.TypeWrapper[struct {
 	Sidecars []*deneb.BlobSidecar `ssz-max:"72"`
 }, []*deneb.BlobSidecar]
@@ -33,6 +34,7 @@ func (b *BlobSidecars) UnmarshalSSZ(buf []byte) error {
 	if err := dynssz.GetGlobalDynSsz().UnmarshalSSZ(&blobs, buf); err != nil {
 		return err
 	}
+
 	b.Sidecars = blobs.Data
 
 	return nil
@@ -50,6 +52,7 @@ func (b *BlobSidecars) SizeSSZ() int {
 	size, _ := dynssz.GetGlobalDynSsz().SizeSSZ(&blobSidecarsSSZ{
 		Data: b.Sidecars,
 	})
+
 	return size
 }
 
