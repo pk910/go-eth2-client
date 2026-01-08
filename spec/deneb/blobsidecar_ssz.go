@@ -42,7 +42,7 @@ func (t *BlobSidecar) MarshalSSZTo(buf []byte) (dst []byte, err error) {
 		}
 	}
 	{ // Field #5 'KZGCommitmentInclusionProof'
-		t := &t.KZGCommitmentInclusionProof
+		t := t.KZGCommitmentInclusionProof
 		for i := 0; i < 17; i++ {
 			dst = append(dst, []byte(t[i][:32])...)
 		}
@@ -133,7 +133,7 @@ func (t *BlobSidecar) HashTreeRootWith(hh sszutils.HashWalker) error {
 		}
 	}
 	{ // Field #5 'KZGCommitmentInclusionProof'
-		t := &t.KZGCommitmentInclusionProof
+		t := t.KZGCommitmentInclusionProof
 		idx := hh.Index()
 		var val1 *KZGCommitmentInclusionProofElement
 		for i := 0; i < 17; i++ {
@@ -149,4 +149,3 @@ func (t *BlobSidecar) HashTreeRootWith(hh sszutils.HashWalker) error {
 	hh.Merkleize(idx)
 	return nil
 }
-
