@@ -26,7 +26,7 @@ import (
 type ExecutionPayloadEnvelope struct {
 	Payload            *deneb.ExecutionPayload
 	ExecutionRequests  *electra.ExecutionRequests
-	BuilderIndex       phase0.ValidatorIndex
+	BuilderIndex       BuilderIndex
 	BeaconBlockRoot    phase0.Root `ssz-size:"32"`
 	Slot               phase0.Slot
 	BlobKZGCommitments []deneb.KZGCommitment `dynssz-max:"MAX_BLOB_COMMITMENTS_PER_BLOCK" ssz-max:"4096" ssz-size:"?,48"`

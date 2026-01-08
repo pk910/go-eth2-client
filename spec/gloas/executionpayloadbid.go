@@ -26,11 +26,13 @@ type ExecutionPayloadBid struct {
 	ParentBlockHash        phase0.Hash32              `ssz-size:"32"`
 	ParentBlockRoot        phase0.Root                `ssz-size:"32"`
 	BlockHash              phase0.Hash32              `ssz-size:"32"`
+	PrevRandao             phase0.Root                `ssz-size:"32"`
 	FeeRecipient           bellatrix.ExecutionAddress `ssz-size:"20"`
 	GasLimit               uint64
-	BuilderIndex           phase0.ValidatorIndex
+	BuilderIndex           BuilderIndex
 	Slot                   phase0.Slot
 	Value                  phase0.Gwei
+	ExecutionPayment       phase0.Gwei
 	BlobKZGCommitmentsRoot phase0.Root `ssz-size:"32"`
 }
 

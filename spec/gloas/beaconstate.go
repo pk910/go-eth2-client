@@ -16,12 +16,12 @@ package gloas
 import (
 	"fmt"
 
+	bitfield "github.com/OffchainLabs/go-bitfield"
 	"github.com/attestantio/go-eth2-client/spec/altair"
 	"github.com/attestantio/go-eth2-client/spec/capella"
 	"github.com/attestantio/go-eth2-client/spec/electra"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 	"github.com/goccy/go-yaml"
-	bitfield "github.com/prysmaticlabs/go-bitfield"
 )
 
 // BeaconState represents a beacon state for EIP-7732.
@@ -64,11 +64,13 @@ type BeaconState struct {
 	PendingPartialWithdrawals     []*electra.PendingPartialWithdrawal `ssz-max:"134217728"`
 	PendingConsolidations         []*electra.PendingConsolidation     `ssz-max:"262144"`
 	ProposerLookahead             []phase0.ValidatorIndex             `dynssz-size:"(MIN_SEED_LOOKAHEAD+1)*SLOTS_PER_EPOCH" ssz-size:"64"`
-	ExecutionPayloadAvailability  []byte                              `dynssz-size:"SLOTS_PER_HISTORICAL_ROOT/8" ssz-size:"1024"`
-	BuilderPendingPayments        []*BuilderPendingPayment            `dynssz-size:"SLOTS_PER_EPOCH*2" ssz-size:"64"`
-	BuilderPendingWithdrawals     []*BuilderPendingWithdrawal         `dynssz-max:"BUILDER_PENDING_WITHDRAWALS_LIMIT" ssz-max:"1048576"`
-	LatestBlockHash               phase0.Hash32                       `ssz-size:"32"`
-	LatestWithdrawalsRoot         phase0.Root                         `ssz-size:"32"`
+	Builders                      []*Builder                          `dynssz-max:"BUILDER_REGISTRY_LIMIT" ssz-max:"1099511627776"`
+	NextWithdrawalBuilderIndex    BuilderIndex
+	ExecutionPayloadAvailability  []uint8                     `dynssz-size:"SLOTS_PER_HISTORICAL_ROOT/8" ssz-size:"1024"`
+	BuilderPendingPayments        []*BuilderPendingPayment    `dynssz-size:"SLOTS_PER_EPOCH*2" ssz-size:"64"`
+	BuilderPendingWithdrawals     []*BuilderPendingWithdrawal `dynssz-max:"BUILDER_PENDING_WITHDRAWALS_LIMIT" ssz-max:"1048576"`
+	LatestBlockHash               phase0.Hash32               `ssz-size:"32"`
+	PayloadExpectedWithdrawals    []*capella.Withdrawal       `dynssz-size:"MAX_WITHDRAWALS_PER_PAYLOAD" ssz-size:"16"`
 }
 
 // String returns a string version of the structure.

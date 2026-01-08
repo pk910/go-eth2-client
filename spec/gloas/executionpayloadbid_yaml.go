@@ -28,10 +28,12 @@ func (e *ExecutionPayloadBid) MarshalYAML() ([]byte, error) {
 		ParentBlockHash:        fmt.Sprintf("%#x", e.ParentBlockHash),
 		ParentBlockRoot:        fmt.Sprintf("%#x", e.ParentBlockRoot),
 		BlockHash:              fmt.Sprintf("%#x", e.BlockHash),
+		PrevRandao:             fmt.Sprintf("%#x", e.PrevRandao),
 		GasLimit:               fmt.Sprintf("%d", e.GasLimit),
 		BuilderIndex:           fmt.Sprintf("%d", e.BuilderIndex),
 		Slot:                   fmt.Sprintf("%d", e.Slot),
 		Value:                  fmt.Sprintf("%d", e.Value),
+		ExecutionPayment:       fmt.Sprintf("%d", e.ExecutionPayment),
 		BlobKZGCommitmentsRoot: fmt.Sprintf("%#x", e.BlobKZGCommitmentsRoot),
 	}, yaml.Flow(true))
 	if err != nil {

@@ -66,11 +66,13 @@ type beaconStateYAML struct {
 	PendingPartialWithdrawals     []*electra.PendingPartialWithdrawal `yaml:"pending_partial_withdrawals"`
 	PendingConsolidations         []*electra.PendingConsolidation     `yaml:"pending_consolidations"`
 	ProposerLookahead             []phase0.ValidatorIndex             `yaml:"proposer_lookahead"`
+	Builders                      []*Builder                          `yaml:"builders"`
+	NextWithdrawalBuilderIndex    BuilderIndex                        `yaml:"next_withdrawal_builder_index"`
 	ExecutionPayloadAvailability  string                              `yaml:"execution_payload_availability"`
 	BuilderPendingPayments        []*BuilderPendingPayment            `yaml:"builder_pending_payments"`
 	BuilderPendingWithdrawals     []*BuilderPendingWithdrawal         `yaml:"builder_pending_withdrawals"`
 	LatestBlockHash               phase0.Hash32                       `yaml:"latest_block_hash"`
-	LatestWithdrawalsRoot         phase0.Root                         `yaml:"latest_withdrawals_root"`
+	PayloadExpectedWithdrawals    []*capella.Withdrawal               `yaml:"payload_expected_withdrawals"`
 }
 
 // MarshalYAML implements yaml.Marshaler.
@@ -114,11 +116,13 @@ func (b *BeaconState) MarshalYAML() ([]byte, error) {
 		PendingPartialWithdrawals:     b.PendingPartialWithdrawals,
 		PendingConsolidations:         b.PendingConsolidations,
 		ProposerLookahead:             b.ProposerLookahead,
+		Builders:                      b.Builders,
+		NextWithdrawalBuilderIndex:    b.NextWithdrawalBuilderIndex,
 		LatestBlockHash:               b.LatestBlockHash,
 		ExecutionPayloadAvailability:  fmt.Sprintf("%#x", b.ExecutionPayloadAvailability[:]),
 		BuilderPendingPayments:        b.BuilderPendingPayments,
 		BuilderPendingWithdrawals:     b.BuilderPendingWithdrawals,
-		LatestWithdrawalsRoot:         b.LatestWithdrawalsRoot,
+		PayloadExpectedWithdrawals:    b.PayloadExpectedWithdrawals,
 	}, yaml.Flow(true))
 	if err != nil {
 		return nil, err

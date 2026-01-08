@@ -29,10 +29,12 @@ type executionPayloadBidJSON struct {
 	ParentBlockHash        string `json:"parent_block_hash"`
 	ParentBlockRoot        string `json:"parent_block_root"`
 	BlockHash              string `json:"block_hash"`
+	PrevRandao             string `json:"prev_randao"`
 	GasLimit               string `json:"gas_limit"`
 	BuilderIndex           string `json:"builder_index"`
 	Slot                   string `json:"slot"`
 	Value                  string `json:"value"`
+	ExecutionPayment       string `json:"execution_payment"`
 	BlobKZGCommitmentsRoot string `json:"blob_kzg_commitments_root"`
 }
 
@@ -42,10 +44,12 @@ func (e *ExecutionPayloadBid) MarshalJSON() ([]byte, error) {
 		ParentBlockHash:        fmt.Sprintf("%#x", e.ParentBlockHash),
 		ParentBlockRoot:        fmt.Sprintf("%#x", e.ParentBlockRoot),
 		BlockHash:              fmt.Sprintf("%#x", e.BlockHash),
+		PrevRandao:             fmt.Sprintf("%#x", e.PrevRandao),
 		GasLimit:               fmt.Sprintf("%d", e.GasLimit),
 		BuilderIndex:           fmt.Sprintf("%d", e.BuilderIndex),
 		Slot:                   fmt.Sprintf("%d", e.Slot),
 		Value:                  fmt.Sprintf("%d", e.Value),
+		ExecutionPayment:       fmt.Sprintf("%d", e.ExecutionPayment),
 		BlobKZGCommitmentsRoot: fmt.Sprintf("%#x", e.BlobKZGCommitmentsRoot),
 	})
 }
@@ -87,6 +91,16 @@ func (e *ExecutionPayloadBid) UnmarshalJSON(input []byte) error {
 	}
 	copy(e.BlockHash[:], blockHash)
 
+	// Prev randao
+	if data.PrevRandao == "" {
+		return errors.New("prev randao missing")
+	}
+	prevRandao, err := hex.DecodeString(strings.TrimPrefix(data.PrevRandao, "0x"))
+	if err != nil {
+		return errors.Wrap(err, "invalid prev randao")
+	}
+	copy(e.PrevRandao[:], prevRandao)
+
 	// Gas limit
 	if data.GasLimit == "" {
 		return errors.New("gas limit missing")
@@ -105,7 +119,7 @@ func (e *ExecutionPayloadBid) UnmarshalJSON(input []byte) error {
 	if err != nil {
 		return errors.Wrap(err, "invalid builder index")
 	}
-	e.BuilderIndex = phase0.ValidatorIndex(builderIndex)
+	e.BuilderIndex = BuilderIndex(builderIndex)
 
 	// Slot
 	if data.Slot == "" {
@@ -126,6 +140,16 @@ func (e *ExecutionPayloadBid) UnmarshalJSON(input []byte) error {
 		return errors.Wrap(err, "invalid value")
 	}
 	e.Value = phase0.Gwei(value)
+
+	// Execution payment
+	if data.ExecutionPayment == "" {
+		return errors.New("execution payment missing")
+	}
+	executionPayment, err := strconv.ParseUint(data.ExecutionPayment, 10, 64)
+	if err != nil {
+		return errors.Wrap(err, "invalid execution payment")
+	}
+	e.ExecutionPayment = phase0.Gwei(executionPayment)
 
 	// Blob KZG commitments root
 	if data.BlobKZGCommitmentsRoot == "" {

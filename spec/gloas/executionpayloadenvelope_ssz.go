@@ -98,7 +98,7 @@ func (e *ExecutionPayloadEnvelope) UnmarshalSSZ(buf []byte) error {
 	}
 
 	// Field (2) 'BuilderIndex'
-	e.BuilderIndex = phase0.ValidatorIndex(ssz.UnmarshallUint64(buf[8:16]))
+	e.BuilderIndex = BuilderIndex(ssz.UnmarshallUint64(buf[8:16]))
 
 	// Field (3) 'BeaconBlockRoot'
 	copy(e.BeaconBlockRoot[:], buf[16:48])

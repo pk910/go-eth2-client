@@ -80,7 +80,7 @@ func (e *ExecutionPayloadEnvelope) UnmarshalJSON(input []byte) error {
 	if err != nil {
 		return errors.Wrap(err, "invalid builder index")
 	}
-	e.BuilderIndex = phase0.ValidatorIndex(builderIndex)
+	e.BuilderIndex = BuilderIndex(builderIndex)
 
 	if data.BeaconBlockRoot == "" {
 		return errors.New("beacon block root missing")

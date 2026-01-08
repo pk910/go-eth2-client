@@ -23,10 +23,9 @@ import (
 
 // BuilderPendingWithdrawal represents a builder pending withdrawal.
 type BuilderPendingWithdrawal struct {
-	FeeRecipient      bellatrix.ExecutionAddress `ssz-size:"20"`
-	Amount            phase0.Gwei
-	BuilderIndex      phase0.ValidatorIndex
-	WithdrawableEpoch phase0.Epoch
+	FeeRecipient bellatrix.ExecutionAddress `ssz-size:"20"`
+	Amount       phase0.Gwei
+	BuilderIndex BuilderIndex
 }
 
 // String returns a string version of the structure.

@@ -16,9 +16,9 @@ package gloas
 import (
 	"fmt"
 
+	bitfield "github.com/OffchainLabs/go-bitfield"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 	"github.com/goccy/go-yaml"
-	bitfield "github.com/prysmaticlabs/go-bitfield"
 )
 
 // PayloadAttestation represents a payload attestation.

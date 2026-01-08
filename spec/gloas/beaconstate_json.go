@@ -70,11 +70,13 @@ type beaconStateJSON struct {
 	PendingPartialWithdrawals     []*electra.PendingPartialWithdrawal `json:"pending_partial_withdrawals"`
 	PendingConsolidations         []*electra.PendingConsolidation     `json:"pending_consolidations"`
 	ProposerLookahead             []string                            `json:"proposer_lookahead"`
+	Builders                      []*Builder                          `json:"builders"`
+	NextWithdrawalBuilderIndex    string                              `json:"next_withdrawal_builder_index"`
 	ExecutionPayloadAvailability  []string                            `json:"execution_payload_availability"`
 	BuilderPendingPayments        []*BuilderPendingPayment            `json:"builder_pending_payments"`
 	BuilderPendingWithdrawals     []*BuilderPendingWithdrawal         `json:"builder_pending_withdrawals"`
 	LatestBlockHash               string                              `json:"latest_block_hash"`
-	LatestWithdrawalsRoot         string                              `json:"latest_withdrawals_root"`
+	PayloadExpectedWithdrawals    []*capella.Withdrawal               `json:"payload_expected_withdrawals"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -151,11 +153,13 @@ func (b *BeaconState) MarshalJSON() ([]byte, error) {
 		PendingPartialWithdrawals:     b.PendingPartialWithdrawals,
 		PendingConsolidations:         b.PendingConsolidations,
 		ProposerLookahead:             proposerLookahead,
+		Builders:                      b.Builders,
+		NextWithdrawalBuilderIndex:    fmt.Sprintf("%d", b.NextWithdrawalBuilderIndex),
 		ExecutionPayloadAvailability:  executionPayloadAvailability,
 		BuilderPendingPayments:        b.BuilderPendingPayments,
 		BuilderPendingWithdrawals:     b.BuilderPendingWithdrawals,
 		LatestBlockHash:               fmt.Sprintf("%#x", b.LatestBlockHash),
-		LatestWithdrawalsRoot:         fmt.Sprintf("%#x", b.LatestWithdrawalsRoot),
+		PayloadExpectedWithdrawals:    b.PayloadExpectedWithdrawals,
 	})
 }
 
@@ -373,6 +377,19 @@ func (b *BeaconState) UnmarshalJSON(input []byte) error {
 		return errors.Wrap(err, "proposer_lookahead")
 	}
 
+	if err := json.Unmarshal(raw["builders"], &b.Builders); err != nil {
+		return errors.Wrap(err, "builders")
+	}
+	for i := range b.Builders {
+		if b.Builders[i] == nil {
+			return fmt.Errorf("builders entry %d missing", i)
+		}
+	}
+
+	if err := b.NextWithdrawalBuilderIndex.UnmarshalJSON(raw["next_withdrawal_builder_index"]); err != nil {
+		return errors.Wrap(err, "next_withdrawal_builder_index")
+	}
+
 	if err := json.Unmarshal(raw["execution_payload_availability"], &b.ExecutionPayloadAvailability); err != nil {
 		return errors.Wrap(err, "execution_payload_availability")
 	}
@@ -406,16 +423,14 @@ func (b *BeaconState) UnmarshalJSON(input []byte) error {
 	}
 	copy(b.LatestBlockHash[:], latestBlockHash)
 
-	if raw["latest_withdrawals_root"] == nil {
-		return errors.New("latest withdrawals root missing")
+	if err := json.Unmarshal(raw["payload_expected_withdrawals"], &b.PayloadExpectedWithdrawals); err != nil {
+		return errors.Wrap(err, "payload_expected_withdrawals")
 	}
-	latestWithdrawalsRoot, err := hex.DecodeString(
-		strings.TrimPrefix(string(bytes.Trim(raw["latest_withdrawals_root"], `"`)), "0x"),
-	)
-	if err != nil {
-		return errors.Wrap(err, "invalid latest withdrawals root")
+	for i := range b.PayloadExpectedWithdrawals {
+		if b.PayloadExpectedWithdrawals[i] == nil {
+			return fmt.Errorf("payload expected withdrawals entry %d missing", i)
+		}
 	}
-	copy(b.LatestWithdrawalsRoot[:], latestWithdrawalsRoot)
 
 	return nil
 }
