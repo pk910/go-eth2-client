@@ -21,6 +21,7 @@ import (
 	"github.com/attestantio/go-eth2-client/spec/capella"
 	"github.com/attestantio/go-eth2-client/spec/deneb"
 	"github.com/attestantio/go-eth2-client/spec/electra"
+	"github.com/attestantio/go-eth2-client/spec/gloas"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 )
 
@@ -34,12 +35,13 @@ type VersionedBeaconBlock struct {
 	Deneb     *deneb.BeaconBlock
 	Electra   *electra.BeaconBlock
 	Fulu      *electra.BeaconBlock
+	Gloas     *gloas.BeaconBlock
 }
 
 // IsEmpty returns true if there is no block.
 func (v *VersionedBeaconBlock) IsEmpty() bool {
-	return v.Phase0 == nil && v.Altair == nil && v.Bellatrix == nil && v.Capella == nil &&
-		v.Deneb == nil && v.Electra == nil && v.Fulu == nil
+	return v.Phase0 == nil && v.Altair == nil && v.Bellatrix == nil && v.Capella == nil && v.Deneb == nil &&
+		v.Electra == nil && v.Fulu == nil && v.Gloas == nil
 }
 
 // Slot returns the slot of the beacon block.
@@ -87,6 +89,12 @@ func (v *VersionedBeaconBlock) Slot() (phase0.Slot, error) {
 		}
 
 		return v.Fulu.Slot, nil
+	case DataVersionGloas:
+		if v.Gloas == nil {
+			return 0, errors.New("no gloas block")
+		}
+
+		return v.Gloas.Slot, nil
 	default:
 		return 0, errors.New("unknown version")
 	}
@@ -165,6 +173,15 @@ func (v *VersionedBeaconBlock) RandaoReveal() (phase0.BLSSignature, error) {
 		}
 
 		return v.Fulu.Body.RANDAOReveal, nil
+	case DataVersionGloas:
+		if v.Gloas == nil {
+			return phase0.BLSSignature{}, errors.New("no gloas block")
+		}
+		if v.Gloas.Body == nil {
+			return phase0.BLSSignature{}, errors.New("no gloas block body")
+		}
+
+		return v.Gloas.Body.RANDAOReveal, nil
 	default:
 		return phase0.BLSSignature{}, errors.New("unknown version")
 	}
@@ -243,6 +260,15 @@ func (v *VersionedBeaconBlock) Graffiti() ([32]byte, error) {
 		}
 
 		return v.Fulu.Body.Graffiti, nil
+	case DataVersionGloas:
+		if v.Gloas == nil {
+			return [32]byte{}, errors.New("no gloas block")
+		}
+		if v.Gloas.Body == nil {
+			return [32]byte{}, errors.New("no gloas block body")
+		}
+
+		return v.Gloas.Body.Graffiti, nil
 	default:
 		return [32]byte{}, errors.New("unknown version")
 	}
@@ -293,6 +319,12 @@ func (v *VersionedBeaconBlock) ProposerIndex() (phase0.ValidatorIndex, error) {
 		}
 
 		return v.Fulu.ProposerIndex, nil
+	case DataVersionGloas:
+		if v.Gloas == nil {
+			return 0, errors.New("no gloas block")
+		}
+
+		return v.Gloas.ProposerIndex, nil
 	default:
 		return 0, errors.New("unknown version")
 	}
@@ -343,6 +375,12 @@ func (v *VersionedBeaconBlock) Root() (phase0.Root, error) {
 		}
 
 		return v.Fulu.HashTreeRoot()
+	case DataVersionGloas:
+		if v.Gloas == nil {
+			return phase0.Root{}, errors.New("no gloas block")
+		}
+
+		return v.Gloas.HashTreeRoot()
 	default:
 		return phase0.Root{}, errors.New("unknown version")
 	}
@@ -421,6 +459,15 @@ func (v *VersionedBeaconBlock) BodyRoot() (phase0.Root, error) {
 		}
 
 		return v.Fulu.Body.HashTreeRoot()
+	case DataVersionGloas:
+		if v.Gloas == nil {
+			return phase0.Root{}, errors.New("no gloas block")
+		}
+		if v.Gloas.Body == nil {
+			return phase0.Root{}, errors.New("no gloas block body")
+		}
+
+		return v.Gloas.Body.HashTreeRoot()
 	default:
 		return phase0.Root{}, errors.New("unknown version")
 	}
@@ -471,6 +518,12 @@ func (v *VersionedBeaconBlock) ParentRoot() (phase0.Root, error) {
 		}
 
 		return v.Fulu.ParentRoot, nil
+	case DataVersionGloas:
+		if v.Gloas == nil {
+			return phase0.Root{}, errors.New("no gloas block")
+		}
+
+		return v.Gloas.ParentRoot, nil
 	default:
 		return phase0.Root{}, errors.New("unknown version")
 	}
@@ -521,6 +574,12 @@ func (v *VersionedBeaconBlock) StateRoot() (phase0.Root, error) {
 		}
 
 		return v.Fulu.StateRoot, nil
+	case DataVersionGloas:
+		if v.Gloas == nil {
+			return phase0.Root{}, errors.New("no gloas block")
+		}
+
+		return v.Gloas.StateRoot, nil
 	default:
 		return phase0.Root{}, errors.New("unknown version")
 	}
@@ -623,6 +682,20 @@ func (v *VersionedBeaconBlock) Attestations() ([]VersionedAttestation, error) {
 			versionedAttestations[i] = VersionedAttestation{
 				Version: DataVersionFulu,
 				Fulu:    attestation,
+			}
+		}
+
+		return versionedAttestations, nil
+	case DataVersionGloas:
+		if v.Gloas == nil || v.Gloas.Body == nil {
+			return nil, errors.New("no gloas block")
+		}
+
+		versionedAttestations := make([]VersionedAttestation, len(v.Gloas.Body.Attestations))
+		for i, attestation := range v.Gloas.Body.Attestations {
+			versionedAttestations[i] = VersionedAttestation{
+				Version: DataVersionGloas,
+				Gloas:   attestation,
 			}
 		}
 
@@ -733,6 +806,20 @@ func (v *VersionedBeaconBlock) AttesterSlashings() ([]VersionedAttesterSlashing,
 		}
 
 		return versionedAttesterSlashings, nil
+	case DataVersionGloas:
+		if v.Gloas == nil || v.Gloas.Body == nil {
+			return nil, errors.New("no gloas block")
+		}
+
+		versionedAttesterSlashings := make([]VersionedAttesterSlashing, len(v.Gloas.Body.AttesterSlashings))
+		for i, attesterSlashing := range v.Gloas.Body.AttesterSlashings {
+			versionedAttesterSlashings[i] = VersionedAttesterSlashing{
+				Version: DataVersionGloas,
+				Gloas:   attesterSlashing,
+			}
+		}
+
+		return versionedAttesterSlashings, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -783,6 +870,12 @@ func (v *VersionedBeaconBlock) ProposerSlashings() ([]*phase0.ProposerSlashing, 
 		}
 
 		return v.Fulu.Body.ProposerSlashings, nil
+	case DataVersionGloas:
+		if v.Gloas == nil || v.Gloas.Body == nil {
+			return nil, errors.New("no gloas block")
+		}
+
+		return v.Gloas.Body.ProposerSlashings, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -829,6 +922,8 @@ func (v *VersionedBeaconBlock) ExecutionPayload() (*VersionedExecutionPayload, e
 		}
 
 		versionedExecutionPayload.Fulu = v.Fulu.Body.ExecutionPayload
+	case DataVersionGloas:
+		return nil, errors.New("no execution payload in gloas")
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -881,6 +976,12 @@ func (v *VersionedBeaconBlock) String() string {
 		}
 
 		return v.Fulu.String()
+	case DataVersionGloas:
+		if v.Gloas == nil {
+			return ""
+		}
+
+		return v.Gloas.String()
 	default:
 		return "unknown version"
 	}
