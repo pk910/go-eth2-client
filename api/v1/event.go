@@ -50,6 +50,7 @@ var SupportedEventTopics = map[string]bool{
 	"proposer_slashing":       true,
 	"single_attestation":      true,
 	"voluntary_exit":          true,
+	"inclusion_list":          true,
 }
 
 // eventJSON is the spec representation of the struct.
@@ -127,6 +128,8 @@ func (e *Event) UnmarshalJSON(input []byte) error {
 		e.Data = &electra.SingleAttestation{}
 	case "voluntary_exit":
 		e.Data = &phase0.SignedVoluntaryExit{}
+	case "inclusion_list":
+		e.Data = &InclusionListEvent{}
 	default:
 		return fmt.Errorf("unsupported event topic %s", eventJSON.Topic)
 	}

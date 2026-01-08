@@ -33,12 +33,14 @@ type VersionedAttestation struct {
 	Deneb          *phase0.Attestation
 	Electra        *electra.Attestation
 	Fulu           *electra.Attestation
+	Eip7805        *electra.Attestation
 }
 
 // IsEmpty returns true if there is no block.
 func (v *VersionedAttestation) IsEmpty() bool {
 	return v.Phase0 == nil && v.Altair == nil && v.Bellatrix == nil &&
-		v.Capella == nil && v.Deneb == nil && v.Electra == nil && v.Fulu == nil
+		v.Capella == nil && v.Deneb == nil && v.Electra == nil &&
+		v.Fulu == nil && v.Eip7805 == nil
 }
 
 // AggregationBits returns the aggregation bits of the attestation.
@@ -86,6 +88,12 @@ func (v *VersionedAttestation) AggregationBits() (bitfield.Bitlist, error) {
 		}
 
 		return v.Fulu.AggregationBits, nil
+	case DataVersionEip7805:
+		if v.Eip7805 == nil {
+			return nil, errors.New("no EIP7805 attestation")
+		}
+
+		return v.Eip7805.AggregationBits, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -136,6 +144,12 @@ func (v *VersionedAttestation) Data() (*phase0.AttestationData, error) {
 		}
 
 		return v.Fulu.Data, nil
+	case DataVersionEip7805:
+		if v.Eip7805 == nil {
+			return nil, errors.New("no EIP7805 attestation")
+		}
+
+		return v.Eip7805.Data, nil
 	default:
 		return nil, fmt.Errorf("unknown version: %d", v.Version)
 	}
@@ -158,6 +172,12 @@ func (v *VersionedAttestation) CommitteeBits() (bitfield.Bitvector64, error) {
 		}
 
 		return v.Fulu.CommitteeBits, nil
+	case DataVersionEip7805:
+		if v.Eip7805 == nil {
+			return nil, errors.New("no EIP7805 attestation")
+		}
+
+		return v.Eip7805.CommitteeBits, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -208,6 +228,12 @@ func (v *VersionedAttestation) CommitteeIndex() (phase0.CommitteeIndex, error) {
 		}
 
 		return v.Fulu.CommitteeIndex()
+	case DataVersionEip7805:
+		if v.Eip7805 == nil {
+			return 0, errors.New("no EIP7805 attestation")
+		}
+
+		return v.Eip7805.CommitteeIndex()
 	default:
 		return 0, errors.New("unknown version")
 	}
@@ -257,6 +283,12 @@ func (v *VersionedAttestation) HashTreeRoot() ([32]byte, error) {
 		}
 
 		return v.Fulu.HashTreeRoot()
+	case DataVersionEip7805:
+		if v.Eip7805 == nil {
+			return [32]byte{}, errors.New("no EIP7805 attestation")
+		}
+
+		return v.Eip7805.HashTreeRoot()
 	default:
 		return [32]byte{}, errors.New("unknown version")
 	}
@@ -307,6 +339,12 @@ func (v *VersionedAttestation) Signature() (phase0.BLSSignature, error) {
 		}
 
 		return v.Fulu.Signature, nil
+	case DataVersionEip7805:
+		if v.Eip7805 == nil {
+			return phase0.BLSSignature{}, errors.New("no EIP7805 attestation")
+		}
+
+		return v.Eip7805.Signature, nil
 	default:
 		return phase0.BLSSignature{}, errors.New("unknown version")
 	}
@@ -357,6 +395,12 @@ func (v *VersionedAttestation) String() string {
 		}
 
 		return v.Fulu.String()
+	case DataVersionEip7805:
+		if v.Eip7805 == nil {
+			return ""
+		}
+
+		return v.Eip7805.String()
 	default:
 		return "unknown version"
 	}

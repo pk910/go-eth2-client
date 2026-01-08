@@ -37,12 +37,14 @@ type VersionedBeaconState struct {
 	Deneb     *deneb.BeaconState
 	Electra   *electra.BeaconState
 	Fulu      *fulu.BeaconState
+	EIP7805   *electra.BeaconState
 }
 
 // IsEmpty returns true if there is no block.
 func (v *VersionedBeaconState) IsEmpty() bool {
 	return v.Phase0 == nil && v.Altair == nil && v.Bellatrix == nil &&
-		v.Capella == nil && v.Deneb == nil && v.Electra == nil && v.Fulu == nil
+		v.Capella == nil && v.Deneb == nil && v.Electra == nil &&
+		v.Fulu == nil && v.EIP7805 == nil
 }
 
 // Slot returns the slot of the state.
@@ -90,6 +92,12 @@ func (v *VersionedBeaconState) Slot() (phase0.Slot, error) {
 		}
 
 		return v.Fulu.Slot, nil
+	case DataVersionEip7805:
+		if v.EIP7805 == nil {
+			return 0, errors.New("no EIP7805 state")
+		}
+
+		return v.EIP7805.Slot, nil
 	default:
 		return 0, errors.New("unknown version")
 	}
@@ -124,6 +132,12 @@ func (v *VersionedBeaconState) NextWithdrawalValidatorIndex() (phase0.ValidatorI
 		}
 
 		return v.Fulu.NextWithdrawalValidatorIndex, nil
+	case DataVersionEip7805:
+		if v.EIP7805 == nil {
+			return 0, errors.New("no EIP7805 state")
+		}
+
+		return v.EIP7805.NextWithdrawalValidatorIndex, nil
 	default:
 		return 0, errors.New("unknown version")
 	}
@@ -174,6 +188,12 @@ func (v *VersionedBeaconState) Validators() ([]*phase0.Validator, error) {
 		}
 
 		return v.Fulu.Validators, nil
+	case DataVersionEip7805:
+		if v.EIP7805 == nil {
+			return nil, errors.New("no EIP7805 state")
+		}
+
+		return v.EIP7805.Validators, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -224,6 +244,12 @@ func (v *VersionedBeaconState) ValidatorBalances() ([]phase0.Gwei, error) {
 		}
 
 		return v.Fulu.Balances, nil
+	case DataVersionEip7805:
+		if v.EIP7805 == nil {
+			return nil, errors.New("no EIP7805 state")
+		}
+
+		return v.EIP7805.Balances, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -246,6 +272,12 @@ func (v *VersionedBeaconState) DepositRequestsStartIndex() (uint64, error) {
 		}
 
 		return v.Fulu.DepositRequestsStartIndex, nil
+	case DataVersionEip7805:
+		if v.EIP7805 == nil {
+			return 0, errors.New("no EIP7805 state")
+		}
+
+		return v.EIP7805.DepositRequestsStartIndex, nil
 	default:
 		return 0, errors.New("unknown version")
 	}
@@ -268,6 +300,12 @@ func (v *VersionedBeaconState) DepositBalanceToConsume() (phase0.Gwei, error) {
 		}
 
 		return v.Fulu.DepositBalanceToConsume, nil
+	case DataVersionEip7805:
+		if v.EIP7805 == nil {
+			return 0, errors.New("no EIP7805 state")
+		}
+
+		return v.EIP7805.DepositBalanceToConsume, nil
 	default:
 		return 0, errors.New("unknown version")
 	}
@@ -290,6 +328,12 @@ func (v *VersionedBeaconState) ExitBalanceToConsume() (phase0.Gwei, error) {
 		}
 
 		return v.Fulu.ExitBalanceToConsume, nil
+	case DataVersionEip7805:
+		if v.EIP7805 == nil {
+			return 0, errors.New("no EIP7805 state")
+		}
+
+		return v.EIP7805.ExitBalanceToConsume, nil
 	default:
 		return 0, errors.New("unknown version")
 	}
@@ -312,6 +356,12 @@ func (v *VersionedBeaconState) EarliestExitEpoch() (phase0.Epoch, error) {
 		}
 
 		return v.Fulu.EarliestExitEpoch, nil
+	case DataVersionEip7805:
+		if v.EIP7805 == nil {
+			return 0, errors.New("no EIP7805 state")
+		}
+
+		return v.EIP7805.EarliestExitEpoch, nil
 	default:
 		return 0, errors.New("unknown version")
 	}
@@ -334,6 +384,12 @@ func (v *VersionedBeaconState) ConsolidationBalanceToConsume() (phase0.Gwei, err
 		}
 
 		return v.Fulu.ConsolidationBalanceToConsume, nil
+	case DataVersionEip7805:
+		if v.EIP7805 == nil {
+			return 0, errors.New("no EIP7805 state")
+		}
+
+		return v.EIP7805.ConsolidationBalanceToConsume, nil
 	default:
 		return 0, errors.New("unknown version")
 	}
@@ -356,6 +412,12 @@ func (v *VersionedBeaconState) EarliestConsolidationEpoch() (phase0.Epoch, error
 		}
 
 		return v.Fulu.EarliestConsolidationEpoch, nil
+	case DataVersionEip7805:
+		if v.EIP7805 == nil {
+			return 0, errors.New("no EIP7805 state")
+		}
+
+		return v.EIP7805.EarliestConsolidationEpoch, nil
 	default:
 		return 0, errors.New("unknown version")
 	}
@@ -378,6 +440,12 @@ func (v *VersionedBeaconState) PendingDeposits() ([]*electra.PendingDeposit, err
 		}
 
 		return v.Fulu.PendingDeposits, nil
+	case DataVersionEip7805:
+		if v.EIP7805 == nil {
+			return nil, errors.New("no EIP7805 state")
+		}
+
+		return v.EIP7805.PendingDeposits, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -400,6 +468,12 @@ func (v *VersionedBeaconState) PendingPartialWithdrawals() ([]*electra.PendingPa
 		}
 
 		return v.Fulu.PendingPartialWithdrawals, nil
+	case DataVersionEip7805:
+		if v.EIP7805 == nil {
+			return nil, errors.New("no EIP7805 state")
+		}
+
+		return v.EIP7805.PendingPartialWithdrawals, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -422,6 +496,12 @@ func (v *VersionedBeaconState) PendingConsolidations() ([]*electra.PendingConsol
 		}
 
 		return v.Fulu.PendingConsolidations, nil
+	case DataVersionEip7805:
+		if v.EIP7805 == nil {
+			return nil, errors.New("no EIP7805 state")
+		}
+
+		return v.EIP7805.PendingConsolidations, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -514,6 +594,12 @@ func (v *VersionedBeaconState) GetTree() (*ssz.Node, error) {
 		}
 
 		return v.Fulu.GetTree()
+	case DataVersionEip7805:
+		if v.EIP7805 == nil {
+			return nil, errors.New("no EIP7805 state")
+		}
+
+		return v.EIP7805.GetTree()
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -564,6 +650,12 @@ func (v *VersionedBeaconState) HashTreeRoot() (phase0.Hash32, error) {
 		}
 
 		return v.Fulu.HashTreeRoot()
+	case DataVersionEip7805:
+		if v.EIP7805 == nil {
+			return phase0.Hash32{}, errors.New("no EIP7805 state")
+		}
+
+		return v.EIP7805.HashTreeRoot()
 	default:
 		return phase0.Hash32{}, errors.New("unknown version")
 	}
@@ -616,6 +708,12 @@ func (v *VersionedBeaconState) FieldIndex(name string) (int, error) {
 		}
 
 		return proofutil.FieldIndex(v.Fulu, name)
+	case DataVersionEip7805:
+		if v.EIP7805 == nil {
+			return 0, errors.New("no EIP7805 state")
+		}
+
+		return proofutil.FieldIndex(v.EIP7805, name)
 	default:
 		return 0, errors.New("unknown version")
 	}
@@ -669,6 +767,12 @@ func (v *VersionedBeaconState) FieldGeneralizedIndex(name string) (int, error) {
 		}
 
 		return proofutil.FieldGeneralizedIndex(v.Fulu, name)
+	case DataVersionEip7805:
+		if v.EIP7805 == nil {
+			return 0, errors.New("no EIP7805 state")
+		}
+
+		return proofutil.FieldGeneralizedIndex(v.EIP7805, name)
 	default:
 		return 0, errors.New("unknown version")
 	}
@@ -828,6 +932,12 @@ func (v *VersionedBeaconState) String() string {
 		}
 
 		return v.Fulu.String()
+	case DataVersionEip7805:
+		if v.EIP7805 == nil {
+			return ""
+		}
+
+		return v.EIP7805.String()
 	default:
 		return "unknown version"
 	}
