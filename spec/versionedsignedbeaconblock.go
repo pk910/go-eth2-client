@@ -1325,6 +1325,34 @@ func (v *VersionedSignedBeaconBlock) ExecutionRequests() (*electra.ExecutionRequ
 	}
 }
 
+// SignedExecutionPayloadBid returns the execution payload bid of the beacon block.
+func (v *VersionedSignedBeaconBlock) SignedExecutionPayloadBid() (*gloas.SignedExecutionPayloadBid, error) {
+	switch v.Version {
+	case DataVersionPhase0:
+		return nil, errors.New("no signed execution payload bid in phase0")
+	case DataVersionAltair:
+		return nil, errors.New("no signed execution payload bid in altair")
+	case DataVersionBellatrix:
+		return nil, errors.New("no signed execution payload bid in bellatrix")
+	case DataVersionCapella:
+		return nil, errors.New("no signed execution payload bid in capella")
+	case DataVersionDeneb:
+		return nil, errors.New("no signed execution payload bid in deneb")
+	case DataVersionElectra:
+		return nil, errors.New("no signed execution payload bid in electra")
+	case DataVersionFulu:
+		return nil, errors.New("no signed execution payload bid in fulu")
+	case DataVersionGloas:
+		if v.Gloas == nil || v.Gloas.Message == nil || v.Gloas.Message.Body == nil {
+			return nil, errors.New("no gloas block")
+		}
+
+		return v.Gloas.Message.Body.SignedExecutionPayloadBid, nil
+	default:
+		return nil, errors.New("unknown version")
+	}
+}
+
 // ExecutionPayload returns the execution payload of the signed beacon block.
 func (v *VersionedSignedBeaconBlock) ExecutionPayload() (*VersionedExecutionPayload, error) {
 	versionedExecutionPayload := &VersionedExecutionPayload{
