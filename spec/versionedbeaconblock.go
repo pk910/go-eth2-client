@@ -881,6 +881,34 @@ func (v *VersionedBeaconBlock) ProposerSlashings() ([]*phase0.ProposerSlashing, 
 	}
 }
 
+// SignedExecutionPayloadBid returns the execution payload bid of the beacon block.
+func (v *VersionedBeaconBlock) SignedExecutionPayloadBid() (*gloas.SignedExecutionPayloadBid, error) {
+	switch v.Version {
+	case DataVersionPhase0:
+		return nil, errors.New("no signed execution payload bid in phase0")
+	case DataVersionAltair:
+		return nil, errors.New("no signed execution payload bid in altair")
+	case DataVersionBellatrix:
+		return nil, errors.New("no signed execution payload bid in bellatrix")
+	case DataVersionCapella:
+		return nil, errors.New("no signed execution payload bid in capella")
+	case DataVersionDeneb:
+		return nil, errors.New("no signed execution payload bid in deneb")
+	case DataVersionElectra:
+		return nil, errors.New("no signed execution payload bid in electra")
+	case DataVersionFulu:
+		return nil, errors.New("no signed execution payload bid in fulu")
+	case DataVersionGloas:
+		if v.Gloas == nil || v.Gloas.Body == nil {
+			return nil, errors.New("no gloas block")
+		}
+
+		return v.Gloas.Body.SignedExecutionPayloadBid, nil
+	default:
+		return nil, errors.New("unknown version")
+	}
+}
+
 // ExecutionPayload returns the execution payload of the beacon block.
 func (v *VersionedBeaconBlock) ExecutionPayload() (*VersionedExecutionPayload, error) {
 	versionedExecutionPayload := &VersionedExecutionPayload{
