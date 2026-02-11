@@ -45,6 +45,7 @@ type ExecutionPayload struct {
 	BlobGasUsed     uint64
 	ExcessBlobGas   uint64
 	BlockAccessList BlockAccessList `dynssz-max:"MAX_BYTES_PER_TRANSACTION" ssz-max:"1073741824"`
+	SlotNumber      uint64
 }
 
 // String returns a string version of the structure.
