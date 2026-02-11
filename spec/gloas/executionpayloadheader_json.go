@@ -47,6 +47,7 @@ type executionPayloadHeaderJSON struct {
 	BlobGasUsed         string                     `json:"blob_gas_used"`
 	ExcessBlobGas       string                     `json:"excess_blob_gas"`
 	BlockAccessListRoot phase0.Root                `json:"block_access_list_root"`
+	SlotNumber          string                     `json:"slot_number"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -75,6 +76,7 @@ func (e *ExecutionPayloadHeader) MarshalJSON() ([]byte, error) {
 		BlobGasUsed:         strconv.FormatUint(e.BlobGasUsed, 10),
 		ExcessBlobGas:       strconv.FormatUint(e.ExcessBlobGas, 10),
 		BlockAccessListRoot: e.BlockAccessListRoot,
+		SlotNumber:          strconv.FormatUint(e.SlotNumber, 10),
 	})
 }
 
@@ -219,6 +221,12 @@ func (e *ExecutionPayloadHeader) UnmarshalJSON(input []byte) error {
 	if err := e.BlockAccessListRoot.UnmarshalJSON(raw["block_access_list_root"]); err != nil {
 		return errors.Wrap(err, "block_access_list_root")
 	}
+
+	tmpUint, err = strconv.ParseUint(string(bytes.Trim(raw["slot_number"], `"`)), 10, 64)
+	if err != nil {
+		return errors.Wrap(err, "slot_number")
+	}
+	e.SlotNumber = tmpUint
 
 	return nil
 }

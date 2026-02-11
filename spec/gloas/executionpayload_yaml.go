@@ -43,6 +43,7 @@ type executionPayloadYAML struct {
 	BlobGasUsed     uint64                `yaml:"blob_gas_used"`
 	ExcessBlobGas   uint64                `yaml:"excess_blob_gas"`
 	BlockAccessList string                `yaml:"block_access_list"`
+	SlotNumber      uint64                `yaml:"slot_number"`
 }
 
 // MarshalYAML implements yaml.Marshaler.
@@ -76,6 +77,7 @@ func (e *ExecutionPayload) MarshalYAML() ([]byte, error) {
 		BlobGasUsed:     e.BlobGasUsed,
 		ExcessBlobGas:   e.ExcessBlobGas,
 		BlockAccessList: fmt.Sprintf("%#x", e.BlockAccessList),
+		SlotNumber:      e.SlotNumber,
 	}, yaml.Flow(true))
 	if err != nil {
 		return nil, err

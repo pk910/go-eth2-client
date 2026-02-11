@@ -42,6 +42,7 @@ type ExecutionPayloadHeader struct {
 	BlobGasUsed         uint64
 	ExcessBlobGas       uint64
 	BlockAccessListRoot phase0.Root `ssz-size:"32"`
+	SlotNumber          uint64
 }
 
 // String returns a string version of the structure.

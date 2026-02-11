@@ -865,6 +865,34 @@ func (v *VersionedExecutionPayload) BlockAccessList() (gloas.BlockAccessList, er
 	}
 }
 
+// SlotNumber returns the slot number of the execution payload.
+func (v *VersionedExecutionPayload) SlotNumber() (uint64, error) {
+	switch v.Version {
+	case DataVersionPhase0:
+		return 0, errors.New("no execution payload in phase0")
+	case DataVersionAltair:
+		return 0, errors.New("no execution payload in altair")
+	case DataVersionBellatrix:
+		return 0, errors.New("no slot number in bellatrix")
+	case DataVersionCapella:
+		return 0, errors.New("no slot number in capella")
+	case DataVersionDeneb:
+		return 0, errors.New("no slot number in deneb")
+	case DataVersionElectra:
+		return 0, errors.New("no slot number in electra")
+	case DataVersionFulu:
+		return 0, errors.New("no slot number in fulu")
+	case DataVersionGloas:
+		if v.Gloas == nil {
+			return 0, errors.New("no gloas execution payload")
+		}
+
+		return v.Gloas.SlotNumber, nil
+	default:
+		return 0, errors.New("unknown version")
+	}
+}
+
 // String returns a string version of the structure.
 func (v *VersionedExecutionPayload) String() string {
 	switch v.Version {

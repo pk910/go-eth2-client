@@ -16,7 +16,7 @@ func (e *ExecutionPayloadHeader) MarshalSSZ() ([]byte, error) {
 // MarshalSSZTo ssz marshals the ExecutionPayloadHeader object to a target array
 func (e *ExecutionPayloadHeader) MarshalSSZTo(buf []byte) (dst []byte, err error) {
 	dst = buf
-	offset := int(616)
+	offset := int(624)
 
 	// Field (0) 'ParentHash'
 	dst = append(dst, e.ParentHash[:]...)
@@ -76,6 +76,9 @@ func (e *ExecutionPayloadHeader) MarshalSSZTo(buf []byte) (dst []byte, err error
 	// Field (17) 'BlockAccessListRoot'
 	dst = append(dst, e.BlockAccessListRoot[:]...)
 
+	// Field (18) 'SlotNumber'
+	dst = ssz.MarshalUint64(dst, e.SlotNumber)
+
 	// Field (10) 'ExtraData'
 	if size := len(e.ExtraData); size > 32 {
 		err = ssz.ErrBytesLengthFn("ExecutionPayloadHeader.ExtraData", size, 32)
@@ -90,7 +93,7 @@ func (e *ExecutionPayloadHeader) MarshalSSZTo(buf []byte) (dst []byte, err error
 func (e *ExecutionPayloadHeader) UnmarshalSSZ(buf []byte) error {
 	var err error
 	size := uint64(len(buf))
-	if size < 616 {
+	if size < 624 {
 		return ssz.ErrSize
 	}
 
@@ -132,7 +135,7 @@ func (e *ExecutionPayloadHeader) UnmarshalSSZ(buf []byte) error {
 		return ssz.ErrOffset
 	}
 
-	if o10 < 616 {
+	if o10 < 624 {
 		return ssz.ErrInvalidVariableOffset
 	}
 
@@ -162,6 +165,9 @@ func (e *ExecutionPayloadHeader) UnmarshalSSZ(buf []byte) error {
 	// Field (17) 'BlockAccessListRoot'
 	copy(e.BlockAccessListRoot[:], buf[584:616])
 
+	// Field (18) 'SlotNumber'
+	e.SlotNumber = ssz.UnmarshallUint64(buf[616:624])
+
 	// Field (10) 'ExtraData'
 	{
 		buf = tail[o10:]
@@ -178,7 +184,7 @@ func (e *ExecutionPayloadHeader) UnmarshalSSZ(buf []byte) error {
 
 // SizeSSZ returns the ssz encoded size in bytes for the ExecutionPayloadHeader object
 func (e *ExecutionPayloadHeader) SizeSSZ() (size int) {
-	size = 616
+	size = 624
 
 	// Field (10) 'ExtraData'
 	size += len(e.ExtraData)
@@ -262,6 +268,9 @@ func (e *ExecutionPayloadHeader) HashTreeRootWith(hh ssz.HashWalker) (err error)
 
 	// Field (17) 'BlockAccessListRoot'
 	hh.PutBytes(e.BlockAccessListRoot[:])
+
+	// Field (18) 'SlotNumber'
+	hh.PutUint64(e.SlotNumber)
 
 	hh.Merkleize(indx)
 	return
