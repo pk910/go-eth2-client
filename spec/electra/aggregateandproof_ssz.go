@@ -65,14 +65,12 @@ func (t *AggregateAndProof) UnmarshalSSZ(buf []byte) (err error) {
 	}
 	{ // Field #1 'Aggregate' (dynamic)
 		buf := buf[offset1:]
-		val1 := t.Aggregate
-		if val1 == nil {
-			val1 = new(Attestation)
+		if t.Aggregate == nil {
+			t.Aggregate = new(Attestation)
 		}
-		if err = val1.UnmarshalSSZ(buf); err != nil {
+		if err = t.Aggregate.UnmarshalSSZ(buf); err != nil {
 			return err
 		}
-		t.Aggregate = val1
 	}
 	return nil
 }
@@ -124,4 +122,3 @@ func (t *AggregateAndProof) HashTreeRootWith(hh sszutils.HashWalker) error {
 	hh.Merkleize(idx)
 	return nil
 }
-

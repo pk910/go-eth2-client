@@ -146,10 +146,8 @@ func (t *ExecutionPayloadHeader) UnmarshalSSZ(buf []byte) (err error) {
 	}
 	{ // Field #10 'ExtraData' (dynamic)
 		buf := buf[offset10:]
-		val1 := t.ExtraData
-		val1 = sszutils.ExpandSlice(val1, len(buf))
-		copy(val1[:], buf)
-		t.ExtraData = val1
+		t.ExtraData = sszutils.ExpandSlice(t.ExtraData, len(buf))
+		copy(t.ExtraData[:], buf)
 	}
 	return nil
 }
@@ -249,4 +247,3 @@ func (t *ExecutionPayloadHeader) HashTreeRootWith(hh sszutils.HashWalker) error 
 	hh.Merkleize(idx)
 	return nil
 }
-

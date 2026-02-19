@@ -89,4 +89,3 @@ func (t *SignedBLSToExecutionChange) HashTreeRootWith(hh sszutils.HashWalker) er
 	hh.Merkleize(idx)
 	return nil
 }
-

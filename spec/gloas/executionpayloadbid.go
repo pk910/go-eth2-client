@@ -17,23 +17,24 @@ import (
 	"fmt"
 
 	"github.com/attestantio/go-eth2-client/spec/bellatrix"
+	"github.com/attestantio/go-eth2-client/spec/deneb"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 	"github.com/goccy/go-yaml"
 )
 
 // ExecutionPayloadBid represents an execution payload bid for EIP-7732.
 type ExecutionPayloadBid struct {
-	ParentBlockHash        phase0.Hash32              `ssz-size:"32"`
-	ParentBlockRoot        phase0.Root                `ssz-size:"32"`
-	BlockHash              phase0.Hash32              `ssz-size:"32"`
-	PrevRandao             phase0.Root                `ssz-size:"32"`
-	FeeRecipient           bellatrix.ExecutionAddress `ssz-size:"20"`
-	GasLimit               uint64
-	BuilderIndex           BuilderIndex
-	Slot                   phase0.Slot
-	Value                  phase0.Gwei
-	ExecutionPayment       phase0.Gwei
-	BlobKZGCommitmentsRoot phase0.Root `ssz-size:"32"`
+	ParentBlockHash    phase0.Hash32              `ssz-size:"32"`
+	ParentBlockRoot    phase0.Root                `ssz-size:"32"`
+	BlockHash          phase0.Hash32              `ssz-size:"32"`
+	PrevRandao         phase0.Root                `ssz-size:"32"`
+	FeeRecipient       bellatrix.ExecutionAddress `ssz-size:"20"`
+	GasLimit           uint64
+	BuilderIndex       BuilderIndex
+	Slot               phase0.Slot
+	Value              phase0.Gwei
+	ExecutionPayment   phase0.Gwei
+	BlobKZGCommitments []deneb.KZGCommitment `dynssz-max:"MAX_BLOB_COMMITMENTS_PER_BLOCK" ssz-max:"4096" ssz-size:"?,48"`
 }
 
 // String returns a string version of the structure.

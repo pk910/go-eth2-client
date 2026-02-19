@@ -392,33 +392,31 @@ func (t *BlindedBeaconBlockBody) UnmarshalSSZ(buf []byte) (err error) {
 	}
 	{ // Field #9 'ExecutionPayloadHeader' (dynamic)
 		buf := buf[offset9:offset10]
-		val8 := t.ExecutionPayloadHeader
-		if val8 == nil {
-			val8 = new(capella.ExecutionPayloadHeader)
+		if t.ExecutionPayloadHeader == nil {
+			t.ExecutionPayloadHeader = new(capella.ExecutionPayloadHeader)
 		}
-		if err = val8.UnmarshalSSZ(buf); err != nil {
+		if err = t.ExecutionPayloadHeader.UnmarshalSSZ(buf); err != nil {
 			return err
 		}
-		t.ExecutionPayloadHeader = val8
 	}
 	{ // Field #10 'BLSToExecutionChanges' (dynamic)
 		buf := buf[offset10:]
-		val9 := t.BLSToExecutionChanges
+		val8 := t.BLSToExecutionChanges
 		itemCount := len(buf) / 172
 		if len(buf)%172 != 0 {
 			return sszutils.ErrUnexpectedEOF
 		}
-		val9 = sszutils.ExpandSlice(val9, itemCount)
+		val8 = sszutils.ExpandSlice(val8, itemCount)
 		for i := range itemCount {
-			if val9[i] == nil {
-				val9[i] = new(capella.SignedBLSToExecutionChange)
+			if val8[i] == nil {
+				val8[i] = new(capella.SignedBLSToExecutionChange)
 			}
 			buf := buf[172*i : 172*(i+1)]
-			if err = val9[i].UnmarshalSSZ(buf); err != nil {
+			if err = val8[i].UnmarshalSSZ(buf); err != nil {
 				return err
 			}
 		}
-		t.BLSToExecutionChanges = val9
+		t.BLSToExecutionChanges = val8
 	}
 	return nil
 }
@@ -632,4 +630,3 @@ func (t *BlindedBeaconBlockBody) HashTreeRootWith(hh sszutils.HashWalker) error 
 	hh.Merkleize(idx)
 	return nil
 }
-

@@ -24,17 +24,23 @@ import (
 
 // MarshalYAML implements yaml.Marshaler.
 func (e *ExecutionPayloadBid) MarshalYAML() ([]byte, error) {
+	blobKZGCommitments := make([]string, len(e.BlobKZGCommitments))
+	for i := range e.BlobKZGCommitments {
+		blobKZGCommitments[i] = fmt.Sprintf("%#x", e.BlobKZGCommitments[i])
+	}
+
 	yamlBytes, err := yaml.MarshalWithOptions(&executionPayloadBidJSON{
-		ParentBlockHash:        fmt.Sprintf("%#x", e.ParentBlockHash),
-		ParentBlockRoot:        fmt.Sprintf("%#x", e.ParentBlockRoot),
-		BlockHash:              fmt.Sprintf("%#x", e.BlockHash),
-		PrevRandao:             fmt.Sprintf("%#x", e.PrevRandao),
-		GasLimit:               fmt.Sprintf("%d", e.GasLimit),
-		BuilderIndex:           fmt.Sprintf("%d", e.BuilderIndex),
-		Slot:                   fmt.Sprintf("%d", e.Slot),
-		Value:                  fmt.Sprintf("%d", e.Value),
-		ExecutionPayment:       fmt.Sprintf("%d", e.ExecutionPayment),
-		BlobKZGCommitmentsRoot: fmt.Sprintf("%#x", e.BlobKZGCommitmentsRoot),
+		ParentBlockHash:    fmt.Sprintf("%#x", e.ParentBlockHash),
+		ParentBlockRoot:    fmt.Sprintf("%#x", e.ParentBlockRoot),
+		BlockHash:          fmt.Sprintf("%#x", e.BlockHash),
+		PrevRandao:         fmt.Sprintf("%#x", e.PrevRandao),
+		FeeRecipient:       fmt.Sprintf("%#x", e.FeeRecipient),
+		GasLimit:           fmt.Sprintf("%d", e.GasLimit),
+		BuilderIndex:       fmt.Sprintf("%d", e.BuilderIndex),
+		Slot:               fmt.Sprintf("%d", e.Slot),
+		Value:              fmt.Sprintf("%d", e.Value),
+		ExecutionPayment:   fmt.Sprintf("%d", e.ExecutionPayment),
+		BlobKZGCommitments: blobKZGCommitments,
 	}, yaml.Flow(true))
 	if err != nil {
 		return nil, err

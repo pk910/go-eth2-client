@@ -30,7 +30,7 @@ func (t *SyncCommittee) MarshalSSZTo(buf []byte) (dst []byte, err error) {
 			dst = append(dst, t[i][:48]...)
 		}
 		if vlen < 512 {
-			dst = sszutils.AppendZeroPadding(dst, (512 - vlen) * 48)
+			dst = sszutils.AppendZeroPadding(dst, (512-vlen)*48)
 		}
 	}
 	{ // Field #1 'AggregatePubkey'
@@ -104,4 +104,3 @@ func (t *SyncCommittee) HashTreeRootWith(hh sszutils.HashWalker) error {
 	hh.Merkleize(idx)
 	return nil
 }
-

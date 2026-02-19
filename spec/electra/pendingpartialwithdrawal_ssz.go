@@ -85,4 +85,3 @@ func (t *PendingPartialWithdrawal) HashTreeRootWith(hh sszutils.HashWalker) erro
 	hh.Merkleize(idx)
 	return nil
 }
-

@@ -45,7 +45,7 @@ func (t *Attestation) MarshalSSZTo(buf []byte) (dst []byte, err error) {
 		}
 		dst = append(dst, t.CommitteeBits[:vlen]...)
 		if vlen < 8 {
-			dst = sszutils.AppendZeroPadding(dst, (8 - vlen) * 1)
+			dst = sszutils.AppendZeroPadding(dst, (8-vlen)*1)
 		}
 	}
 	{ // Dynamic Field #0 'AggregationBits'
@@ -174,4 +174,3 @@ func (t *Attestation) HashTreeRootWith(hh sszutils.HashWalker) error {
 	hh.Merkleize(idx)
 	return nil
 }
-

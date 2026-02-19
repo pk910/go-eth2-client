@@ -366,14 +366,12 @@ func (t *BeaconBlockBody) UnmarshalSSZ(buf []byte) (err error) {
 	}
 	{ // Field #9 'ExecutionPayload' (dynamic)
 		buf := buf[offset9:]
-		val8 := t.ExecutionPayload
-		if val8 == nil {
-			val8 = new(ExecutionPayload)
+		if t.ExecutionPayload == nil {
+			t.ExecutionPayload = new(ExecutionPayload)
 		}
-		if err = val8.UnmarshalSSZ(buf); err != nil {
+		if err = t.ExecutionPayload.UnmarshalSSZ(buf); err != nil {
 			return err
 		}
-		t.ExecutionPayload = val8
 	}
 	return nil
 }
@@ -565,4 +563,3 @@ func (t *BeaconBlockBody) HashTreeRootWith(hh sszutils.HashWalker) error {
 	hh.Merkleize(idx)
 	return nil
 }
-

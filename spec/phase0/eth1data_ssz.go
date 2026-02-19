@@ -34,7 +34,7 @@ func (t *ETH1Data) MarshalSSZTo(buf []byte) (dst []byte, err error) {
 		}
 		dst = append(dst, t.BlockHash[:vlen]...)
 		if vlen < 32 {
-			dst = sszutils.AppendZeroPadding(dst, (32 - vlen) * 1)
+			dst = sszutils.AppendZeroPadding(dst, (32-vlen)*1)
 		}
 	}
 	return dst, nil
@@ -100,4 +100,3 @@ func (t *ETH1Data) HashTreeRootWith(hh sszutils.HashWalker) error {
 	hh.Merkleize(idx)
 	return nil
 }
-

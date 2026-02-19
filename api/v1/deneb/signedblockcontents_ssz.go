@@ -89,42 +89,40 @@ func (t *SignedBlockContents) UnmarshalSSZ(buf []byte) (err error) {
 	}
 	{ // Field #0 'SignedBlock' (dynamic)
 		buf := buf[offset0:offset1]
-		val1 := t.SignedBlock
-		if val1 == nil {
-			val1 = new(deneb.SignedBeaconBlock)
+		if t.SignedBlock == nil {
+			t.SignedBlock = new(deneb.SignedBeaconBlock)
 		}
-		if err = val1.UnmarshalSSZ(buf); err != nil {
+		if err = t.SignedBlock.UnmarshalSSZ(buf); err != nil {
 			return err
 		}
-		t.SignedBlock = val1
 	}
 	{ // Field #1 'KZGProofs' (dynamic)
 		buf := buf[offset1:offset2]
-		val2 := t.KZGProofs
+		val1 := t.KZGProofs
 		itemCount := len(buf) / 48
 		if len(buf)%48 != 0 {
 			return sszutils.ErrUnexpectedEOF
 		}
-		val2 = sszutils.ExpandSlice(val2, itemCount)
+		val1 = sszutils.ExpandSlice(val1, itemCount)
 		for i := range itemCount {
 			buf := buf[48*i : 48*(i+1)]
-			copy(val2[i][:], buf)
+			copy(val1[i][:], buf)
 		}
-		t.KZGProofs = val2
+		t.KZGProofs = val1
 	}
 	{ // Field #2 'Blobs' (dynamic)
 		buf := buf[offset2:]
-		val3 := t.Blobs
+		val2 := t.Blobs
 		itemCount := len(buf) / 131072
 		if len(buf)%131072 != 0 {
 			return sszutils.ErrUnexpectedEOF
 		}
-		val3 = sszutils.ExpandSlice(val3, itemCount)
+		val2 = sszutils.ExpandSlice(val2, itemCount)
 		for i := range itemCount {
 			buf := buf[131072*i : 131072*(i+1)]
-			copy(val3[i][:], buf)
+			copy(val2[i][:], buf)
 		}
-		t.Blobs = val3
+		t.Blobs = val2
 	}
 	return nil
 }
@@ -200,4 +198,3 @@ func (t *SignedBlockContents) HashTreeRootWith(hh sszutils.HashWalker) error {
 	hh.Merkleize(idx)
 	return nil
 }
-

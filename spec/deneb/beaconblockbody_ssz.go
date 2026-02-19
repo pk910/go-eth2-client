@@ -411,47 +411,45 @@ func (t *BeaconBlockBody) UnmarshalSSZ(buf []byte) (err error) {
 	}
 	{ // Field #9 'ExecutionPayload' (dynamic)
 		buf := buf[offset9:offset10]
-		val8 := t.ExecutionPayload
-		if val8 == nil {
-			val8 = new(ExecutionPayload)
+		if t.ExecutionPayload == nil {
+			t.ExecutionPayload = new(ExecutionPayload)
 		}
-		if err = val8.UnmarshalSSZ(buf); err != nil {
+		if err = t.ExecutionPayload.UnmarshalSSZ(buf); err != nil {
 			return err
 		}
-		t.ExecutionPayload = val8
 	}
 	{ // Field #10 'BLSToExecutionChanges' (dynamic)
 		buf := buf[offset10:offset11]
-		val9 := t.BLSToExecutionChanges
+		val8 := t.BLSToExecutionChanges
 		itemCount := len(buf) / 172
 		if len(buf)%172 != 0 {
 			return sszutils.ErrUnexpectedEOF
 		}
-		val9 = sszutils.ExpandSlice(val9, itemCount)
+		val8 = sszutils.ExpandSlice(val8, itemCount)
 		for i := range itemCount {
-			if val9[i] == nil {
-				val9[i] = new(capella.SignedBLSToExecutionChange)
+			if val8[i] == nil {
+				val8[i] = new(capella.SignedBLSToExecutionChange)
 			}
 			buf := buf[172*i : 172*(i+1)]
-			if err = val9[i].UnmarshalSSZ(buf); err != nil {
+			if err = val8[i].UnmarshalSSZ(buf); err != nil {
 				return err
 			}
 		}
-		t.BLSToExecutionChanges = val9
+		t.BLSToExecutionChanges = val8
 	}
 	{ // Field #11 'BlobKZGCommitments' (dynamic)
 		buf := buf[offset11:]
-		val10 := t.BlobKZGCommitments
+		val9 := t.BlobKZGCommitments
 		itemCount := len(buf) / 48
 		if len(buf)%48 != 0 {
 			return sszutils.ErrUnexpectedEOF
 		}
-		val10 = sszutils.ExpandSlice(val10, itemCount)
+		val9 = sszutils.ExpandSlice(val9, itemCount)
 		for i := range itemCount {
 			buf := buf[48*i : 48*(i+1)]
-			copy(val10[i][:], buf)
+			copy(val9[i][:], buf)
 		}
-		t.BlobKZGCommitments = val10
+		t.BlobKZGCommitments = val9
 	}
 	return nil
 }
@@ -681,4 +679,3 @@ func (t *BeaconBlockBody) HashTreeRootWith(hh sszutils.HashWalker) error {
 	hh.Merkleize(idx)
 	return nil
 }
-

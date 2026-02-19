@@ -20,37 +20,45 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/attestantio/go-eth2-client/spec/deneb"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 	"github.com/pkg/errors"
 )
 
 // executionPayloadBidJSON is the spec representation of the struct.
 type executionPayloadBidJSON struct {
-	ParentBlockHash        string `json:"parent_block_hash"`
-	ParentBlockRoot        string `json:"parent_block_root"`
-	BlockHash              string `json:"block_hash"`
-	PrevRandao             string `json:"prev_randao"`
-	GasLimit               string `json:"gas_limit"`
-	BuilderIndex           string `json:"builder_index"`
-	Slot                   string `json:"slot"`
-	Value                  string `json:"value"`
-	ExecutionPayment       string `json:"execution_payment"`
-	BlobKZGCommitmentsRoot string `json:"blob_kzg_commitments_root"`
+	ParentBlockHash    string   `json:"parent_block_hash"`
+	ParentBlockRoot    string   `json:"parent_block_root"`
+	BlockHash          string   `json:"block_hash"`
+	PrevRandao         string   `json:"prev_randao"`
+	FeeRecipient       string   `json:"fee_recipient"`
+	GasLimit           string   `json:"gas_limit"`
+	BuilderIndex       string   `json:"builder_index"`
+	Slot               string   `json:"slot"`
+	Value              string   `json:"value"`
+	ExecutionPayment   string   `json:"execution_payment"`
+	BlobKZGCommitments []string `json:"blob_kzg_commitments"`
 }
 
 // MarshalJSON implements json.Marshaler.
 func (e *ExecutionPayloadBid) MarshalJSON() ([]byte, error) {
+	blobKZGCommitments := make([]string, len(e.BlobKZGCommitments))
+	for i := range e.BlobKZGCommitments {
+		blobKZGCommitments[i] = fmt.Sprintf("%#x", e.BlobKZGCommitments[i])
+	}
+
 	return json.Marshal(&executionPayloadBidJSON{
-		ParentBlockHash:        fmt.Sprintf("%#x", e.ParentBlockHash),
-		ParentBlockRoot:        fmt.Sprintf("%#x", e.ParentBlockRoot),
-		BlockHash:              fmt.Sprintf("%#x", e.BlockHash),
-		PrevRandao:             fmt.Sprintf("%#x", e.PrevRandao),
-		GasLimit:               fmt.Sprintf("%d", e.GasLimit),
-		BuilderIndex:           fmt.Sprintf("%d", e.BuilderIndex),
-		Slot:                   fmt.Sprintf("%d", e.Slot),
-		Value:                  fmt.Sprintf("%d", e.Value),
-		ExecutionPayment:       fmt.Sprintf("%d", e.ExecutionPayment),
-		BlobKZGCommitmentsRoot: fmt.Sprintf("%#x", e.BlobKZGCommitmentsRoot),
+		ParentBlockHash:    fmt.Sprintf("%#x", e.ParentBlockHash),
+		ParentBlockRoot:    fmt.Sprintf("%#x", e.ParentBlockRoot),
+		BlockHash:          fmt.Sprintf("%#x", e.BlockHash),
+		PrevRandao:         fmt.Sprintf("%#x", e.PrevRandao),
+		FeeRecipient:       fmt.Sprintf("%#x", e.FeeRecipient),
+		GasLimit:           fmt.Sprintf("%d", e.GasLimit),
+		BuilderIndex:       fmt.Sprintf("%d", e.BuilderIndex),
+		Slot:               fmt.Sprintf("%d", e.Slot),
+		Value:              fmt.Sprintf("%d", e.Value),
+		ExecutionPayment:   fmt.Sprintf("%d", e.ExecutionPayment),
+		BlobKZGCommitments: blobKZGCommitments,
 	})
 }
 
@@ -100,6 +108,16 @@ func (e *ExecutionPayloadBid) UnmarshalJSON(input []byte) error {
 		return errors.Wrap(err, "invalid prev randao")
 	}
 	copy(e.PrevRandao[:], prevRandao)
+
+	// Fee recipient
+	if data.FeeRecipient == "" {
+		return errors.New("fee recipient missing")
+	}
+	feeRecipient, err := hex.DecodeString(strings.TrimPrefix(data.FeeRecipient, "0x"))
+	if err != nil {
+		return errors.Wrap(err, "invalid fee recipient")
+	}
+	copy(e.FeeRecipient[:], feeRecipient)
 
 	// Gas limit
 	if data.GasLimit == "" {
@@ -151,15 +169,21 @@ func (e *ExecutionPayloadBid) UnmarshalJSON(input []byte) error {
 	}
 	e.ExecutionPayment = phase0.Gwei(executionPayment)
 
-	// Blob KZG commitments root
-	if data.BlobKZGCommitmentsRoot == "" {
-		return errors.New("blob KZG commitments root missing")
+	// Blob KZG commitments
+	if data.BlobKZGCommitments == nil {
+		data.BlobKZGCommitments = []string{}
 	}
-	blobKZGCommitmentsRoot, err := hex.DecodeString(strings.TrimPrefix(data.BlobKZGCommitmentsRoot, "0x"))
-	if err != nil {
-		return errors.Wrap(err, "invalid blob KZG commitments root")
+	e.BlobKZGCommitments = make([]deneb.KZGCommitment, len(data.BlobKZGCommitments))
+	for i, commitment := range data.BlobKZGCommitments {
+		commitmentBytes, err := hex.DecodeString(strings.TrimPrefix(commitment, "0x"))
+		if err != nil {
+			return errors.Wrap(err, fmt.Sprintf("invalid blob KZG commitment %d", i))
+		}
+		if len(commitmentBytes) != deneb.KZGCommitmentLength {
+			return fmt.Errorf("blob KZG commitment %d has incorrect length %d", i, len(commitmentBytes))
+		}
+		copy(e.BlobKZGCommitments[i][:], commitmentBytes)
 	}
-	copy(e.BlobKZGCommitmentsRoot[:], blobKZGCommitmentsRoot)
 
 	return nil
 }

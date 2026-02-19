@@ -63,7 +63,7 @@ func (t *BeaconState) MarshalSSZTo(buf []byte) (dst []byte, err error) {
 			dst = append(dst, t[i][:32]...)
 		}
 		if vlen < 8192 {
-			dst = sszutils.AppendZeroPadding(dst, (8192 - vlen) * 32)
+			dst = sszutils.AppendZeroPadding(dst, (8192-vlen)*32)
 		}
 	}
 	{ // Field #6 'StateRoots'
@@ -76,7 +76,7 @@ func (t *BeaconState) MarshalSSZTo(buf []byte) (dst []byte, err error) {
 			dst = append(dst, t[i][:32]...)
 		}
 		if vlen < 8192 {
-			dst = sszutils.AppendZeroPadding(dst, (8192 - vlen) * 32)
+			dst = sszutils.AppendZeroPadding(dst, (8192-vlen)*32)
 		}
 	}
 	// Offset #7 'HistoricalRoots'
@@ -113,7 +113,7 @@ func (t *BeaconState) MarshalSSZTo(buf []byte) (dst []byte, err error) {
 			dst = append(dst, t[i][:32]...)
 		}
 		if vlen < 65536 {
-			dst = sszutils.AppendZeroPadding(dst, (65536 - vlen) * 32)
+			dst = sszutils.AppendZeroPadding(dst, (65536-vlen)*32)
 		}
 	}
 	{ // Field #14 'Slashings'
@@ -126,7 +126,7 @@ func (t *BeaconState) MarshalSSZTo(buf []byte) (dst []byte, err error) {
 			dst = binary.LittleEndian.AppendUint64(dst, uint64(t[i]))
 		}
 		if vlen < 8192 {
-			dst = sszutils.AppendZeroPadding(dst, (8192 - vlen) * 8)
+			dst = sszutils.AppendZeroPadding(dst, (8192-vlen)*8)
 		}
 	}
 	// Offset #15 'PreviousEpochParticipation'
@@ -142,7 +142,7 @@ func (t *BeaconState) MarshalSSZTo(buf []byte) (dst []byte, err error) {
 		}
 		dst = append(dst, t.JustificationBits[:vlen]...)
 		if vlen < 1 {
-			dst = sszutils.AppendZeroPadding(dst, (1 - vlen) * 1)
+			dst = sszutils.AppendZeroPadding(dst, (1-vlen)*1)
 		}
 	}
 	{ // Field #18 'PreviousJustifiedCheckpoint'
@@ -736,90 +736,88 @@ func (t *BeaconState) UnmarshalSSZ(buf []byte) (err error) {
 	}
 	{ // Field #24 'LatestExecutionPayloadHeader' (dynamic)
 		buf := buf[offset24:offset27]
-		val12 := t.LatestExecutionPayloadHeader
-		if val12 == nil {
-			val12 = new(deneb.ExecutionPayloadHeader)
+		if t.LatestExecutionPayloadHeader == nil {
+			t.LatestExecutionPayloadHeader = new(deneb.ExecutionPayloadHeader)
 		}
-		if err = val12.UnmarshalSSZ(buf); err != nil {
+		if err = t.LatestExecutionPayloadHeader.UnmarshalSSZ(buf); err != nil {
 			return err
 		}
-		t.LatestExecutionPayloadHeader = val12
 	}
 	{ // Field #27 'HistoricalSummaries' (dynamic)
 		buf := buf[offset27:offset34]
-		val13 := t.HistoricalSummaries
+		val12 := t.HistoricalSummaries
 		itemCount := len(buf) / 64
 		if len(buf)%64 != 0 {
+			return sszutils.ErrUnexpectedEOF
+		}
+		val12 = sszutils.ExpandSlice(val12, itemCount)
+		for i := range itemCount {
+			if val12[i] == nil {
+				val12[i] = new(capella.HistoricalSummary)
+			}
+			buf := buf[64*i : 64*(i+1)]
+			if err = val12[i].UnmarshalSSZ(buf); err != nil {
+				return err
+			}
+		}
+		t.HistoricalSummaries = val12
+	}
+	{ // Field #34 'PendingDeposits' (dynamic)
+		buf := buf[offset34:offset35]
+		val13 := t.PendingDeposits
+		itemCount := len(buf) / 192
+		if len(buf)%192 != 0 {
 			return sszutils.ErrUnexpectedEOF
 		}
 		val13 = sszutils.ExpandSlice(val13, itemCount)
 		for i := range itemCount {
 			if val13[i] == nil {
-				val13[i] = new(capella.HistoricalSummary)
+				val13[i] = new(PendingDeposit)
 			}
-			buf := buf[64*i : 64*(i+1)]
+			buf := buf[192*i : 192*(i+1)]
 			if err = val13[i].UnmarshalSSZ(buf); err != nil {
 				return err
 			}
 		}
-		t.HistoricalSummaries = val13
+		t.PendingDeposits = val13
 	}
-	{ // Field #34 'PendingDeposits' (dynamic)
-		buf := buf[offset34:offset35]
-		val14 := t.PendingDeposits
-		itemCount := len(buf) / 192
-		if len(buf)%192 != 0 {
+	{ // Field #35 'PendingPartialWithdrawals' (dynamic)
+		buf := buf[offset35:offset36]
+		val14 := t.PendingPartialWithdrawals
+		itemCount := len(buf) / 24
+		if len(buf)%24 != 0 {
 			return sszutils.ErrUnexpectedEOF
 		}
 		val14 = sszutils.ExpandSlice(val14, itemCount)
 		for i := range itemCount {
 			if val14[i] == nil {
-				val14[i] = new(PendingDeposit)
+				val14[i] = new(PendingPartialWithdrawal)
 			}
-			buf := buf[192*i : 192*(i+1)]
+			buf := buf[24*i : 24*(i+1)]
 			if err = val14[i].UnmarshalSSZ(buf); err != nil {
 				return err
 			}
 		}
-		t.PendingDeposits = val14
+		t.PendingPartialWithdrawals = val14
 	}
-	{ // Field #35 'PendingPartialWithdrawals' (dynamic)
-		buf := buf[offset35:offset36]
-		val15 := t.PendingPartialWithdrawals
-		itemCount := len(buf) / 24
-		if len(buf)%24 != 0 {
+	{ // Field #36 'PendingConsolidations' (dynamic)
+		buf := buf[offset36:]
+		val15 := t.PendingConsolidations
+		itemCount := len(buf) / 16
+		if len(buf)%16 != 0 {
 			return sszutils.ErrUnexpectedEOF
 		}
 		val15 = sszutils.ExpandSlice(val15, itemCount)
 		for i := range itemCount {
 			if val15[i] == nil {
-				val15[i] = new(PendingPartialWithdrawal)
+				val15[i] = new(PendingConsolidation)
 			}
-			buf := buf[24*i : 24*(i+1)]
+			buf := buf[16*i : 16*(i+1)]
 			if err = val15[i].UnmarshalSSZ(buf); err != nil {
 				return err
 			}
 		}
-		t.PendingPartialWithdrawals = val15
-	}
-	{ // Field #36 'PendingConsolidations' (dynamic)
-		buf := buf[offset36:]
-		val16 := t.PendingConsolidations
-		itemCount := len(buf) / 16
-		if len(buf)%16 != 0 {
-			return sszutils.ErrUnexpectedEOF
-		}
-		val16 = sszutils.ExpandSlice(val16, itemCount)
-		for i := range itemCount {
-			if val16[i] == nil {
-				val16[i] = new(PendingConsolidation)
-			}
-			buf := buf[16*i : 16*(i+1)]
-			if err = val16[i].UnmarshalSSZ(buf); err != nil {
-				return err
-			}
-		}
-		t.PendingConsolidations = val16
+		t.PendingConsolidations = val15
 	}
 	return nil
 }
@@ -1296,4 +1294,3 @@ func (t *BeaconState) HashTreeRootWith(hh sszutils.HashWalker) error {
 	hh.Merkleize(idx)
 	return nil
 }
-

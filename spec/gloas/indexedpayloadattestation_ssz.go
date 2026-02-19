@@ -149,4 +149,3 @@ func (t *IndexedPayloadAttestation) HashTreeRootWith(hh sszutils.HashWalker) err
 	hh.Merkleize(idx)
 	return nil
 }
-

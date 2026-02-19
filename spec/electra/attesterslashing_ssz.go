@@ -68,25 +68,21 @@ func (t *AttesterSlashing) UnmarshalSSZ(buf []byte) (err error) {
 	}
 	{ // Field #0 'Attestation1' (dynamic)
 		buf := buf[offset0:offset1]
-		val1 := t.Attestation1
-		if val1 == nil {
-			val1 = new(IndexedAttestation)
+		if t.Attestation1 == nil {
+			t.Attestation1 = new(IndexedAttestation)
 		}
-		if err = val1.UnmarshalSSZ(buf); err != nil {
+		if err = t.Attestation1.UnmarshalSSZ(buf); err != nil {
 			return err
 		}
-		t.Attestation1 = val1
 	}
 	{ // Field #1 'Attestation2' (dynamic)
 		buf := buf[offset1:]
-		val2 := t.Attestation2
-		if val2 == nil {
-			val2 = new(IndexedAttestation)
+		if t.Attestation2 == nil {
+			t.Attestation2 = new(IndexedAttestation)
 		}
-		if err = val2.UnmarshalSSZ(buf); err != nil {
+		if err = t.Attestation2.UnmarshalSSZ(buf); err != nil {
 			return err
 		}
-		t.Attestation2 = val2
 	}
 	return nil
 }
@@ -143,4 +139,3 @@ func (t *AttesterSlashing) HashTreeRootWith(hh sszutils.HashWalker) error {
 	hh.Merkleize(idx)
 	return nil
 }
-

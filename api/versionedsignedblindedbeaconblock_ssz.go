@@ -152,69 +152,57 @@ func (t *VersionedSignedBlindedBeaconBlock) UnmarshalSSZ(buf []byte) (err error)
 	}
 	{ // Field #1 'Bellatrix' (dynamic)
 		buf := buf[offset1:offset2]
-		val1 := t.Bellatrix
-		if val1 == nil {
-			val1 = new(bellatrix.SignedBlindedBeaconBlock)
+		if t.Bellatrix == nil {
+			t.Bellatrix = new(bellatrix.SignedBlindedBeaconBlock)
 		}
-		if err = val1.UnmarshalSSZ(buf); err != nil {
+		if err = t.Bellatrix.UnmarshalSSZ(buf); err != nil {
 			return err
 		}
-		t.Bellatrix = val1
 	}
 	{ // Field #2 'Capella' (dynamic)
 		buf := buf[offset2:offset3]
-		val2 := t.Capella
-		if val2 == nil {
-			val2 = new(capella.SignedBlindedBeaconBlock)
+		if t.Capella == nil {
+			t.Capella = new(capella.SignedBlindedBeaconBlock)
 		}
-		if err = val2.UnmarshalSSZ(buf); err != nil {
+		if err = t.Capella.UnmarshalSSZ(buf); err != nil {
 			return err
 		}
-		t.Capella = val2
 	}
 	{ // Field #3 'Deneb' (dynamic)
 		buf := buf[offset3:offset4]
-		val3 := t.Deneb
-		if val3 == nil {
-			val3 = new(deneb.SignedBlindedBeaconBlock)
+		if t.Deneb == nil {
+			t.Deneb = new(deneb.SignedBlindedBeaconBlock)
 		}
-		if err = val3.UnmarshalSSZ(buf); err != nil {
+		if err = t.Deneb.UnmarshalSSZ(buf); err != nil {
 			return err
 		}
-		t.Deneb = val3
 	}
 	{ // Field #4 'Electra' (dynamic)
 		buf := buf[offset4:offset5]
-		val4 := t.Electra
-		if val4 == nil {
-			val4 = new(electra.SignedBlindedBeaconBlock)
+		if t.Electra == nil {
+			t.Electra = new(electra.SignedBlindedBeaconBlock)
 		}
-		if err = val4.UnmarshalSSZ(buf); err != nil {
+		if err = t.Electra.UnmarshalSSZ(buf); err != nil {
 			return err
 		}
-		t.Electra = val4
 	}
 	{ // Field #5 'Fulu' (dynamic)
 		buf := buf[offset5:offset6]
-		val5 := t.Fulu
-		if val5 == nil {
-			val5 = new(electra.SignedBlindedBeaconBlock)
+		if t.Fulu == nil {
+			t.Fulu = new(electra.SignedBlindedBeaconBlock)
 		}
-		if err = val5.UnmarshalSSZ(buf); err != nil {
+		if err = t.Fulu.UnmarshalSSZ(buf); err != nil {
 			return err
 		}
-		t.Fulu = val5
 	}
 	{ // Field #6 'Gloas' (dynamic)
 		buf := buf[offset6:]
-		val6 := t.Gloas
-		if val6 == nil {
-			val6 = new(electra.SignedBlindedBeaconBlock)
+		if t.Gloas == nil {
+			t.Gloas = new(electra.SignedBlindedBeaconBlock)
 		}
-		if err = val6.UnmarshalSSZ(buf); err != nil {
+		if err = t.Gloas.UnmarshalSSZ(buf); err != nil {
 			return err
 		}
-		t.Gloas = val6
 	}
 	return nil
 }
@@ -327,4 +315,3 @@ func (t *VersionedSignedBlindedBeaconBlock) HashTreeRootWith(hh sszutils.HashWal
 	hh.Merkleize(idx)
 	return nil
 }
-

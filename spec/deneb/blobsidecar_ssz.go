@@ -53,7 +53,7 @@ func (t *BlobSidecar) MarshalSSZTo(buf []byte) (dst []byte, err error) {
 			dst = append(dst, t[i][:32]...)
 		}
 		if vlen < 17 {
-			dst = sszutils.AppendZeroPadding(dst, (17 - vlen) * 32)
+			dst = sszutils.AppendZeroPadding(dst, (17-vlen)*32)
 		}
 	}
 	return dst, nil
@@ -163,4 +163,3 @@ func (t *BlobSidecar) HashTreeRootWith(hh sszutils.HashWalker) error {
 	hh.Merkleize(idx)
 	return nil
 }
-

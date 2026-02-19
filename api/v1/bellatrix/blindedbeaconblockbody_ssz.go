@@ -367,14 +367,12 @@ func (t *BlindedBeaconBlockBody) UnmarshalSSZ(buf []byte) (err error) {
 	}
 	{ // Field #9 'ExecutionPayloadHeader' (dynamic)
 		buf := buf[offset9:]
-		val8 := t.ExecutionPayloadHeader
-		if val8 == nil {
-			val8 = new(bellatrix.ExecutionPayloadHeader)
+		if t.ExecutionPayloadHeader == nil {
+			t.ExecutionPayloadHeader = new(bellatrix.ExecutionPayloadHeader)
 		}
-		if err = val8.UnmarshalSSZ(buf); err != nil {
+		if err = t.ExecutionPayloadHeader.UnmarshalSSZ(buf); err != nil {
 			return err
 		}
-		t.ExecutionPayloadHeader = val8
 	}
 	return nil
 }
@@ -566,4 +564,3 @@ func (t *BlindedBeaconBlockBody) HashTreeRootWith(hh sszutils.HashWalker) error 
 	hh.Merkleize(idx)
 	return nil
 }
-

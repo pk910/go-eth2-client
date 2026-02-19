@@ -102,4 +102,3 @@ func (t *PayloadAttestationMessage) HashTreeRootWith(hh sszutils.HashWalker) err
 	hh.Merkleize(idx)
 	return nil
 }
-

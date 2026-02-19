@@ -126,4 +126,3 @@ func (t *ExecutionPayloadWithdrawals) HashTreeRootWith(hh sszutils.HashWalker) e
 	hh.Merkleize(idx)
 	return nil
 }
-

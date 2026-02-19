@@ -59,7 +59,7 @@ func (t *BeaconState) MarshalSSZTo(buf []byte) (dst []byte, err error) {
 			dst = append(dst, t[i][:32]...)
 		}
 		if vlen < 8192 {
-			dst = sszutils.AppendZeroPadding(dst, (8192 - vlen) * 32)
+			dst = sszutils.AppendZeroPadding(dst, (8192-vlen)*32)
 		}
 	}
 	{ // Field #6 'StateRoots'
@@ -72,7 +72,7 @@ func (t *BeaconState) MarshalSSZTo(buf []byte) (dst []byte, err error) {
 			dst = append(dst, t[i][:32]...)
 		}
 		if vlen < 8192 {
-			dst = sszutils.AppendZeroPadding(dst, (8192 - vlen) * 32)
+			dst = sszutils.AppendZeroPadding(dst, (8192-vlen)*32)
 		}
 	}
 	// Offset #7 'HistoricalRoots'
@@ -109,7 +109,7 @@ func (t *BeaconState) MarshalSSZTo(buf []byte) (dst []byte, err error) {
 			dst = append(dst, t[i][:32]...)
 		}
 		if vlen < 65536 {
-			dst = sszutils.AppendZeroPadding(dst, (65536 - vlen) * 32)
+			dst = sszutils.AppendZeroPadding(dst, (65536-vlen)*32)
 		}
 	}
 	{ // Field #14 'Slashings'
@@ -122,7 +122,7 @@ func (t *BeaconState) MarshalSSZTo(buf []byte) (dst []byte, err error) {
 			dst = binary.LittleEndian.AppendUint64(dst, uint64(t[i]))
 		}
 		if vlen < 8192 {
-			dst = sszutils.AppendZeroPadding(dst, (8192 - vlen) * 8)
+			dst = sszutils.AppendZeroPadding(dst, (8192-vlen)*8)
 		}
 	}
 	// Offset #15 'PreviousEpochAttestations'
@@ -138,7 +138,7 @@ func (t *BeaconState) MarshalSSZTo(buf []byte) (dst []byte, err error) {
 		}
 		dst = append(dst, t.JustificationBits[:vlen]...)
 		if vlen < 1 {
-			dst = sszutils.AppendZeroPadding(dst, (1 - vlen) * 1)
+			dst = sszutils.AppendZeroPadding(dst, (1-vlen)*1)
 		}
 	}
 	{ // Field #18 'PreviousJustifiedCheckpoint'
@@ -884,4 +884,3 @@ func (t *BeaconState) HashTreeRootWith(hh sszutils.HashWalker) error {
 	hh.Merkleize(idx)
 	return nil
 }
-

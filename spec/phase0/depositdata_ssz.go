@@ -31,7 +31,7 @@ func (t *DepositData) MarshalSSZTo(buf []byte) (dst []byte, err error) {
 		}
 		dst = append(dst, t.WithdrawalCredentials[:vlen]...)
 		if vlen < 32 {
-			dst = sszutils.AppendZeroPadding(dst, (32 - vlen) * 1)
+			dst = sszutils.AppendZeroPadding(dst, (32-vlen)*1)
 		}
 	}
 	{ // Field #2 'Amount'
@@ -110,4 +110,3 @@ func (t *DepositData) HashTreeRootWith(hh sszutils.HashWalker) error {
 	hh.Merkleize(idx)
 	return nil
 }
-

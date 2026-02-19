@@ -70,7 +70,7 @@ type BeaconState struct {
 	BuilderPendingPayments        []*BuilderPendingPayment    `dynssz-size:"SLOTS_PER_EPOCH*2" ssz-size:"64"`
 	BuilderPendingWithdrawals     []*BuilderPendingWithdrawal `dynssz-max:"BUILDER_PENDING_WITHDRAWALS_LIMIT" ssz-max:"1048576"`
 	LatestBlockHash               phase0.Hash32               `ssz-size:"32"`
-	PayloadExpectedWithdrawals    []*capella.Withdrawal       `dynssz-size:"MAX_WITHDRAWALS_PER_PAYLOAD" ssz-size:"16"`
+	PayloadExpectedWithdrawals    []*capella.Withdrawal       `dynssz-max:"MAX_WITHDRAWALS_PER_PAYLOAD"       ssz-max:"16"`
 }
 
 // String returns a string version of the structure.

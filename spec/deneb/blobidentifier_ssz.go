@@ -74,4 +74,3 @@ func (t *BlobIdentifier) HashTreeRootWith(hh sszutils.HashWalker) error {
 	hh.Merkleize(idx)
 	return nil
 }
-

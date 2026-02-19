@@ -89,4 +89,3 @@ func (t *SignedValidatorRegistration) HashTreeRootWith(hh sszutils.HashWalker) e
 	hh.Merkleize(idx)
 	return nil
 }
-

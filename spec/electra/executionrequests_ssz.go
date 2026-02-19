@@ -257,4 +257,3 @@ func (t *ExecutionRequests) HashTreeRootWith(hh sszutils.HashWalker) error {
 	hh.Merkleize(idx)
 	return nil
 }
-

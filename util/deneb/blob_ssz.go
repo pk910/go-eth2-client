@@ -62,4 +62,3 @@ func (t *BeaconBlockBlob) HashTreeRootWith(hh sszutils.HashWalker) error {
 	hh.Merkleize(idx)
 	return nil
 }
-

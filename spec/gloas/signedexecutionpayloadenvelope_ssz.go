@@ -57,14 +57,12 @@ func (t *SignedExecutionPayloadEnvelope) UnmarshalSSZ(buf []byte) (err error) {
 	}
 	{ // Field #0 'Message' (dynamic)
 		buf := buf[offset0:]
-		val1 := t.Message
-		if val1 == nil {
-			val1 = new(ExecutionPayloadEnvelope)
+		if t.Message == nil {
+			t.Message = new(ExecutionPayloadEnvelope)
 		}
-		if err = val1.UnmarshalSSZ(buf); err != nil {
+		if err = t.Message.UnmarshalSSZ(buf); err != nil {
 			return err
 		}
-		t.Message = val1
 	}
 	return nil
 }
@@ -112,4 +110,3 @@ func (t *SignedExecutionPayloadEnvelope) HashTreeRootWith(hh sszutils.HashWalker
 	hh.Merkleize(idx)
 	return nil
 }
-

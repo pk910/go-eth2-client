@@ -79,14 +79,12 @@ func (t *BlindedBeaconBlock) UnmarshalSSZ(buf []byte) (err error) {
 	}
 	{ // Field #4 'Body' (dynamic)
 		buf := buf[offset4:]
-		val1 := t.Body
-		if val1 == nil {
-			val1 = new(BlindedBeaconBlockBody)
+		if t.Body == nil {
+			t.Body = new(BlindedBeaconBlockBody)
 		}
-		if err = val1.UnmarshalSSZ(buf); err != nil {
+		if err = t.Body.UnmarshalSSZ(buf); err != nil {
 			return err
 		}
-		t.Body = val1
 	}
 	return nil
 }
@@ -146,4 +144,3 @@ func (t *BlindedBeaconBlock) HashTreeRootWith(hh sszutils.HashWalker) error {
 	hh.Merkleize(idx)
 	return nil
 }
-

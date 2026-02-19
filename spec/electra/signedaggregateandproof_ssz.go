@@ -57,14 +57,12 @@ func (t *SignedAggregateAndProof) UnmarshalSSZ(buf []byte) (err error) {
 	}
 	{ // Field #0 'Message' (dynamic)
 		buf := buf[offset0:]
-		val1 := t.Message
-		if val1 == nil {
-			val1 = new(AggregateAndProof)
+		if t.Message == nil {
+			t.Message = new(AggregateAndProof)
 		}
-		if err = val1.UnmarshalSSZ(buf); err != nil {
+		if err = t.Message.UnmarshalSSZ(buf); err != nil {
 			return err
 		}
-		t.Message = val1
 	}
 	return nil
 }
@@ -112,4 +110,3 @@ func (t *SignedAggregateAndProof) HashTreeRootWith(hh sszutils.HashWalker) error
 	hh.Merkleize(idx)
 	return nil
 }
-

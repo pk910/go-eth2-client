@@ -32,11 +32,11 @@ func (t *Deposit) MarshalSSZTo(buf []byte) (dst []byte, err error) {
 			}
 			dst = append(dst, t[i][:vlen]...)
 			if vlen < 32 {
-				dst = sszutils.AppendZeroPadding(dst, (32 - vlen) * 1)
+				dst = sszutils.AppendZeroPadding(dst, (32-vlen)*1)
 			}
 		}
 		if vlen < 33 {
-			dst = sszutils.AppendZeroPadding(dst, (33 - vlen) * 32)
+			dst = sszutils.AppendZeroPadding(dst, (33-vlen)*32)
 		}
 	}
 	{ // Field #1 'Data'
@@ -136,4 +136,3 @@ func (t *Deposit) HashTreeRootWith(hh sszutils.HashWalker) error {
 	hh.Merkleize(idx)
 	return nil
 }
-

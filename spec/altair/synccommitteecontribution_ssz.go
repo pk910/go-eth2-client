@@ -38,7 +38,7 @@ func (t *SyncCommitteeContribution) MarshalSSZTo(buf []byte) (dst []byte, err er
 		}
 		dst = append(dst, t.AggregationBits[:vlen]...)
 		if vlen < 16 {
-			dst = sszutils.AppendZeroPadding(dst, (16 - vlen) * 1)
+			dst = sszutils.AppendZeroPadding(dst, (16-vlen)*1)
 		}
 	}
 	{ // Field #4 'Signature'
@@ -121,4 +121,3 @@ func (t *SyncCommitteeContribution) HashTreeRootWith(hh sszutils.HashWalker) err
 	hh.Merkleize(idx)
 	return nil
 }
-

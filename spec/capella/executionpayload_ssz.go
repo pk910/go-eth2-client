@@ -183,14 +183,12 @@ func (t *ExecutionPayload) UnmarshalSSZ(buf []byte) (err error) {
 	}
 	{ // Field #10 'ExtraData' (dynamic)
 		buf := buf[offset10:offset13]
-		val1 := t.ExtraData
-		val1 = sszutils.ExpandSlice(val1, len(buf))
-		copy(val1[:], buf)
-		t.ExtraData = val1
+		t.ExtraData = sszutils.ExpandSlice(t.ExtraData, len(buf))
+		copy(t.ExtraData[:], buf)
 	}
 	{ // Field #13 'Transactions' (dynamic)
 		buf := buf[offset13:offset14]
-		val2 := t.Transactions
+		val1 := t.Transactions
 		startOffset := int(0)
 		if len(buf) != 0 {
 			if len(buf) < 4 {
@@ -202,7 +200,7 @@ func (t *ExecutionPayload) UnmarshalSSZ(buf []byte) (err error) {
 		if startOffset%4 != 0 || len(buf) < startOffset {
 			return sszutils.ErrUnexpectedEOF
 		}
-		val2 = sszutils.ExpandSlice(val2, itemCount)
+		val1 = sszutils.ExpandSlice(val1, itemCount)
 		for i := range itemCount {
 			var endOffset int
 			if i < itemCount-1 {
@@ -215,31 +213,31 @@ func (t *ExecutionPayload) UnmarshalSSZ(buf []byte) (err error) {
 			}
 			buf := buf[startOffset:endOffset]
 			startOffset = endOffset
-			val3 := val2[i]
-			val3 = sszutils.ExpandSlice(val3, len(buf))
-			copy(val3[:], buf)
-			val2[i] = val3
+			val2 := val1[i]
+			val2 = sszutils.ExpandSlice(val2, len(buf))
+			copy(val2[:], buf)
+			val1[i] = val2
 		}
-		t.Transactions = val2
+		t.Transactions = val1
 	}
 	{ // Field #14 'Withdrawals' (dynamic)
 		buf := buf[offset14:]
-		val4 := t.Withdrawals
+		val3 := t.Withdrawals
 		itemCount := len(buf) / 44
 		if len(buf)%44 != 0 {
 			return sszutils.ErrUnexpectedEOF
 		}
-		val4 = sszutils.ExpandSlice(val4, itemCount)
+		val3 = sszutils.ExpandSlice(val3, itemCount)
 		for i := range itemCount {
-			if val4[i] == nil {
-				val4[i] = new(Withdrawal)
+			if val3[i] == nil {
+				val3[i] = new(Withdrawal)
 			}
 			buf := buf[44*i : 44*(i+1)]
-			if err = val4[i].UnmarshalSSZ(buf); err != nil {
+			if err = val3[i].UnmarshalSSZ(buf); err != nil {
 				return err
 			}
 		}
-		t.Withdrawals = val4
+		t.Withdrawals = val3
 	}
 	return nil
 }
@@ -380,4 +378,3 @@ func (t *ExecutionPayload) HashTreeRootWith(hh sszutils.HashWalker) error {
 	hh.Merkleize(idx)
 	return nil
 }
-

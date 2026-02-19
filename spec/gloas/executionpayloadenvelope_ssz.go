@@ -118,39 +118,35 @@ func (t *ExecutionPayloadEnvelope) UnmarshalSSZ(buf []byte) (err error) {
 	}
 	{ // Field #0 'Payload' (dynamic)
 		buf := buf[offset0:offset1]
-		val1 := t.Payload
-		if val1 == nil {
-			val1 = new(deneb.ExecutionPayload)
+		if t.Payload == nil {
+			t.Payload = new(deneb.ExecutionPayload)
 		}
-		if err = val1.UnmarshalSSZ(buf); err != nil {
+		if err = t.Payload.UnmarshalSSZ(buf); err != nil {
 			return err
 		}
-		t.Payload = val1
 	}
 	{ // Field #1 'ExecutionRequests' (dynamic)
 		buf := buf[offset1:offset5]
-		val2 := t.ExecutionRequests
-		if val2 == nil {
-			val2 = new(electra.ExecutionRequests)
+		if t.ExecutionRequests == nil {
+			t.ExecutionRequests = new(electra.ExecutionRequests)
 		}
-		if err = val2.UnmarshalSSZ(buf); err != nil {
+		if err = t.ExecutionRequests.UnmarshalSSZ(buf); err != nil {
 			return err
 		}
-		t.ExecutionRequests = val2
 	}
 	{ // Field #5 'BlobKZGCommitments' (dynamic)
 		buf := buf[offset5:]
-		val3 := t.BlobKZGCommitments
+		val1 := t.BlobKZGCommitments
 		itemCount := len(buf) / 48
 		if len(buf)%48 != 0 {
 			return sszutils.ErrUnexpectedEOF
 		}
-		val3 = sszutils.ExpandSlice(val3, itemCount)
+		val1 = sszutils.ExpandSlice(val1, itemCount)
 		for i := range itemCount {
 			buf := buf[48*i : 48*(i+1)]
-			copy(val3[i][:], buf)
+			copy(val1[i][:], buf)
 		}
-		t.BlobKZGCommitments = val3
+		t.BlobKZGCommitments = val1
 	}
 	return nil
 }
@@ -239,4 +235,3 @@ func (t *ExecutionPayloadEnvelope) HashTreeRootWith(hh sszutils.HashWalker) erro
 	hh.Merkleize(idx)
 	return nil
 }
-
