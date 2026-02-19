@@ -1285,7 +1285,13 @@ func (v *VersionedSignedBeaconBlock) BlobKZGCommitments() ([]deneb.KZGCommitment
 
 		return v.Fulu.Message.Body.BlobKZGCommitments, nil
 	case DataVersionGloas:
-		return nil, errors.New("no blob kzg commitments for gloas block")
+		if v.Gloas == nil || v.Gloas.Message == nil || v.Gloas.Message.Body == nil ||
+			v.Gloas.Message.Body.SignedExecutionPayloadBid == nil ||
+			v.Gloas.Message.Body.SignedExecutionPayloadBid.Message == nil {
+			return nil, errors.New("no gloas block")
+		}
+
+		return v.Gloas.Message.Body.SignedExecutionPayloadBid.Message.BlobKZGCommitments, nil
 	default:
 		return nil, errors.New("unknown version")
 	}

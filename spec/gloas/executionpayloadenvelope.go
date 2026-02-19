@@ -24,13 +24,12 @@ import (
 
 // ExecutionPayloadEnvelope represents an execution payload envelope.
 type ExecutionPayloadEnvelope struct {
-	Payload            *deneb.ExecutionPayload
-	ExecutionRequests  *electra.ExecutionRequests
-	BuilderIndex       BuilderIndex
-	BeaconBlockRoot    phase0.Root `ssz-size:"32"`
-	Slot               phase0.Slot
-	BlobKZGCommitments []deneb.KZGCommitment `dynssz-max:"MAX_BLOB_COMMITMENTS_PER_BLOCK" ssz-max:"4096" ssz-size:"?,48"`
-	StateRoot          phase0.Root           `ssz-size:"32"`
+	Payload           *deneb.ExecutionPayload
+	ExecutionRequests *electra.ExecutionRequests
+	BuilderIndex      BuilderIndex
+	BeaconBlockRoot   phase0.Root `ssz-size:"32"`
+	Slot              phase0.Slot
+	StateRoot         phase0.Root `ssz-size:"32"`
 }
 
 // String returns a string version of the structure.

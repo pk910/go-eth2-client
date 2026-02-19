@@ -28,31 +28,23 @@ import (
 
 // executionPayloadEnvelopeJSON is the spec representation of the struct.
 type executionPayloadEnvelopeJSON struct {
-	Payload            *deneb.ExecutionPayload    `json:"payload"`
-	ExecutionRequests  *electra.ExecutionRequests `json:"execution_requests"`
-	BuilderIndex       string                     `json:"builder_index"`
-	BeaconBlockRoot    string                     `json:"beacon_block_root"`
-	Slot               string                     `json:"slot"`
-	BlobKZGCommitments []string                   `json:"blob_kzg_commitments"`
-	PayloadWithheld    bool                       `json:"payload_withheld"`
-	StateRoot          string                     `json:"state_root"`
+	Payload           *deneb.ExecutionPayload    `json:"payload"`
+	ExecutionRequests *electra.ExecutionRequests `json:"execution_requests"`
+	BuilderIndex      string                     `json:"builder_index"`
+	BeaconBlockRoot   string                     `json:"beacon_block_root"`
+	Slot              string                     `json:"slot"`
+	StateRoot         string                     `json:"state_root"`
 }
 
 // MarshalJSON implements json.Marshaler.
 func (e *ExecutionPayloadEnvelope) MarshalJSON() ([]byte, error) {
-	blobCommitments := make([]string, len(e.BlobKZGCommitments))
-	for i := range e.BlobKZGCommitments {
-		blobCommitments[i] = fmt.Sprintf("%#x", e.BlobKZGCommitments[i])
-	}
-
 	return json.Marshal(&executionPayloadEnvelopeJSON{
-		Payload:            e.Payload,
-		ExecutionRequests:  e.ExecutionRequests,
-		BuilderIndex:       fmt.Sprintf("%d", e.BuilderIndex),
-		BeaconBlockRoot:    fmt.Sprintf("%#x", e.BeaconBlockRoot),
-		Slot:               fmt.Sprintf("%d", e.Slot),
-		BlobKZGCommitments: blobCommitments,
-		StateRoot:          fmt.Sprintf("%#x", e.StateRoot),
+		Payload:           e.Payload,
+		ExecutionRequests: e.ExecutionRequests,
+		BuilderIndex:      fmt.Sprintf("%d", e.BuilderIndex),
+		BeaconBlockRoot:   fmt.Sprintf("%#x", e.BeaconBlockRoot),
+		Slot:              fmt.Sprintf("%d", e.Slot),
+		StateRoot:         fmt.Sprintf("%#x", e.StateRoot),
 	})
 }
 
@@ -99,15 +91,6 @@ func (e *ExecutionPayloadEnvelope) UnmarshalJSON(input []byte) error {
 		return errors.Wrap(err, "invalid slot")
 	}
 	e.Slot = phase0.Slot(slot)
-
-	e.BlobKZGCommitments = make([]deneb.KZGCommitment, len(data.BlobKZGCommitments))
-	for i := range data.BlobKZGCommitments {
-		commitment, err := hex.DecodeString(strings.TrimPrefix(data.BlobKZGCommitments[i], "0x"))
-		if err != nil {
-			return errors.Wrap(err, "invalid blob KZG commitment")
-		}
-		copy(e.BlobKZGCommitments[i][:], commitment)
-	}
 
 	if data.StateRoot == "" {
 		return errors.New("state root missing")

@@ -24,18 +24,13 @@ import (
 
 // MarshalYAML implements yaml.Marshaler.
 func (e *ExecutionPayloadEnvelope) MarshalYAML() ([]byte, error) {
-	blobCommitments := make([]string, len(e.BlobKZGCommitments))
-	for i := range e.BlobKZGCommitments {
-		blobCommitments[i] = fmt.Sprintf("%#x", e.BlobKZGCommitments[i])
-	}
 	yamlBytes, err := yaml.MarshalWithOptions(&executionPayloadEnvelopeJSON{
-		Payload:            e.Payload,
-		ExecutionRequests:  e.ExecutionRequests,
-		BuilderIndex:       fmt.Sprintf("%d", e.BuilderIndex),
-		BeaconBlockRoot:    fmt.Sprintf("%#x", e.BeaconBlockRoot),
-		Slot:               fmt.Sprintf("%d", e.Slot),
-		BlobKZGCommitments: blobCommitments,
-		StateRoot:          fmt.Sprintf("%#x", e.StateRoot),
+		Payload:           e.Payload,
+		ExecutionRequests: e.ExecutionRequests,
+		BuilderIndex:      fmt.Sprintf("%d", e.BuilderIndex),
+		BeaconBlockRoot:   fmt.Sprintf("%#x", e.BeaconBlockRoot),
+		Slot:              fmt.Sprintf("%d", e.Slot),
+		StateRoot:         fmt.Sprintf("%#x", e.StateRoot),
 	}, yaml.Flow(true))
 	if err != nil {
 		return nil, err
