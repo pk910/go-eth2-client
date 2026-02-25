@@ -23,7 +23,7 @@ import (
 
 // PayloadAttestation represents a payload attestation.
 type PayloadAttestation struct {
-	AggregationBits bitfield.Bitlist `dynssz-size:"PTC_SIZE/8" ssz-max:"64"`
+	AggregationBits bitfield.Bitvector512 `dynssz-size:"PTC_SIZE/8" ssz-size:"64"`
 	Data            *PayloadAttestationData
 	Signature       phase0.BLSSignature `ssz-size:"96"`
 }
