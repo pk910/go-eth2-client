@@ -524,6 +524,22 @@ func (v *VersionedBeaconState) Builders() ([]*gloas.Builder, error) {
 	}
 }
 
+// ExecutionPayloadAvailability returns the execution payload availability of the state.
+func (v *VersionedBeaconState) ExecutionPayloadAvailability() ([]uint8, error) {
+	switch v.Version {
+	case DataVersionPhase0, DataVersionAltair, DataVersionBellatrix, DataVersionCapella, DataVersionDeneb, DataVersionElectra, DataVersionFulu:
+		return nil, errors.New("state does not provide execution payload availability")
+	case DataVersionGloas:
+		if v.Gloas == nil {
+			return nil, errors.New("no Gloas state")
+		}
+
+		return v.Gloas.ExecutionPayloadAvailability, nil
+	default:
+		return nil, errors.New("unknown version")
+	}
+}
+
 // ValidatorAtIndex returns the validator at the given index.
 // This is a convenience method that handles accessing the validators array.
 // Parameters:
