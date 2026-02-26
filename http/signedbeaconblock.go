@@ -190,15 +190,15 @@ func (s *Service) signedBeaconBlockFromSSZ(ctx context.Context,
 		if err != nil {
 			return nil, errors.Join(errors.New("failed to decode gloas signed block contents"), err)
 		}
-	case spec.DataVersionEip7805:
-		response.Data.Eip7805 = &gloas.SignedBeaconBlock{}
+	case spec.DataVersionHeze:
+		response.Data.Heze = &gloas.SignedBeaconBlock{}
 		if s.customSpecSupport {
-			err = dynSSZ.UnmarshalSSZ(response.Data.Eip7805, res.body)
+			err = dynSSZ.UnmarshalSSZ(response.Data.Heze, res.body)
 		} else {
-			err = response.Data.Eip7805.UnmarshalSSZ(res.body)
+			err = response.Data.Heze.UnmarshalSSZ(res.body)
 		}
 		if err != nil {
-			return nil, errors.Join(errors.New("failed to decode eip7805 signed block contents"), err)
+			return nil, errors.Join(errors.New("failed to decode heze signed block contents"), err)
 		}
 	default:
 		return nil, fmt.Errorf("unhandled block version %s", res.consensusVersion)
@@ -249,8 +249,8 @@ func (*Service) signedBeaconBlockFromJSON(res *httpResponse) (*api.Response[*spe
 		response.Data.Gloas, response.Metadata, err = decodeJSONResponse(bytes.NewReader(res.body),
 			&gloas.SignedBeaconBlock{},
 		)
-	case spec.DataVersionEip7805:
-		response.Data.Eip7805, response.Metadata, err = decodeJSONResponse(bytes.NewReader(res.body),
+	case spec.DataVersionHeze:
+		response.Data.Heze, response.Metadata, err = decodeJSONResponse(bytes.NewReader(res.body),
 			&gloas.SignedBeaconBlock{},
 		)
 	default:

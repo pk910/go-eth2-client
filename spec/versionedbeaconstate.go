@@ -40,13 +40,13 @@ type VersionedBeaconState struct {
 	Electra   *electra.BeaconState
 	Fulu      *fulu.BeaconState
 	Gloas     *gloas.BeaconState
-	EIP7805   *gloas.BeaconState
+	Heze      *gloas.BeaconState
 }
 
 // IsEmpty returns true if there is no block.
 func (v *VersionedBeaconState) IsEmpty() bool {
 	return v.Phase0 == nil && v.Altair == nil && v.Bellatrix == nil && v.Capella == nil && v.Deneb == nil &&
-		v.Electra == nil && v.Fulu == nil && v.Gloas == nil && v.EIP7805 == nil
+		v.Electra == nil && v.Fulu == nil && v.Gloas == nil && v.Heze == nil
 }
 
 // Slot returns the slot of the state.
@@ -100,12 +100,12 @@ func (v *VersionedBeaconState) Slot() (phase0.Slot, error) {
 		}
 
 		return v.Gloas.Slot, nil
-	case DataVersionEip7805:
-		if v.EIP7805 == nil {
-			return 0, errors.New("no EIP7805 state")
+	case DataVersionHeze:
+		if v.Heze == nil {
+			return 0, errors.New("no Heze state")
 		}
 
-		return v.EIP7805.Slot, nil
+		return v.Heze.Slot, nil
 	default:
 		return 0, errors.New("unknown version")
 	}
@@ -146,12 +146,12 @@ func (v *VersionedBeaconState) NextWithdrawalValidatorIndex() (phase0.ValidatorI
 		}
 
 		return v.Gloas.NextWithdrawalValidatorIndex, nil
-	case DataVersionEip7805:
-		if v.EIP7805 == nil {
-			return 0, errors.New("no EIP7805 state")
+	case DataVersionHeze:
+		if v.Heze == nil {
+			return 0, errors.New("no Heze state")
 		}
 
-		return v.EIP7805.NextWithdrawalValidatorIndex, nil
+		return v.Heze.NextWithdrawalValidatorIndex, nil
 	default:
 		return 0, errors.New("unknown version")
 	}
@@ -208,12 +208,12 @@ func (v *VersionedBeaconState) Validators() ([]*phase0.Validator, error) {
 		}
 
 		return v.Gloas.Validators, nil
-	case DataVersionEip7805:
-		if v.EIP7805 == nil {
-			return nil, errors.New("no EIP7805 state")
+	case DataVersionHeze:
+		if v.Heze == nil {
+			return nil, errors.New("no Heze state")
 		}
 
-		return v.EIP7805.Validators, nil
+		return v.Heze.Validators, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -270,12 +270,12 @@ func (v *VersionedBeaconState) ValidatorBalances() ([]phase0.Gwei, error) {
 		}
 
 		return v.Gloas.Balances, nil
-	case DataVersionEip7805:
-		if v.EIP7805 == nil {
-			return nil, errors.New("no EIP7805 state")
+	case DataVersionHeze:
+		if v.Heze == nil {
+			return nil, errors.New("no Heze state")
 		}
 
-		return v.EIP7805.Balances, nil
+		return v.Heze.Balances, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -304,12 +304,12 @@ func (v *VersionedBeaconState) DepositRequestsStartIndex() (uint64, error) {
 		}
 
 		return v.Gloas.DepositRequestsStartIndex, nil
-	case DataVersionEip7805:
-		if v.EIP7805 == nil {
-			return 0, errors.New("no EIP7805 state")
+	case DataVersionHeze:
+		if v.Heze == nil {
+			return 0, errors.New("no Heze state")
 		}
 
-		return v.EIP7805.DepositRequestsStartIndex, nil
+		return v.Heze.DepositRequestsStartIndex, nil
 	default:
 		return 0, errors.New("unknown version")
 	}
@@ -338,12 +338,12 @@ func (v *VersionedBeaconState) DepositBalanceToConsume() (phase0.Gwei, error) {
 		}
 
 		return v.Gloas.DepositBalanceToConsume, nil
-	case DataVersionEip7805:
-		if v.EIP7805 == nil {
-			return 0, errors.New("no EIP7805 state")
+	case DataVersionHeze:
+		if v.Heze == nil {
+			return 0, errors.New("no Heze state")
 		}
 
-		return v.EIP7805.DepositBalanceToConsume, nil
+		return v.Heze.DepositBalanceToConsume, nil
 	default:
 		return 0, errors.New("unknown version")
 	}
@@ -372,12 +372,12 @@ func (v *VersionedBeaconState) ExitBalanceToConsume() (phase0.Gwei, error) {
 		}
 
 		return v.Gloas.ExitBalanceToConsume, nil
-	case DataVersionEip7805:
-		if v.EIP7805 == nil {
-			return 0, errors.New("no EIP7805 state")
+	case DataVersionHeze:
+		if v.Heze == nil {
+			return 0, errors.New("no Heze state")
 		}
 
-		return v.EIP7805.ExitBalanceToConsume, nil
+		return v.Heze.ExitBalanceToConsume, nil
 	default:
 		return 0, errors.New("unknown version")
 	}
@@ -406,12 +406,12 @@ func (v *VersionedBeaconState) EarliestExitEpoch() (phase0.Epoch, error) {
 		}
 
 		return v.Gloas.EarliestExitEpoch, nil
-	case DataVersionEip7805:
-		if v.EIP7805 == nil {
-			return 0, errors.New("no EIP7805 state")
+	case DataVersionHeze:
+		if v.Heze == nil {
+			return 0, errors.New("no Heze state")
 		}
 
-		return v.EIP7805.EarliestExitEpoch, nil
+		return v.Heze.EarliestExitEpoch, nil
 	default:
 		return 0, errors.New("unknown version")
 	}
@@ -440,12 +440,12 @@ func (v *VersionedBeaconState) ConsolidationBalanceToConsume() (phase0.Gwei, err
 		}
 
 		return v.Gloas.ConsolidationBalanceToConsume, nil
-	case DataVersionEip7805:
-		if v.EIP7805 == nil {
-			return 0, errors.New("no EIP7805 state")
+	case DataVersionHeze:
+		if v.Heze == nil {
+			return 0, errors.New("no Heze state")
 		}
 
-		return v.EIP7805.ConsolidationBalanceToConsume, nil
+		return v.Heze.ConsolidationBalanceToConsume, nil
 	default:
 		return 0, errors.New("unknown version")
 	}
@@ -474,12 +474,12 @@ func (v *VersionedBeaconState) EarliestConsolidationEpoch() (phase0.Epoch, error
 		}
 
 		return v.Gloas.EarliestConsolidationEpoch, nil
-	case DataVersionEip7805:
-		if v.EIP7805 == nil {
-			return 0, errors.New("no EIP7805 state")
+	case DataVersionHeze:
+		if v.Heze == nil {
+			return 0, errors.New("no Heze state")
 		}
 
-		return v.EIP7805.EarliestConsolidationEpoch, nil
+		return v.Heze.EarliestConsolidationEpoch, nil
 	default:
 		return 0, errors.New("unknown version")
 	}
@@ -508,12 +508,12 @@ func (v *VersionedBeaconState) PendingDeposits() ([]*electra.PendingDeposit, err
 		}
 
 		return v.Gloas.PendingDeposits, nil
-	case DataVersionEip7805:
-		if v.EIP7805 == nil {
-			return nil, errors.New("no EIP7805 state")
+	case DataVersionHeze:
+		if v.Heze == nil {
+			return nil, errors.New("no Heze state")
 		}
 
-		return v.EIP7805.PendingDeposits, nil
+		return v.Heze.PendingDeposits, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -542,12 +542,12 @@ func (v *VersionedBeaconState) PendingPartialWithdrawals() ([]*electra.PendingPa
 		}
 
 		return v.Gloas.PendingPartialWithdrawals, nil
-	case DataVersionEip7805:
-		if v.EIP7805 == nil {
-			return nil, errors.New("no EIP7805 state")
+	case DataVersionHeze:
+		if v.Heze == nil {
+			return nil, errors.New("no Heze state")
 		}
 
-		return v.EIP7805.PendingPartialWithdrawals, nil
+		return v.Heze.PendingPartialWithdrawals, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -576,12 +576,12 @@ func (v *VersionedBeaconState) PendingConsolidations() ([]*electra.PendingConsol
 		}
 
 		return v.Gloas.PendingConsolidations, nil
-	case DataVersionEip7805:
-		if v.EIP7805 == nil {
-			return nil, errors.New("no EIP7805 state")
+	case DataVersionHeze:
+		if v.Heze == nil {
+			return nil, errors.New("no Heze state")
 		}
 
-		return v.EIP7805.PendingConsolidations, nil
+		return v.Heze.PendingConsolidations, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -680,7 +680,12 @@ func (v *VersionedBeaconState) GetTree() (*treeproof.Node, error) {
 		}
 
 		return dynssz.GetGlobalDynSsz().GetTree(v.Gloas)
+	case DataVersionHeze:
+		if v.Heze == nil {
+			return nil, errors.New("no Heze state")
+		}
 
+		return dynssz.GetGlobalDynSsz().GetTree(v.Heze)
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -737,12 +742,12 @@ func (v *VersionedBeaconState) HashTreeRoot() (phase0.Hash32, error) {
 		}
 
 		return v.Gloas.HashTreeRoot()
-	case DataVersionEip7805:
-		if v.EIP7805 == nil {
-			return phase0.Hash32{}, errors.New("no EIP7805 state")
+	case DataVersionHeze:
+		if v.Heze == nil {
+			return phase0.Hash32{}, errors.New("no Heze state")
 		}
 
-		return v.EIP7805.HashTreeRoot()
+		return v.Heze.HashTreeRoot()
 	default:
 		return phase0.Hash32{}, errors.New("unknown version")
 	}
@@ -801,12 +806,12 @@ func (v *VersionedBeaconState) FieldIndex(name string) (int, error) {
 		}
 
 		return proofutil.FieldIndex(v.Gloas, name)
-	case DataVersionEip7805:
-		if v.EIP7805 == nil {
-			return 0, errors.New("no EIP7805 state")
+	case DataVersionHeze:
+		if v.Heze == nil {
+			return 0, errors.New("no Heze state")
 		}
 
-		return proofutil.FieldIndex(v.EIP7805, name)
+		return proofutil.FieldIndex(v.Heze, name)
 	default:
 		return 0, errors.New("unknown version")
 	}
@@ -866,12 +871,12 @@ func (v *VersionedBeaconState) FieldGeneralizedIndex(name string) (int, error) {
 		}
 
 		return proofutil.FieldGeneralizedIndex(v.Gloas, name)
-	case DataVersionEip7805:
-		if v.EIP7805 == nil {
-			return 0, errors.New("no EIP7805 state")
+	case DataVersionHeze:
+		if v.Heze == nil {
+			return 0, errors.New("no Heze state")
 		}
 
-		return proofutil.FieldGeneralizedIndex(v.EIP7805, name)
+		return proofutil.FieldGeneralizedIndex(v.Heze, name)
 	default:
 		return 0, errors.New("unknown version")
 	}
@@ -1037,12 +1042,12 @@ func (v *VersionedBeaconState) String() string {
 		}
 
 		return v.Gloas.String()
-	case DataVersionEip7805:
-		if v.EIP7805 == nil {
+	case DataVersionHeze:
+		if v.Heze == nil {
 			return ""
 		}
 
-		return v.EIP7805.String()
+		return v.Heze.String()
 	default:
 		return "unknown version"
 	}

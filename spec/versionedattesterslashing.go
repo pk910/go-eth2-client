@@ -31,13 +31,13 @@ type VersionedAttesterSlashing struct {
 	Electra   *electra.AttesterSlashing
 	Fulu      *electra.AttesterSlashing
 	Gloas     *electra.AttesterSlashing
-	Eip7805   *electra.AttesterSlashing
+	Heze      *electra.AttesterSlashing
 }
 
 // IsEmpty returns true if there is no block.
 func (v *VersionedAttesterSlashing) IsEmpty() bool {
 	return v.Phase0 == nil && v.Altair == nil && v.Bellatrix == nil && v.Capella == nil && v.Deneb == nil &&
-		v.Electra == nil && v.Fulu == nil && v.Gloas == nil && v.Eip7805 == nil
+		v.Electra == nil && v.Fulu == nil && v.Gloas == nil && v.Heze == nil
 }
 
 // Attestation1 returns the first indexed attestation.
@@ -131,14 +131,14 @@ func (v *VersionedAttesterSlashing) Attestation1() (*VersionedIndexedAttestation
 		}
 
 		return &versionedIndexedAttestation, nil
-	case DataVersionEip7805:
-		if v.Eip7805 == nil {
-			return nil, errors.New("no EIP7805 indexed attestation")
+	case DataVersionHeze:
+		if v.Heze == nil {
+			return nil, errors.New("no Heze indexed attestation")
 		}
 
 		versionedIndexedAttestation := VersionedIndexedAttestation{
-			Version: DataVersionEip7805,
-			Eip7805: v.Eip7805.Attestation1,
+			Version: DataVersionHeze,
+			Heze:    v.Heze.Attestation1,
 		}
 
 		return &versionedIndexedAttestation, nil
@@ -238,14 +238,14 @@ func (v *VersionedAttesterSlashing) Attestation2() (*VersionedIndexedAttestation
 		}
 
 		return &versionedIndexedAttestation, nil
-	case DataVersionEip7805:
-		if v.Eip7805 == nil {
-			return nil, errors.New("no EIP7805 indexed attestation")
+	case DataVersionHeze:
+		if v.Heze == nil {
+			return nil, errors.New("no Heze indexed attestation")
 		}
 
 		versionedIndexedAttestation := VersionedIndexedAttestation{
-			Version: DataVersionEip7805,
-			Eip7805: v.Eip7805.Attestation2,
+			Version: DataVersionHeze,
+			Heze:    v.Heze.Attestation2,
 		}
 
 		return &versionedIndexedAttestation, nil
@@ -305,12 +305,12 @@ func (v *VersionedAttesterSlashing) String() string {
 		}
 
 		return v.Gloas.String()
-	case DataVersionEip7805:
-		if v.Eip7805 == nil {
+	case DataVersionHeze:
+		if v.Heze == nil {
 			return ""
 		}
 
-		return v.Eip7805.String()
+		return v.Heze.String()
 	default:
 		return "unknown version"
 	}

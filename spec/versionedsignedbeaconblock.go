@@ -36,7 +36,7 @@ type VersionedSignedBeaconBlock struct {
 	Electra   *electra.SignedBeaconBlock
 	Fulu      *electra.SignedBeaconBlock
 	Gloas     *gloas.SignedBeaconBlock
-	Eip7805   *gloas.SignedBeaconBlock
+	Heze      *gloas.SignedBeaconBlock
 }
 
 // Slot returns the slot of the signed beacon block.
@@ -90,12 +90,12 @@ func (v *VersionedSignedBeaconBlock) Slot() (phase0.Slot, error) {
 		}
 
 		return v.Gloas.Message.Slot, nil
-	case DataVersionEip7805:
-		if v.Eip7805 == nil || v.Eip7805.Message == nil {
-			return 0, errors.New("no eip7805 block")
+	case DataVersionHeze:
+		if v.Heze == nil || v.Heze.Message == nil {
+			return 0, errors.New("no heze block")
 		}
 
-		return v.Eip7805.Message.Slot, nil
+		return v.Heze.Message.Slot, nil
 	default:
 		return 0, errors.New("unknown version")
 	}
@@ -152,12 +152,12 @@ func (v *VersionedSignedBeaconBlock) ProposerIndex() (phase0.ValidatorIndex, err
 		}
 
 		return v.Gloas.Message.ProposerIndex, nil
-	case DataVersionEip7805:
-		if v.Eip7805 == nil || v.Eip7805.Message == nil {
-			return 0, errors.New("no eip7805 block")
+	case DataVersionHeze:
+		if v.Heze == nil || v.Heze.Message == nil {
+			return 0, errors.New("no heze block")
 		}
 
-		return v.Eip7805.Message.ProposerIndex, nil
+		return v.Heze.Message.ProposerIndex, nil
 	default:
 		return 0, errors.New("unknown version")
 	}
@@ -215,16 +215,16 @@ func (v *VersionedSignedBeaconBlock) ExecutionBlockHash() (phase0.Hash32, error)
 		}
 
 		return v.Gloas.Message.Body.SignedExecutionPayloadBid.Message.BlockHash, nil
-	case DataVersionEip7805:
-		if v.Eip7805 == nil ||
-			v.Eip7805.Message == nil ||
-			v.Eip7805.Message.Body == nil ||
-			v.Eip7805.Message.Body.SignedExecutionPayloadBid == nil ||
-			v.Eip7805.Message.Body.SignedExecutionPayloadBid.Message == nil {
-			return phase0.Hash32{}, errors.New("no eip7805 block")
+	case DataVersionHeze:
+		if v.Heze == nil ||
+			v.Heze.Message == nil ||
+			v.Heze.Message.Body == nil ||
+			v.Heze.Message.Body.SignedExecutionPayloadBid == nil ||
+			v.Heze.Message.Body.SignedExecutionPayloadBid.Message == nil {
+			return phase0.Hash32{}, errors.New("no heze block")
 		}
 
-		return v.Eip7805.Message.Body.SignedExecutionPayloadBid.Message.BlockHash, nil
+		return v.Heze.Message.Body.SignedExecutionPayloadBid.Message.BlockHash, nil
 	default:
 		return phase0.Hash32{}, errors.New("unknown version")
 	}
@@ -274,8 +274,8 @@ func (v *VersionedSignedBeaconBlock) ExecutionBlockNumber() (uint64, error) {
 		return v.Fulu.Message.Body.ExecutionPayload.BlockNumber, nil
 	case DataVersionGloas:
 		return 0, errors.New("no execution block number for gloas block")
-	case DataVersionEip7805:
-		return 0, errors.New("no execution block number for eip7805 block")
+	case DataVersionHeze:
+		return 0, errors.New("no execution block number for heze block")
 	default:
 		return 0, errors.New("unknown version")
 	}
@@ -329,8 +329,8 @@ func (v *VersionedSignedBeaconBlock) ExecutionTransactions() ([]bellatrix.Transa
 		return v.Fulu.Message.Body.ExecutionPayload.Transactions, nil
 	case DataVersionGloas:
 		return nil, errors.New("no execution block transactions for gloas block")
-	case DataVersionEip7805:
-		return nil, errors.New("no execution block transactions for eip7805 block")
+	case DataVersionHeze:
+		return nil, errors.New("no execution block transactions for heze block")
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -387,12 +387,12 @@ func (v *VersionedSignedBeaconBlock) Graffiti() ([32]byte, error) {
 		}
 
 		return v.Gloas.Message.Body.Graffiti, nil
-	case DataVersionEip7805:
-		if v.Eip7805 == nil || v.Eip7805.Message == nil || v.Eip7805.Message.Body == nil {
-			return [32]byte{}, errors.New("no eip7805 block")
+	case DataVersionHeze:
+		if v.Heze == nil || v.Heze.Message == nil || v.Heze.Message.Body == nil {
+			return [32]byte{}, errors.New("no heze block")
 		}
 
-		return v.Eip7805.Message.Body.Graffiti, nil
+		return v.Heze.Message.Body.Graffiti, nil
 	default:
 		return [32]byte{}, errors.New("unknown version")
 	}
@@ -515,16 +515,16 @@ func (v *VersionedSignedBeaconBlock) Attestations() ([]*VersionedAttestation, er
 		}
 
 		return versionedAttestations, nil
-	case DataVersionEip7805:
-		if v.Eip7805 == nil || v.Eip7805.Message == nil || v.Eip7805.Message.Body == nil {
-			return nil, errors.New("no eip7805 block")
+	case DataVersionHeze:
+		if v.Heze == nil || v.Heze.Message == nil || v.Heze.Message.Body == nil {
+			return nil, errors.New("no heze block")
 		}
 
-		versionedAttestations := make([]*VersionedAttestation, len(v.Eip7805.Message.Body.Attestations))
-		for i, attestation := range v.Eip7805.Message.Body.Attestations {
+		versionedAttestations := make([]*VersionedAttestation, len(v.Heze.Message.Body.Attestations))
+		for i, attestation := range v.Heze.Message.Body.Attestations {
 			versionedAttestations[i] = &VersionedAttestation{
-				Version: DataVersionEip7805,
-				Eip7805: attestation,
+				Version: DataVersionHeze,
+				Heze:    attestation,
 			}
 		}
 
@@ -585,12 +585,12 @@ func (v *VersionedSignedBeaconBlock) Root() (phase0.Root, error) {
 		}
 
 		return v.Gloas.Message.HashTreeRoot()
-	case DataVersionEip7805:
-		if v.Eip7805 == nil || v.Eip7805.Message == nil {
-			return phase0.Root{}, errors.New("no eip7805 block")
+	case DataVersionHeze:
+		if v.Heze == nil || v.Heze.Message == nil {
+			return phase0.Root{}, errors.New("no heze block")
 		}
 
-		return v.Eip7805.Message.HashTreeRoot()
+		return v.Heze.Message.HashTreeRoot()
 	default:
 		return phase0.Root{}, errors.New("unknown version")
 	}
@@ -647,12 +647,12 @@ func (v *VersionedSignedBeaconBlock) BodyRoot() (phase0.Root, error) {
 		}
 
 		return v.Gloas.Message.Body.HashTreeRoot()
-	case DataVersionEip7805:
-		if v.Eip7805 == nil || v.Eip7805.Message == nil || v.Eip7805.Message.Body == nil {
-			return phase0.Root{}, errors.New("no eip7805 block")
+	case DataVersionHeze:
+		if v.Heze == nil || v.Heze.Message == nil || v.Heze.Message.Body == nil {
+			return phase0.Root{}, errors.New("no heze block")
 		}
 
-		return v.Eip7805.Message.Body.HashTreeRoot()
+		return v.Heze.Message.Body.HashTreeRoot()
 	default:
 		return phase0.Root{}, errors.New("unknown version")
 	}
@@ -709,12 +709,12 @@ func (v *VersionedSignedBeaconBlock) ParentRoot() (phase0.Root, error) {
 		}
 
 		return v.Gloas.Message.ParentRoot, nil
-	case DataVersionEip7805:
-		if v.Eip7805 == nil || v.Eip7805.Message == nil {
-			return phase0.Root{}, errors.New("no eip7805 block")
+	case DataVersionHeze:
+		if v.Heze == nil || v.Heze.Message == nil {
+			return phase0.Root{}, errors.New("no heze block")
 		}
 
-		return v.Eip7805.Message.ParentRoot, nil
+		return v.Heze.Message.ParentRoot, nil
 	default:
 		return phase0.Root{}, errors.New("unknown version")
 	}
@@ -771,12 +771,12 @@ func (v *VersionedSignedBeaconBlock) StateRoot() (phase0.Root, error) {
 		}
 
 		return v.Gloas.Message.StateRoot, nil
-	case DataVersionEip7805:
-		if v.Eip7805 == nil || v.Eip7805.Message == nil {
-			return phase0.Root{}, errors.New("no eip7805 block")
+	case DataVersionHeze:
+		if v.Heze == nil || v.Heze.Message == nil {
+			return phase0.Root{}, errors.New("no heze block")
 		}
 
-		return v.Eip7805.Message.StateRoot, nil
+		return v.Heze.Message.StateRoot, nil
 	default:
 		return phase0.Root{}, errors.New("unknown version")
 	}
@@ -833,12 +833,12 @@ func (v *VersionedSignedBeaconBlock) RandaoReveal() (phase0.BLSSignature, error)
 		}
 
 		return v.Gloas.Message.Body.RANDAOReveal, nil
-	case DataVersionEip7805:
-		if v.Eip7805 == nil || v.Eip7805.Message == nil || v.Eip7805.Message.Body == nil {
-			return phase0.BLSSignature{}, errors.New("no eip7805 block")
+	case DataVersionHeze:
+		if v.Heze == nil || v.Heze.Message == nil || v.Heze.Message.Body == nil {
+			return phase0.BLSSignature{}, errors.New("no heze block")
 		}
 
-		return v.Eip7805.Message.Body.RANDAOReveal, nil
+		return v.Heze.Message.Body.RANDAOReveal, nil
 	default:
 		return phase0.BLSSignature{}, errors.New("unknown version")
 	}
@@ -895,12 +895,12 @@ func (v *VersionedSignedBeaconBlock) ETH1Data() (*phase0.ETH1Data, error) {
 		}
 
 		return v.Gloas.Message.Body.ETH1Data, nil
-	case DataVersionEip7805:
-		if v.Eip7805 == nil || v.Eip7805.Message == nil || v.Eip7805.Message.Body == nil {
-			return nil, errors.New("no eip7805 block")
+	case DataVersionHeze:
+		if v.Heze == nil || v.Heze.Message == nil || v.Heze.Message.Body == nil {
+			return nil, errors.New("no heze block")
 		}
 
-		return v.Eip7805.Message.Body.ETH1Data, nil
+		return v.Heze.Message.Body.ETH1Data, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -957,12 +957,12 @@ func (v *VersionedSignedBeaconBlock) Deposits() ([]*phase0.Deposit, error) {
 		}
 
 		return v.Gloas.Message.Body.Deposits, nil
-	case DataVersionEip7805:
-		if v.Eip7805 == nil || v.Eip7805.Message == nil || v.Eip7805.Message.Body == nil {
-			return nil, errors.New("no eip7805 block")
+	case DataVersionHeze:
+		if v.Heze == nil || v.Heze.Message == nil || v.Heze.Message.Body == nil {
+			return nil, errors.New("no heze block")
 		}
 
-		return v.Eip7805.Message.Body.Deposits, nil
+		return v.Heze.Message.Body.Deposits, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -1019,12 +1019,12 @@ func (v *VersionedSignedBeaconBlock) VoluntaryExits() ([]*phase0.SignedVoluntary
 		}
 
 		return v.Gloas.Message.Body.VoluntaryExits, nil
-	case DataVersionEip7805:
-		if v.Eip7805 == nil || v.Eip7805.Message == nil || v.Eip7805.Message.Body == nil {
-			return nil, errors.New("no eip7805 block")
+	case DataVersionHeze:
+		if v.Heze == nil || v.Heze.Message == nil || v.Heze.Message.Body == nil {
+			return nil, errors.New("no heze block")
 		}
 
-		return v.Eip7805.Message.Body.VoluntaryExits, nil
+		return v.Heze.Message.Body.VoluntaryExits, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -1147,16 +1147,16 @@ func (v *VersionedSignedBeaconBlock) AttesterSlashings() ([]VersionedAttesterSla
 		}
 
 		return versionedAttesterSlashings, nil
-	case DataVersionEip7805:
-		if v.Eip7805 == nil || v.Eip7805.Message == nil || v.Eip7805.Message.Body == nil {
-			return nil, errors.New("no eip7805 block")
+	case DataVersionHeze:
+		if v.Heze == nil || v.Heze.Message == nil || v.Heze.Message.Body == nil {
+			return nil, errors.New("no heze block")
 		}
 
-		versionedAttesterSlashings := make([]VersionedAttesterSlashing, len(v.Eip7805.Message.Body.AttesterSlashings))
-		for i, attesterSlashing := range v.Eip7805.Message.Body.AttesterSlashings {
+		versionedAttesterSlashings := make([]VersionedAttesterSlashing, len(v.Heze.Message.Body.AttesterSlashings))
+		for i, attesterSlashing := range v.Heze.Message.Body.AttesterSlashings {
 			versionedAttesterSlashings[i] = VersionedAttesterSlashing{
-				Version: DataVersionEip7805,
-				Eip7805: attesterSlashing,
+				Version: DataVersionHeze,
+				Heze:    attesterSlashing,
 			}
 		}
 
@@ -1217,12 +1217,12 @@ func (v *VersionedSignedBeaconBlock) ProposerSlashings() ([]*phase0.ProposerSlas
 		}
 
 		return v.Gloas.Message.Body.ProposerSlashings, nil
-	case DataVersionEip7805:
-		if v.Eip7805 == nil || v.Eip7805.Message == nil || v.Eip7805.Message.Body == nil {
-			return nil, errors.New("no eip7805 block")
+	case DataVersionHeze:
+		if v.Heze == nil || v.Heze.Message == nil || v.Heze.Message.Body == nil {
+			return nil, errors.New("no heze block")
 		}
 
-		return v.Eip7805.Message.Body.ProposerSlashings, nil
+		return v.Heze.Message.Body.ProposerSlashings, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -1275,12 +1275,12 @@ func (v *VersionedSignedBeaconBlock) SyncAggregate() (*altair.SyncAggregate, err
 		}
 
 		return v.Gloas.Message.Body.SyncAggregate, nil
-	case DataVersionEip7805:
-		if v.Eip7805 == nil || v.Eip7805.Message == nil || v.Eip7805.Message.Body == nil {
-			return nil, errors.New("no eip7805 block")
+	case DataVersionHeze:
+		if v.Heze == nil || v.Heze.Message == nil || v.Heze.Message.Body == nil {
+			return nil, errors.New("no heze block")
 		}
 
-		return v.Eip7805.Message.Body.SyncAggregate, nil
+		return v.Heze.Message.Body.SyncAggregate, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -1325,12 +1325,12 @@ func (v *VersionedSignedBeaconBlock) BLSToExecutionChanges() ([]*capella.SignedB
 		}
 
 		return v.Gloas.Message.Body.BLSToExecutionChanges, nil
-	case DataVersionEip7805:
-		if v.Eip7805 == nil || v.Eip7805.Message == nil || v.Eip7805.Message.Body == nil {
-			return nil, errors.New("no eip7805 block")
+	case DataVersionHeze:
+		if v.Heze == nil || v.Heze.Message == nil || v.Heze.Message.Body == nil {
+			return nil, errors.New("no heze block")
 		}
 
-		return v.Eip7805.Message.Body.BLSToExecutionChanges, nil
+		return v.Heze.Message.Body.BLSToExecutionChanges, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -1377,8 +1377,8 @@ func (v *VersionedSignedBeaconBlock) Withdrawals() ([]*capella.Withdrawal, error
 		return v.Fulu.Message.Body.ExecutionPayload.Withdrawals, nil
 	case DataVersionGloas:
 		return nil, errors.New("no execution payload withdrawals for gloas block")
-	case DataVersionEip7805:
-		return nil, errors.New("no execution payload withdrawals for gloas block")
+	case DataVersionHeze:
+		return nil, errors.New("no execution payload withdrawals for heze block")
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -1421,14 +1421,14 @@ func (v *VersionedSignedBeaconBlock) BlobKZGCommitments() ([]deneb.KZGCommitment
 		}
 
 		return v.Gloas.Message.Body.SignedExecutionPayloadBid.Message.BlobKZGCommitments, nil
-	case DataVersionEip7805:
-		if v.Eip7805 == nil || v.Eip7805.Message == nil || v.Eip7805.Message.Body == nil ||
-			v.Eip7805.Message.Body.SignedExecutionPayloadBid == nil ||
-			v.Eip7805.Message.Body.SignedExecutionPayloadBid.Message == nil {
-			return nil, errors.New("no eip7805 block")
+	case DataVersionHeze:
+		if v.Heze == nil || v.Heze.Message == nil || v.Heze.Message.Body == nil ||
+			v.Heze.Message.Body.SignedExecutionPayloadBid == nil ||
+			v.Heze.Message.Body.SignedExecutionPayloadBid.Message == nil {
+			return nil, errors.New("no heze block")
 		}
 
-		return v.Eip7805.Message.Body.SignedExecutionPayloadBid.Message.BlobKZGCommitments, nil
+		return v.Heze.Message.Body.SignedExecutionPayloadBid.Message.BlobKZGCommitments, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -1463,8 +1463,8 @@ func (v *VersionedSignedBeaconBlock) ExecutionRequests() (*electra.ExecutionRequ
 		return v.Fulu.Message.Body.ExecutionRequests, nil
 	case DataVersionGloas:
 		return nil, errors.New("no execution requests for gloas block")
-	case DataVersionEip7805:
-		return nil, errors.New("no execution requests for eip7805 block")
+	case DataVersionHeze:
+		return nil, errors.New("no execution requests for heze block")
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -1493,12 +1493,12 @@ func (v *VersionedSignedBeaconBlock) SignedExecutionPayloadBid() (*gloas.SignedE
 		}
 
 		return v.Gloas.Message.Body.SignedExecutionPayloadBid, nil
-	case DataVersionEip7805:
-		if v.Eip7805 == nil || v.Eip7805.Message == nil || v.Eip7805.Message.Body == nil {
-			return nil, errors.New("no eip7805 block")
+	case DataVersionHeze:
+		if v.Heze == nil || v.Heze.Message == nil || v.Heze.Message.Body == nil {
+			return nil, errors.New("no heze block")
 		}
 
-		return v.Eip7805.Message.Body.SignedExecutionPayloadBid, nil
+		return v.Heze.Message.Body.SignedExecutionPayloadBid, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -1547,8 +1547,8 @@ func (v *VersionedSignedBeaconBlock) ExecutionPayload() (*VersionedExecutionPayl
 		versionedExecutionPayload.Fulu = v.Fulu.Message.Body.ExecutionPayload
 	case DataVersionGloas:
 		return nil, errors.New("no execution payload in gloas")
-	case DataVersionEip7805:
-		return nil, errors.New("no execution payload in eip7805")
+	case DataVersionHeze:
+		return nil, errors.New("no execution payload in heze")
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -1607,12 +1607,12 @@ func (v *VersionedSignedBeaconBlock) String() string {
 		}
 
 		return v.Gloas.String()
-	case DataVersionEip7805:
-		if v.Eip7805 == nil {
+	case DataVersionHeze:
+		if v.Heze == nil {
 			return ""
 		}
 
-		return v.Eip7805.String()
+		return v.Heze.String()
 	default:
 		return "unknown version"
 	}

@@ -178,15 +178,15 @@ func (s *Service) beaconStateFromSSZ(ctx context.Context, res *httpResponse) (*a
 		if err != nil {
 			return nil, errors.Join(errors.New("failed to decode gloas beacon state"), err)
 		}
-	case spec.DataVersionEip7805:
-		response.Data.EIP7805 = &gloas.BeaconState{}
+	case spec.DataVersionHeze:
+		response.Data.Heze = &gloas.BeaconState{}
 		if s.customSpecSupport {
-			err = dynSSZ.UnmarshalSSZ(response.Data.EIP7805, res.body)
+			err = dynSSZ.UnmarshalSSZ(response.Data.Heze, res.body)
 		} else {
-			err = response.Data.EIP7805.UnmarshalSSZ(res.body)
+			err = response.Data.Heze.UnmarshalSSZ(res.body)
 		}
 		if err != nil {
-			return nil, errors.Join(errors.New("failed to decode eip7805 beacon state"), err)
+			return nil, errors.Join(errors.New("failed to decode heze beacon state"), err)
 		}
 	default:
 		return nil, fmt.Errorf("unhandled state version %s", res.consensusVersion)
@@ -221,8 +221,8 @@ func (*Service) beaconStateFromJSON(res *httpResponse) (*api.Response[*spec.Vers
 		response.Data.Fulu, response.Metadata, err = decodeJSONResponse(bytes.NewReader(res.body), &fulu.BeaconState{})
 	case spec.DataVersionGloas:
 		response.Data.Gloas, response.Metadata, err = decodeJSONResponse(bytes.NewReader(res.body), &gloas.BeaconState{})
-	case spec.DataVersionEip7805:
-		response.Data.EIP7805, response.Metadata, err = decodeJSONResponse(bytes.NewReader(res.body), &gloas.BeaconState{})
+	case spec.DataVersionHeze:
+		response.Data.Heze, response.Metadata, err = decodeJSONResponse(bytes.NewReader(res.body), &gloas.BeaconState{})
 	default:
 		err = fmt.Errorf("unsupported version %s", res.consensusVersion)
 	}
