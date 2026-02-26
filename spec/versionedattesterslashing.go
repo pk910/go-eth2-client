@@ -31,12 +31,13 @@ type VersionedAttesterSlashing struct {
 	Electra   *electra.AttesterSlashing
 	Fulu      *electra.AttesterSlashing
 	Gloas     *electra.AttesterSlashing
+	Eip7805   *electra.AttesterSlashing
 }
 
 // IsEmpty returns true if there is no block.
 func (v *VersionedAttesterSlashing) IsEmpty() bool {
 	return v.Phase0 == nil && v.Altair == nil && v.Bellatrix == nil && v.Capella == nil && v.Deneb == nil &&
-		v.Electra == nil && v.Fulu == nil && v.Gloas == nil
+		v.Electra == nil && v.Fulu == nil && v.Gloas == nil && v.Eip7805 == nil
 }
 
 // Attestation1 returns the first indexed attestation.
@@ -127,6 +128,17 @@ func (v *VersionedAttesterSlashing) Attestation1() (*VersionedIndexedAttestation
 		versionedIndexedAttestation := VersionedIndexedAttestation{
 			Version: DataVersionGloas,
 			Gloas:   v.Gloas.Attestation1,
+		}
+
+		return &versionedIndexedAttestation, nil
+	case DataVersionEip7805:
+		if v.Eip7805 == nil {
+			return nil, errors.New("no EIP7805 indexed attestation")
+		}
+
+		versionedIndexedAttestation := VersionedIndexedAttestation{
+			Version: DataVersionEip7805,
+			Eip7805: v.Eip7805.Attestation1,
 		}
 
 		return &versionedIndexedAttestation, nil
@@ -226,6 +238,17 @@ func (v *VersionedAttesterSlashing) Attestation2() (*VersionedIndexedAttestation
 		}
 
 		return &versionedIndexedAttestation, nil
+	case DataVersionEip7805:
+		if v.Eip7805 == nil {
+			return nil, errors.New("no EIP7805 indexed attestation")
+		}
+
+		versionedIndexedAttestation := VersionedIndexedAttestation{
+			Version: DataVersionEip7805,
+			Eip7805: v.Eip7805.Attestation2,
+		}
+
+		return &versionedIndexedAttestation, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -282,6 +305,12 @@ func (v *VersionedAttesterSlashing) String() string {
 		}
 
 		return v.Gloas.String()
+	case DataVersionEip7805:
+		if v.Eip7805 == nil {
+			return ""
+		}
+
+		return v.Eip7805.String()
 	default:
 		return "unknown version"
 	}

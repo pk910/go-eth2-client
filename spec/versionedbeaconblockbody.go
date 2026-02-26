@@ -34,6 +34,7 @@ type VersionedBeaconBlockBody struct {
 	Electra   *electra.BeaconBlockBody
 	Fulu      *electra.BeaconBlockBody
 	Gloas     *gloas.BeaconBlockBody
+	Eip7805   *gloas.BeaconBlockBody
 }
 
 // String returns a string version of the structure.
@@ -87,6 +88,12 @@ func (v *VersionedBeaconBlockBody) String() string {
 		}
 
 		return v.Gloas.String()
+	case DataVersionEip7805:
+		if v.Eip7805 == nil {
+			return ""
+		}
+
+		return v.Eip7805.String()
 	default:
 		return "unknown version"
 	}

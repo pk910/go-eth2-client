@@ -36,12 +36,13 @@ type VersionedBeaconBlock struct {
 	Electra   *electra.BeaconBlock
 	Fulu      *electra.BeaconBlock
 	Gloas     *gloas.BeaconBlock
+	EIP7805   *gloas.BeaconBlock
 }
 
 // IsEmpty returns true if there is no block.
 func (v *VersionedBeaconBlock) IsEmpty() bool {
 	return v.Phase0 == nil && v.Altair == nil && v.Bellatrix == nil && v.Capella == nil && v.Deneb == nil &&
-		v.Electra == nil && v.Fulu == nil && v.Gloas == nil
+		v.Electra == nil && v.Fulu == nil && v.Gloas == nil && v.EIP7805 == nil
 }
 
 // Slot returns the slot of the beacon block.
@@ -95,6 +96,12 @@ func (v *VersionedBeaconBlock) Slot() (phase0.Slot, error) {
 		}
 
 		return v.Gloas.Slot, nil
+	case DataVersionEip7805:
+		if v.EIP7805 == nil {
+			return 0, errors.New("no eip7805 block")
+		}
+
+		return v.EIP7805.Slot, nil
 	default:
 		return 0, errors.New("unknown version")
 	}
@@ -182,6 +189,15 @@ func (v *VersionedBeaconBlock) RandaoReveal() (phase0.BLSSignature, error) {
 		}
 
 		return v.Gloas.Body.RANDAOReveal, nil
+	case DataVersionEip7805:
+		if v.EIP7805 == nil {
+			return phase0.BLSSignature{}, errors.New("no eip7805 block")
+		}
+		if v.EIP7805.Body == nil {
+			return phase0.BLSSignature{}, errors.New("no eip7805 block body")
+		}
+
+		return v.EIP7805.Body.RANDAOReveal, nil
 	default:
 		return phase0.BLSSignature{}, errors.New("unknown version")
 	}
@@ -269,6 +285,15 @@ func (v *VersionedBeaconBlock) Graffiti() ([32]byte, error) {
 		}
 
 		return v.Gloas.Body.Graffiti, nil
+	case DataVersionEip7805:
+		if v.EIP7805 == nil {
+			return [32]byte{}, errors.New("no eip7805 block")
+		}
+		if v.EIP7805.Body == nil {
+			return [32]byte{}, errors.New("no eip7805 block body")
+		}
+
+		return v.EIP7805.Body.Graffiti, nil
 	default:
 		return [32]byte{}, errors.New("unknown version")
 	}
@@ -325,6 +350,12 @@ func (v *VersionedBeaconBlock) ProposerIndex() (phase0.ValidatorIndex, error) {
 		}
 
 		return v.Gloas.ProposerIndex, nil
+	case DataVersionEip7805:
+		if v.EIP7805 == nil {
+			return 0, errors.New("no eip7805 block")
+		}
+
+		return v.EIP7805.ProposerIndex, nil
 	default:
 		return 0, errors.New("unknown version")
 	}
@@ -381,6 +412,12 @@ func (v *VersionedBeaconBlock) Root() (phase0.Root, error) {
 		}
 
 		return v.Gloas.HashTreeRoot()
+	case DataVersionEip7805:
+		if v.EIP7805 == nil {
+			return phase0.Root{}, errors.New("no eip7805 block")
+		}
+
+		return v.EIP7805.HashTreeRoot()
 	default:
 		return phase0.Root{}, errors.New("unknown version")
 	}
@@ -468,6 +505,15 @@ func (v *VersionedBeaconBlock) BodyRoot() (phase0.Root, error) {
 		}
 
 		return v.Gloas.Body.HashTreeRoot()
+	case DataVersionEip7805:
+		if v.EIP7805 == nil {
+			return phase0.Root{}, errors.New("no eip7805 block")
+		}
+		if v.EIP7805.Body == nil {
+			return phase0.Root{}, errors.New("no eip7805 block body")
+		}
+
+		return v.EIP7805.Body.HashTreeRoot()
 	default:
 		return phase0.Root{}, errors.New("unknown version")
 	}
@@ -524,6 +570,12 @@ func (v *VersionedBeaconBlock) ParentRoot() (phase0.Root, error) {
 		}
 
 		return v.Gloas.ParentRoot, nil
+	case DataVersionEip7805:
+		if v.EIP7805 == nil {
+			return phase0.Root{}, errors.New("no eip7805 block")
+		}
+
+		return v.EIP7805.ParentRoot, nil
 	default:
 		return phase0.Root{}, errors.New("unknown version")
 	}
@@ -580,6 +632,12 @@ func (v *VersionedBeaconBlock) StateRoot() (phase0.Root, error) {
 		}
 
 		return v.Gloas.StateRoot, nil
+	case DataVersionEip7805:
+		if v.EIP7805 == nil {
+			return phase0.Root{}, errors.New("no eip7805 block")
+		}
+
+		return v.EIP7805.StateRoot, nil
 	default:
 		return phase0.Root{}, errors.New("unknown version")
 	}
@@ -696,6 +754,20 @@ func (v *VersionedBeaconBlock) Attestations() ([]VersionedAttestation, error) {
 			versionedAttestations[i] = VersionedAttestation{
 				Version: DataVersionGloas,
 				Gloas:   attestation,
+			}
+		}
+
+		return versionedAttestations, nil
+	case DataVersionEip7805:
+		if v.EIP7805 == nil || v.EIP7805.Body == nil {
+			return nil, errors.New("no eip7805 block")
+		}
+
+		versionedAttestations := make([]VersionedAttestation, len(v.EIP7805.Body.Attestations))
+		for i, attestation := range v.EIP7805.Body.Attestations {
+			versionedAttestations[i] = VersionedAttestation{
+				Version: DataVersionEip7805,
+				Eip7805: attestation,
 			}
 		}
 
@@ -820,6 +892,20 @@ func (v *VersionedBeaconBlock) AttesterSlashings() ([]VersionedAttesterSlashing,
 		}
 
 		return versionedAttesterSlashings, nil
+	case DataVersionEip7805:
+		if v.EIP7805 == nil || v.EIP7805.Body == nil {
+			return nil, errors.New("no eip7805 block")
+		}
+
+		versionedAttesterSlashings := make([]VersionedAttesterSlashing, len(v.EIP7805.Body.AttesterSlashings))
+		for i, attesterSlashing := range v.EIP7805.Body.AttesterSlashings {
+			versionedAttesterSlashings[i] = VersionedAttesterSlashing{
+				Version: DataVersionEip7805,
+				Eip7805: attesterSlashing,
+			}
+		}
+
+		return versionedAttesterSlashings, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -876,6 +962,12 @@ func (v *VersionedBeaconBlock) ProposerSlashings() ([]*phase0.ProposerSlashing, 
 		}
 
 		return v.Gloas.Body.ProposerSlashings, nil
+	case DataVersionEip7805:
+		if v.EIP7805 == nil || v.EIP7805.Body == nil {
+			return nil, errors.New("no eip7805 block")
+		}
+
+		return v.EIP7805.Body.ProposerSlashings, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -904,6 +996,13 @@ func (v *VersionedBeaconBlock) SignedExecutionPayloadBid() (*gloas.SignedExecuti
 		}
 
 		return v.Gloas.Body.SignedExecutionPayloadBid, nil
+	case DataVersionEip7805:
+		if v.EIP7805 == nil || v.EIP7805.Body == nil {
+			return nil, errors.New("no gloas block")
+		}
+
+		return v.EIP7805.Body.SignedExecutionPayloadBid, nil
+
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -952,6 +1051,8 @@ func (v *VersionedBeaconBlock) ExecutionPayload() (*VersionedExecutionPayload, e
 		versionedExecutionPayload.Fulu = v.Fulu.Body.ExecutionPayload
 	case DataVersionGloas:
 		return nil, errors.New("no execution payload in gloas")
+	case DataVersionEip7805:
+		return nil, errors.New("no execution payload in eip7805")
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -1010,6 +1111,12 @@ func (v *VersionedBeaconBlock) String() string {
 		}
 
 		return v.Gloas.String()
+	case DataVersionEip7805:
+		if v.EIP7805 == nil {
+			return ""
+		}
+
+		return v.EIP7805.String()
 	default:
 		return "unknown version"
 	}

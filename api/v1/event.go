@@ -49,6 +49,7 @@ var SupportedEventTopics = map[string]bool{
 	"execution_payload_bid":       true,
 	"finalized_checkpoint":        true,
 	"head":                        true,
+	"inclusion_list":              true,
 	"payload_attestation_message": true,
 	"payload_attributes":          true,
 	"proposer_slashing":           true,
@@ -137,6 +138,8 @@ func (e *Event) UnmarshalJSON(input []byte) error {
 		e.Data = &electra.SingleAttestation{}
 	case "voluntary_exit":
 		e.Data = &phase0.SignedVoluntaryExit{}
+	case "inclusion_list":
+		e.Data = &InclusionListEvent{}
 	default:
 		return fmt.Errorf("unsupported event topic %s", eventJSON.Topic)
 	}

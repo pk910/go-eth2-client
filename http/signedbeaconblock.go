@@ -190,6 +190,16 @@ func (s *Service) signedBeaconBlockFromSSZ(ctx context.Context,
 		if err != nil {
 			return nil, errors.Join(errors.New("failed to decode gloas signed block contents"), err)
 		}
+	case spec.DataVersionEip7805:
+		response.Data.Eip7805 = &gloas.SignedBeaconBlock{}
+		if s.customSpecSupport {
+			err = dynSSZ.UnmarshalSSZ(response.Data.Eip7805, res.body)
+		} else {
+			err = response.Data.Eip7805.UnmarshalSSZ(res.body)
+		}
+		if err != nil {
+			return nil, errors.Join(errors.New("failed to decode eip7805 signed block contents"), err)
+		}
 	default:
 		return nil, fmt.Errorf("unhandled block version %s", res.consensusVersion)
 	}
@@ -237,6 +247,10 @@ func (*Service) signedBeaconBlockFromJSON(res *httpResponse) (*api.Response[*spe
 		)
 	case spec.DataVersionGloas:
 		response.Data.Gloas, response.Metadata, err = decodeJSONResponse(bytes.NewReader(res.body),
+			&gloas.SignedBeaconBlock{},
+		)
+	case spec.DataVersionEip7805:
+		response.Data.Eip7805, response.Metadata, err = decodeJSONResponse(bytes.NewReader(res.body),
 			&gloas.SignedBeaconBlock{},
 		)
 	default:
