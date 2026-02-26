@@ -508,6 +508,22 @@ func (v *VersionedBeaconState) PendingConsolidations() ([]*electra.PendingConsol
 	}
 }
 
+// Builders returns the builders of the state.
+func (v *VersionedBeaconState) Builders() ([]*gloas.Builder, error) {
+	switch v.Version {
+	case DataVersionPhase0, DataVersionAltair, DataVersionBellatrix, DataVersionCapella, DataVersionDeneb, DataVersionElectra, DataVersionFulu:
+		return nil, errors.New("state does not provide builders")
+	case DataVersionGloas:
+		if v.Gloas == nil {
+			return nil, errors.New("no Gloas state")
+		}
+
+		return v.Gloas.Builders, nil
+	default:
+		return nil, errors.New("unknown version")
+	}
+}
+
 // ValidatorAtIndex returns the validator at the given index.
 // This is a convenience method that handles accessing the validators array.
 // Parameters:
