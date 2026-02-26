@@ -621,6 +621,12 @@ func (v *VersionedBeaconState) ExecutionPayloadAvailability() ([]uint8, error) {
 		}
 
 		return v.Gloas.ExecutionPayloadAvailability, nil
+	case DataVersionHeze:
+		if v.Heze == nil {
+			return nil, errors.New("no Heze state")
+		}
+
+		return v.Heze.ExecutionPayloadAvailability, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
