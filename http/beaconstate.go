@@ -29,6 +29,7 @@ import (
 	"github.com/attestantio/go-eth2-client/spec/electra"
 	"github.com/attestantio/go-eth2-client/spec/fulu"
 	"github.com/attestantio/go-eth2-client/spec/gloas"
+	"github.com/attestantio/go-eth2-client/spec/heze"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 	dynssz "github.com/pk910/dynamic-ssz"
 )
@@ -179,7 +180,7 @@ func (s *Service) beaconStateFromSSZ(ctx context.Context, res *httpResponse) (*a
 			return nil, errors.Join(errors.New("failed to decode gloas beacon state"), err)
 		}
 	case spec.DataVersionHeze:
-		response.Data.Heze = &gloas.BeaconState{}
+		response.Data.Heze = &heze.BeaconState{}
 		if s.customSpecSupport {
 			err = dynSSZ.UnmarshalSSZ(response.Data.Heze, res.body)
 		} else {
@@ -222,7 +223,7 @@ func (*Service) beaconStateFromJSON(res *httpResponse) (*api.Response[*spec.Vers
 	case spec.DataVersionGloas:
 		response.Data.Gloas, response.Metadata, err = decodeJSONResponse(bytes.NewReader(res.body), &gloas.BeaconState{})
 	case spec.DataVersionHeze:
-		response.Data.Heze, response.Metadata, err = decodeJSONResponse(bytes.NewReader(res.body), &gloas.BeaconState{})
+		response.Data.Heze, response.Metadata, err = decodeJSONResponse(bytes.NewReader(res.body), &heze.BeaconState{})
 	default:
 		err = fmt.Errorf("unsupported version %s", res.consensusVersion)
 	}

@@ -28,6 +28,7 @@ import (
 	"github.com/attestantio/go-eth2-client/spec/deneb"
 	"github.com/attestantio/go-eth2-client/spec/electra"
 	"github.com/attestantio/go-eth2-client/spec/gloas"
+	"github.com/attestantio/go-eth2-client/spec/heze"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 	dynssz "github.com/pk910/dynamic-ssz"
 )
@@ -191,7 +192,7 @@ func (s *Service) signedBeaconBlockFromSSZ(ctx context.Context,
 			return nil, errors.Join(errors.New("failed to decode gloas signed block contents"), err)
 		}
 	case spec.DataVersionHeze:
-		response.Data.Heze = &gloas.SignedBeaconBlock{}
+		response.Data.Heze = &heze.SignedBeaconBlock{}
 		if s.customSpecSupport {
 			err = dynSSZ.UnmarshalSSZ(response.Data.Heze, res.body)
 		} else {
@@ -251,7 +252,7 @@ func (*Service) signedBeaconBlockFromJSON(res *httpResponse) (*api.Response[*spe
 		)
 	case spec.DataVersionHeze:
 		response.Data.Heze, response.Metadata, err = decodeJSONResponse(bytes.NewReader(res.body),
-			&gloas.SignedBeaconBlock{},
+			&heze.SignedBeaconBlock{},
 		)
 	default:
 		return nil, fmt.Errorf("unhandled version %s", res.consensusVersion)

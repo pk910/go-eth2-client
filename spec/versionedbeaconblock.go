@@ -22,6 +22,7 @@ import (
 	"github.com/attestantio/go-eth2-client/spec/deneb"
 	"github.com/attestantio/go-eth2-client/spec/electra"
 	"github.com/attestantio/go-eth2-client/spec/gloas"
+	"github.com/attestantio/go-eth2-client/spec/heze"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 )
 
@@ -36,7 +37,7 @@ type VersionedBeaconBlock struct {
 	Electra   *electra.BeaconBlock
 	Fulu      *electra.BeaconBlock
 	Gloas     *gloas.BeaconBlock
-	Heze      *gloas.BeaconBlock
+	Heze      *heze.BeaconBlock
 }
 
 // IsEmpty returns true if there is no block.
@@ -974,7 +975,7 @@ func (v *VersionedBeaconBlock) ProposerSlashings() ([]*phase0.ProposerSlashing, 
 }
 
 // SignedExecutionPayloadBid returns the execution payload bid of the beacon block.
-func (v *VersionedBeaconBlock) SignedExecutionPayloadBid() (*gloas.SignedExecutionPayloadBid, error) {
+func (v *VersionedBeaconBlock) SignedExecutionPayloadBid() (*VersionedSignedExecutionPayloadBid, error) {
 	switch v.Version {
 	case DataVersionPhase0:
 		return nil, errors.New("no signed execution payload bid in phase0")
@@ -995,13 +996,19 @@ func (v *VersionedBeaconBlock) SignedExecutionPayloadBid() (*gloas.SignedExecuti
 			return nil, errors.New("no gloas block")
 		}
 
-		return v.Gloas.Body.SignedExecutionPayloadBid, nil
+		return &VersionedSignedExecutionPayloadBid{
+			Version: DataVersionGloas,
+			Gloas:   v.Gloas.Body.SignedExecutionPayloadBid,
+		}, nil
 	case DataVersionHeze:
 		if v.Heze == nil || v.Heze.Body == nil {
 			return nil, errors.New("no heze block")
 		}
 
-		return v.Heze.Body.SignedExecutionPayloadBid, nil
+		return &VersionedSignedExecutionPayloadBid{
+			Version: DataVersionHeze,
+			Heze:    v.Heze.Body.SignedExecutionPayloadBid,
+		}, nil
 
 	default:
 		return nil, errors.New("unknown version")

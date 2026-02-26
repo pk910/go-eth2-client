@@ -20,6 +20,7 @@ import (
 	"github.com/attestantio/go-eth2-client/spec/deneb"
 	"github.com/attestantio/go-eth2-client/spec/electra"
 	"github.com/attestantio/go-eth2-client/spec/gloas"
+	"github.com/attestantio/go-eth2-client/spec/heze"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 )
 
@@ -34,7 +35,7 @@ type VersionedBeaconBlockBody struct {
 	Electra   *electra.BeaconBlockBody
 	Fulu      *electra.BeaconBlockBody
 	Gloas     *gloas.BeaconBlockBody
-	Heze      *gloas.BeaconBlockBody
+	Heze      *heze.BeaconBlockBody
 }
 
 // String returns a string version of the structure.

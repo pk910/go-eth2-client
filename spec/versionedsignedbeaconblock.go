@@ -22,6 +22,7 @@ import (
 	"github.com/attestantio/go-eth2-client/spec/deneb"
 	"github.com/attestantio/go-eth2-client/spec/electra"
 	"github.com/attestantio/go-eth2-client/spec/gloas"
+	"github.com/attestantio/go-eth2-client/spec/heze"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 )
 
@@ -36,7 +37,7 @@ type VersionedSignedBeaconBlock struct {
 	Electra   *electra.SignedBeaconBlock
 	Fulu      *electra.SignedBeaconBlock
 	Gloas     *gloas.SignedBeaconBlock
-	Heze      *gloas.SignedBeaconBlock
+	Heze      *heze.SignedBeaconBlock
 }
 
 // Slot returns the slot of the signed beacon block.
@@ -1471,7 +1472,7 @@ func (v *VersionedSignedBeaconBlock) ExecutionRequests() (*electra.ExecutionRequ
 }
 
 // SignedExecutionPayloadBid returns the execution payload bid of the beacon block.
-func (v *VersionedSignedBeaconBlock) SignedExecutionPayloadBid() (*gloas.SignedExecutionPayloadBid, error) {
+func (v *VersionedSignedBeaconBlock) SignedExecutionPayloadBid() (*VersionedSignedExecutionPayloadBid, error) {
 	switch v.Version {
 	case DataVersionPhase0:
 		return nil, errors.New("no signed execution payload bid in phase0")
@@ -1492,13 +1493,19 @@ func (v *VersionedSignedBeaconBlock) SignedExecutionPayloadBid() (*gloas.SignedE
 			return nil, errors.New("no gloas block")
 		}
 
-		return v.Gloas.Message.Body.SignedExecutionPayloadBid, nil
+		return &VersionedSignedExecutionPayloadBid{
+			Version: DataVersionGloas,
+			Gloas:   v.Gloas.Message.Body.SignedExecutionPayloadBid,
+		}, nil
 	case DataVersionHeze:
 		if v.Heze == nil || v.Heze.Message == nil || v.Heze.Message.Body == nil {
 			return nil, errors.New("no heze block")
 		}
 
-		return v.Heze.Message.Body.SignedExecutionPayloadBid, nil
+		return &VersionedSignedExecutionPayloadBid{
+			Version: DataVersionHeze,
+			Heze:    v.Heze.Message.Body.SignedExecutionPayloadBid,
+		}, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
