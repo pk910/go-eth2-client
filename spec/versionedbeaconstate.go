@@ -674,12 +674,13 @@ func (v *VersionedBeaconState) GetTree() (*treeproof.Node, error) {
 		}
 
 		return dynssz.GetGlobalDynSsz().GetTree(v.Fulu)
-	case DataVersionEip7805:
-		if v.EIP7805 == nil {
-			return nil, errors.New("no EIP7805 state")
+	case DataVersionGloas:
+		if v.Gloas == nil {
+			return nil, errors.New("no Gloas state")
 		}
 
-		return dynssz.GetGlobalDynSsz().GetTree(v.EIP7805)
+		return dynssz.GetGlobalDynSsz().GetTree(v.Gloas)
+
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -730,6 +731,12 @@ func (v *VersionedBeaconState) HashTreeRoot() (phase0.Hash32, error) {
 		}
 
 		return v.Fulu.HashTreeRoot()
+	case DataVersionGloas:
+		if v.Gloas == nil {
+			return phase0.Hash32{}, errors.New("no Gloas state")
+		}
+
+		return v.Gloas.HashTreeRoot()
 	case DataVersionEip7805:
 		if v.EIP7805 == nil {
 			return phase0.Hash32{}, errors.New("no EIP7805 state")
@@ -788,6 +795,12 @@ func (v *VersionedBeaconState) FieldIndex(name string) (int, error) {
 		}
 
 		return proofutil.FieldIndex(v.Fulu, name)
+	case DataVersionGloas:
+		if v.Gloas == nil {
+			return 0, errors.New("no Gloas state")
+		}
+
+		return proofutil.FieldIndex(v.Gloas, name)
 	case DataVersionEip7805:
 		if v.EIP7805 == nil {
 			return 0, errors.New("no EIP7805 state")
@@ -847,6 +860,12 @@ func (v *VersionedBeaconState) FieldGeneralizedIndex(name string) (int, error) {
 		}
 
 		return proofutil.FieldGeneralizedIndex(v.Fulu, name)
+	case DataVersionGloas:
+		if v.Gloas == nil {
+			return 0, errors.New("no Gloas state")
+		}
+
+		return proofutil.FieldGeneralizedIndex(v.Gloas, name)
 	case DataVersionEip7805:
 		if v.EIP7805 == nil {
 			return 0, errors.New("no EIP7805 state")
