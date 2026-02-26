@@ -599,6 +599,12 @@ func (v *VersionedBeaconState) Builders() ([]*gloas.Builder, error) {
 		}
 
 		return v.Gloas.Builders, nil
+	case DataVersionHeze:
+		if v.Heze == nil {
+			return nil, errors.New("no Heze state")
+		}
+
+		return v.Heze.Builders, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
