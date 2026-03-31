@@ -73,6 +73,7 @@ type beaconStateYAML struct {
 	BuilderPendingWithdrawals     []*BuilderPendingWithdrawal         `yaml:"builder_pending_withdrawals"`
 	LatestBlockHash               phase0.Hash32                       `yaml:"latest_block_hash"`
 	PayloadExpectedWithdrawals    []*capella.Withdrawal               `yaml:"payload_expected_withdrawals"`
+	PTCWindow                     [][]phase0.ValidatorIndex           `yaml:"ptc_window"`
 }
 
 // MarshalYAML implements yaml.Marshaler.
@@ -123,6 +124,7 @@ func (b *BeaconState) MarshalYAML() ([]byte, error) {
 		BuilderPendingPayments:        b.BuilderPendingPayments,
 		BuilderPendingWithdrawals:     b.BuilderPendingWithdrawals,
 		PayloadExpectedWithdrawals:    b.PayloadExpectedWithdrawals,
+		PTCWindow:                     b.PTCWindow,
 	}, yaml.Flow(true))
 	if err != nil {
 		return nil, err

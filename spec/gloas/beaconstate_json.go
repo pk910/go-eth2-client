@@ -77,6 +77,7 @@ type beaconStateJSON struct {
 	BuilderPendingWithdrawals     []*BuilderPendingWithdrawal         `json:"builder_pending_withdrawals"`
 	LatestBlockHash               string                              `json:"latest_block_hash"`
 	PayloadExpectedWithdrawals    []*capella.Withdrawal               `json:"payload_expected_withdrawals"`
+	PTCWindow                     [][]string                          `json:"ptc_window"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -112,6 +113,13 @@ func (b *BeaconState) MarshalJSON() ([]byte, error) {
 	executionPayloadAvailability := make([]string, len(b.ExecutionPayloadAvailability))
 	for i := range b.ExecutionPayloadAvailability {
 		executionPayloadAvailability[i] = fmt.Sprintf("%d", b.ExecutionPayloadAvailability[i])
+	}
+	ptcWindow := make([][]string, len(b.PTCWindow))
+	for i := range b.PTCWindow {
+		ptcWindow[i] = make([]string, len(b.PTCWindow[i]))
+		for j := range b.PTCWindow[i] {
+			ptcWindow[i][j] = fmt.Sprintf("%d", b.PTCWindow[i][j])
+		}
 	}
 
 	return json.Marshal(&beaconStateJSON{
@@ -160,6 +168,7 @@ func (b *BeaconState) MarshalJSON() ([]byte, error) {
 		BuilderPendingWithdrawals:     b.BuilderPendingWithdrawals,
 		LatestBlockHash:               fmt.Sprintf("%#x", b.LatestBlockHash),
 		PayloadExpectedWithdrawals:    b.PayloadExpectedWithdrawals,
+		PTCWindow:                     ptcWindow,
 	})
 }
 
@@ -429,6 +438,22 @@ func (b *BeaconState) UnmarshalJSON(input []byte) error {
 	for i := range b.PayloadExpectedWithdrawals {
 		if b.PayloadExpectedWithdrawals[i] == nil {
 			return fmt.Errorf("payload expected withdrawals entry %d missing", i)
+		}
+	}
+
+	ptcWindowStr := make([][]string, 0)
+	if err := json.Unmarshal(raw["ptc_window"], &ptcWindowStr); err != nil {
+		return errors.Wrap(err, "ptc_window")
+	}
+	b.PTCWindow = make([][]phase0.ValidatorIndex, len(ptcWindowStr))
+	for i := range ptcWindowStr {
+		b.PTCWindow[i] = make([]phase0.ValidatorIndex, len(ptcWindowStr[i]))
+		for j := range ptcWindowStr[i] {
+			idx, parseErr := strconv.ParseUint(ptcWindowStr[i][j], 10, 64)
+			if parseErr != nil {
+				return errors.Wrap(parseErr, fmt.Sprintf("ptc_window[%d][%d]", i, j))
+			}
+			b.PTCWindow[i][j] = phase0.ValidatorIndex(idx)
 		}
 	}
 
