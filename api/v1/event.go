@@ -52,6 +52,7 @@ var SupportedEventTopics = map[string]bool{
 	"inclusion_list":              true,
 	"payload_attestation_message": true,
 	"payload_attributes":          true,
+	"proposer_preferences":        true,
 	"proposer_slashing":           true,
 	"single_attestation":          true,
 	"voluntary_exit":              true,
@@ -132,6 +133,8 @@ func (e *Event) UnmarshalJSON(input []byte) error {
 		e.Data = &gloas.PayloadAttestationMessage{}
 	case "payload_attributes":
 		e.Data = &PayloadAttributesEvent{}
+	case "proposer_preferences":
+		e.Data = &gloas.SignedProposerPreferences{}
 	case "proposer_slashing":
 		e.Data = &phase0.ProposerSlashing{}
 	case "single_attestation":
