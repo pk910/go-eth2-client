@@ -6,7 +6,7 @@ package fulu
 import (
 	"encoding/binary"
 
-	"github.com/attestantio/go-eth2-client/spec/electra"
+	"github.com/ethpandaops/go-eth2-client/spec/electra"
 	dynssz "github.com/pk910/dynamic-ssz"
 	"github.com/pk910/dynamic-ssz/hasher"
 	"github.com/pk910/dynamic-ssz/sszutils"
@@ -165,6 +165,7 @@ func (t *SignedBlockContents) HashTreeRoot() (root [32]byte, err error) {
 	})
 	return
 }
+
 // HashTreeRootWith computes the SSZ hash tree root of the *SignedBlockContents using the given hash walker.
 func (t *SignedBlockContents) HashTreeRootWith(hh sszutils.HashWalker) error {
 	if t == nil {

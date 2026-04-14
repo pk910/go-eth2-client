@@ -17,12 +17,12 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/attestantio/go-eth2-client/spec"
-	"github.com/attestantio/go-eth2-client/spec/altair"
-	"github.com/attestantio/go-eth2-client/spec/capella"
-	"github.com/attestantio/go-eth2-client/spec/electra"
-	"github.com/attestantio/go-eth2-client/spec/gloas"
-	"github.com/attestantio/go-eth2-client/spec/phase0"
+	"github.com/ethpandaops/go-eth2-client/spec"
+	"github.com/ethpandaops/go-eth2-client/spec/altair"
+	"github.com/ethpandaops/go-eth2-client/spec/capella"
+	"github.com/ethpandaops/go-eth2-client/spec/electra"
+	"github.com/ethpandaops/go-eth2-client/spec/gloas"
+	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 	"github.com/pkg/errors"
 )
 
@@ -49,6 +49,7 @@ var SupportedEventTopics = map[string]bool{
 	"execution_payload_bid":       true,
 	"finalized_checkpoint":        true,
 	"head":                        true,
+	"inclusion_list":              true,
 	"payload_attestation_message": true,
 	"payload_attributes":          true,
 	"proposer_preferences":        true,
@@ -140,6 +141,8 @@ func (e *Event) UnmarshalJSON(input []byte) error {
 		e.Data = &electra.SingleAttestation{}
 	case "voluntary_exit":
 		e.Data = &phase0.SignedVoluntaryExit{}
+	case "inclusion_list":
+		e.Data = &InclusionListEvent{}
 	default:
 		return fmt.Errorf("unsupported event topic %s", eventJSON.Topic)
 	}

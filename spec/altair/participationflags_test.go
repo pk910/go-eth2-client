@@ -17,7 +17,7 @@ package altair_test
 import (
 	"testing"
 
-	"github.com/attestantio/go-eth2-client/spec/altair"
+	"github.com/ethpandaops/go-eth2-client/spec/altair"
 	require "github.com/stretchr/testify/require"
 )
 

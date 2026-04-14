@@ -17,8 +17,8 @@ import (
 	"context"
 	"testing"
 
-	client "github.com/attestantio/go-eth2-client"
-	"github.com/attestantio/go-eth2-client/api"
+	client "github.com/ethpandaops/go-eth2-client"
+	"github.com/ethpandaops/go-eth2-client/api"
 	"github.com/stretchr/testify/require"
 )
 

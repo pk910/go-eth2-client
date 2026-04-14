@@ -19,9 +19,9 @@ import (
 	"encoding/json"
 	"errors"
 
-	client "github.com/attestantio/go-eth2-client"
-	"github.com/attestantio/go-eth2-client/api"
-	"github.com/attestantio/go-eth2-client/spec"
+	client "github.com/ethpandaops/go-eth2-client"
+	"github.com/ethpandaops/go-eth2-client/api"
+	"github.com/ethpandaops/go-eth2-client/spec"
 )
 
 // SubmitValidatorRegistrations submits a validator registration.

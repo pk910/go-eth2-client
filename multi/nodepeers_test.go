@@ -17,12 +17,12 @@ import (
 	"context"
 	"testing"
 
-	"github.com/attestantio/go-eth2-client/api"
+	"github.com/ethpandaops/go-eth2-client/api"
 
-	consensusclient "github.com/attestantio/go-eth2-client"
-	"github.com/attestantio/go-eth2-client/mock"
-	"github.com/attestantio/go-eth2-client/multi"
-	"github.com/attestantio/go-eth2-client/testclients"
+	consensusclient "github.com/ethpandaops/go-eth2-client"
+	"github.com/ethpandaops/go-eth2-client/mock"
+	"github.com/ethpandaops/go-eth2-client/multi"
+	"github.com/ethpandaops/go-eth2-client/testclients"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/require"
 )

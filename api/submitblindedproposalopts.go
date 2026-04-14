@@ -13,7 +13,7 @@
 
 package api
 
-import apiv2 "github.com/attestantio/go-eth2-client/api/v2"
+import apiv2 "github.com/ethpandaops/go-eth2-client/api/v2"
 
 // SubmitBlindedProposalOpts are the options for submitting proposals.
 type SubmitBlindedProposalOpts struct {

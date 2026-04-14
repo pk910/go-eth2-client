@@ -16,7 +16,7 @@ package mock
 import (
 	"context"
 
-	api "github.com/attestantio/go-eth2-client/api/v1"
+	api "github.com/ethpandaops/go-eth2-client/api/v1"
 )
 
 // SubmitBeaconCommitteeSubscriptions subscribes to beacon committees.

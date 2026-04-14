@@ -17,7 +17,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	api "github.com/attestantio/go-eth2-client/api/v1"
+	api "github.com/ethpandaops/go-eth2-client/api/v1"
 	"github.com/stretchr/testify/assert"
 	require "github.com/stretchr/testify/require"
 )

@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/attestantio/go-eth2-client/spec/altair"
+	"github.com/ethpandaops/go-eth2-client/spec/altair"
 	"github.com/goccy/go-yaml"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

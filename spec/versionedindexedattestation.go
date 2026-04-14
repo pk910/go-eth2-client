@@ -16,8 +16,8 @@ package spec
 import (
 	"errors"
 
-	"github.com/attestantio/go-eth2-client/spec/electra"
-	"github.com/attestantio/go-eth2-client/spec/phase0"
+	"github.com/ethpandaops/go-eth2-client/spec/electra"
+	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 )
 
 // VersionedIndexedAttestation contains a versioned indexed attestation.
@@ -31,12 +31,13 @@ type VersionedIndexedAttestation struct {
 	Electra   *electra.IndexedAttestation
 	Fulu      *electra.IndexedAttestation
 	Gloas     *electra.IndexedAttestation
+	Heze      *electra.IndexedAttestation
 }
 
 // IsEmpty returns true if there is no block.
 func (v *VersionedIndexedAttestation) IsEmpty() bool {
 	return v.Phase0 == nil && v.Altair == nil && v.Bellatrix == nil && v.Capella == nil && v.Deneb == nil &&
-		v.Electra == nil && v.Fulu == nil && v.Gloas == nil
+		v.Electra == nil && v.Fulu == nil && v.Gloas == nil && v.Heze == nil
 }
 
 // AttestingIndices returns the attesting indices of the indexed attestation.
@@ -90,6 +91,12 @@ func (v *VersionedIndexedAttestation) AttestingIndices() ([]uint64, error) {
 		}
 
 		return v.Gloas.AttestingIndices, nil
+	case DataVersionHeze:
+		if v.Heze == nil {
+			return nil, errors.New("no Heze indexed attestation")
+		}
+
+		return v.Heze.AttestingIndices, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -146,6 +153,12 @@ func (v *VersionedIndexedAttestation) Data() (*phase0.AttestationData, error) {
 		}
 
 		return v.Gloas.Data, nil
+	case DataVersionHeze:
+		if v.Heze == nil {
+			return nil, errors.New("no Heze indexed attestation")
+		}
+
+		return v.Heze.Data, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -202,6 +215,12 @@ func (v *VersionedIndexedAttestation) Signature() (phase0.BLSSignature, error) {
 		}
 
 		return v.Gloas.Signature, nil
+	case DataVersionHeze:
+		if v.Heze == nil {
+			return phase0.BLSSignature{}, errors.New("no Heze indexed attestation")
+		}
+
+		return v.Heze.Signature, nil
 	default:
 		return phase0.BLSSignature{}, errors.New("unknown version")
 	}
@@ -258,6 +277,12 @@ func (v *VersionedIndexedAttestation) String() string {
 		}
 
 		return v.Gloas.String()
+	case DataVersionHeze:
+		if v.Heze == nil {
+			return ""
+		}
+
+		return v.Heze.String()
 	default:
 		return "unknown version"
 	}

@@ -17,7 +17,7 @@ package deneb_test
 import (
 	"testing"
 
-	"github.com/attestantio/go-eth2-client/spec/deneb"
+	"github.com/ethpandaops/go-eth2-client/spec/deneb"
 	require "github.com/stretchr/testify/require"
 )
 

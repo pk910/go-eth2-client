@@ -13,7 +13,7 @@
 
 package api
 
-import "github.com/attestantio/go-eth2-client/spec"
+import "github.com/ethpandaops/go-eth2-client/spec"
 
 // SubmitAttestationsOpts are the options for submitting attestations.
 type SubmitAttestationsOpts struct {

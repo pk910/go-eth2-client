@@ -14,7 +14,7 @@
 package api
 
 import (
-	"github.com/attestantio/go-eth2-client/spec/deneb"
+	"github.com/ethpandaops/go-eth2-client/spec/deneb"
 	dynssz "github.com/pk910/dynamic-ssz"
 )
 

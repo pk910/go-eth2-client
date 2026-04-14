@@ -16,7 +16,7 @@ package http
 import (
 	"context"
 
-	"github.com/attestantio/go-eth2-client/spec/phase0"
+	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 )
 
 // FarFutureEpoch provides the values for FAR_FUTURE_EPOCH of the chain.

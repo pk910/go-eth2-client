@@ -17,8 +17,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	"github.com/attestantio/go-eth2-client/spec/deneb"
-	"github.com/attestantio/go-eth2-client/spec/electra"
+	"github.com/ethpandaops/go-eth2-client/spec/deneb"
+	"github.com/ethpandaops/go-eth2-client/spec/electra"
 	"github.com/goccy/go-yaml"
 	"github.com/pkg/errors"
 )

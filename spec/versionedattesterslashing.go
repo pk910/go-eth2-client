@@ -16,8 +16,8 @@ package spec
 import (
 	"errors"
 
-	"github.com/attestantio/go-eth2-client/spec/electra"
-	"github.com/attestantio/go-eth2-client/spec/phase0"
+	"github.com/ethpandaops/go-eth2-client/spec/electra"
+	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 )
 
 // VersionedAttesterSlashing contains a versioned attestation.
@@ -31,12 +31,13 @@ type VersionedAttesterSlashing struct {
 	Electra   *electra.AttesterSlashing
 	Fulu      *electra.AttesterSlashing
 	Gloas     *electra.AttesterSlashing
+	Heze      *electra.AttesterSlashing
 }
 
 // IsEmpty returns true if there is no block.
 func (v *VersionedAttesterSlashing) IsEmpty() bool {
 	return v.Phase0 == nil && v.Altair == nil && v.Bellatrix == nil && v.Capella == nil && v.Deneb == nil &&
-		v.Electra == nil && v.Fulu == nil && v.Gloas == nil
+		v.Electra == nil && v.Fulu == nil && v.Gloas == nil && v.Heze == nil
 }
 
 // Attestation1 returns the first indexed attestation.
@@ -127,6 +128,17 @@ func (v *VersionedAttesterSlashing) Attestation1() (*VersionedIndexedAttestation
 		versionedIndexedAttestation := VersionedIndexedAttestation{
 			Version: DataVersionGloas,
 			Gloas:   v.Gloas.Attestation1,
+		}
+
+		return &versionedIndexedAttestation, nil
+	case DataVersionHeze:
+		if v.Heze == nil {
+			return nil, errors.New("no Heze indexed attestation")
+		}
+
+		versionedIndexedAttestation := VersionedIndexedAttestation{
+			Version: DataVersionHeze,
+			Heze:    v.Heze.Attestation1,
 		}
 
 		return &versionedIndexedAttestation, nil
@@ -226,6 +238,17 @@ func (v *VersionedAttesterSlashing) Attestation2() (*VersionedIndexedAttestation
 		}
 
 		return &versionedIndexedAttestation, nil
+	case DataVersionHeze:
+		if v.Heze == nil {
+			return nil, errors.New("no Heze indexed attestation")
+		}
+
+		versionedIndexedAttestation := VersionedIndexedAttestation{
+			Version: DataVersionHeze,
+			Heze:    v.Heze.Attestation2,
+		}
+
+		return &versionedIndexedAttestation, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -282,6 +305,12 @@ func (v *VersionedAttesterSlashing) String() string {
 		}
 
 		return v.Gloas.String()
+	case DataVersionHeze:
+		if v.Heze == nil {
+			return ""
+		}
+
+		return v.Heze.String()
 	default:
 		return "unknown version"
 	}
