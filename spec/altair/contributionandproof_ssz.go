@@ -85,7 +85,6 @@ func (t *ContributionAndProof) HashTreeRoot() (root [32]byte, err error) {
 	})
 	return
 }
-
 // HashTreeRootWith computes the SSZ hash tree root of the *ContributionAndProof using the given hash walker.
 func (t *ContributionAndProof) HashTreeRootWith(hh sszutils.HashWalker) error {
 	if t == nil {

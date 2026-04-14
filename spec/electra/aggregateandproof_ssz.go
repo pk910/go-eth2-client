@@ -104,7 +104,6 @@ func (t *AggregateAndProof) HashTreeRoot() (root [32]byte, err error) {
 	})
 	return
 }
-
 // HashTreeRootWith computes the SSZ hash tree root of the *AggregateAndProof using the given hash walker.
 func (t *AggregateAndProof) HashTreeRootWith(hh sszutils.HashWalker) error {
 	if t == nil {

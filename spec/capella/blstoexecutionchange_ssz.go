@@ -74,7 +74,6 @@ func (t *BLSToExecutionChange) HashTreeRoot() (root [32]byte, err error) {
 	})
 	return
 }
-
 // HashTreeRootWith computes the SSZ hash tree root of the *BLSToExecutionChange using the given hash walker.
 func (t *BLSToExecutionChange) HashTreeRootWith(hh sszutils.HashWalker) error {
 	if t == nil {

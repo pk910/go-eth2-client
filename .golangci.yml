@@ -156,6 +156,7 @@ linters:
     # Exclude specific file patterns
     paths:
       - .*_ssz\.go$ # Exclude SSZ generated files
+      - .*/generate\.go$ # Exclude generate.go files (only contain long go:generate directives)
       - third_party$ # Exclude third party code
       - builtin$ # Exclude builtin code
       - examples$ # Exclude example code

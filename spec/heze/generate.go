@@ -13,7 +13,5 @@
 
 package heze
 
-//nolint:revive
-// Need to `go install github.com/pk910/dynamic-ssz/dynssz-gen@latest` for this to work.
 //go:generate rm -f beaconblock_ssz.go beaconblockbody_ssz.go beaconstate_ssz.go executionpayloadbid_ssz.go signedbeaconblock_ssz.go signedexecutionpayloadbid_ssz.go
-//go:generate dynssz-gen -package . -legacy -without-dynamic-expressions -types BeaconBlock:beaconblock_ssz.go,BeaconBlockBody:beaconblockbody_ssz.go,BeaconState:beaconstate_ssz.go,ExecutionPayloadBid:executionpayloadbid_ssz.go,SignedBeaconBlock:signedbeaconblock_ssz.go,SignedExecutionPayloadBid:signedexecutionpayloadbid_ssz.go
+//go:generate go tool dynssz-gen -package . -legacy -without-dynamic-expressions -types BeaconBlock:beaconblock_ssz.go,BeaconBlockBody:beaconblockbody_ssz.go,BeaconState:beaconstate_ssz.go,ExecutionPayloadBid:executionpayloadbid_ssz.go,SignedBeaconBlock:signedbeaconblock_ssz.go,SignedExecutionPayloadBid:signedexecutionpayloadbid_ssz.go

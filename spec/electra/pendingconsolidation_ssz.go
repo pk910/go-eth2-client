@@ -67,7 +67,6 @@ func (t *PendingConsolidation) HashTreeRoot() (root [32]byte, err error) {
 	})
 	return
 }
-
 // HashTreeRootWith computes the SSZ hash tree root of the *PendingConsolidation using the given hash walker.
 func (t *PendingConsolidation) HashTreeRootWith(hh sszutils.HashWalker) error {
 	if t == nil {

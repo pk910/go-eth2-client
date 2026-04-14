@@ -85,7 +85,6 @@ func (t *PayloadAttestationMessage) HashTreeRoot() (root [32]byte, err error) {
 	})
 	return
 }
-
 // HashTreeRootWith computes the SSZ hash tree root of the *PayloadAttestationMessage using the given hash walker.
 func (t *PayloadAttestationMessage) HashTreeRootWith(hh sszutils.HashWalker) error {
 	if t == nil {
