@@ -4,11 +4,11 @@
 package api
 
 import (
-	apiv1bellatrix "github.com/attestantio/go-eth2-client/api/v1/bellatrix"
-	apiv1capella "github.com/attestantio/go-eth2-client/api/v1/capella"
-	apiv1deneb "github.com/attestantio/go-eth2-client/api/v1/deneb"
-	apiv1electra "github.com/attestantio/go-eth2-client/api/v1/electra"
-	"github.com/attestantio/go-eth2-client/spec"
+	apiv1bellatrix "github.com/ethpandaops/go-eth2-client/api/v1/bellatrix"
+	apiv1capella "github.com/ethpandaops/go-eth2-client/api/v1/capella"
+	apiv1deneb "github.com/ethpandaops/go-eth2-client/api/v1/deneb"
+	apiv1electra "github.com/ethpandaops/go-eth2-client/api/v1/electra"
+	"github.com/ethpandaops/go-eth2-client/spec"
 	ssz "github.com/ferranbt/fastssz"
 )
 

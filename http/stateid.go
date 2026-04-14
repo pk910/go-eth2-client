@@ -20,8 +20,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/attestantio/go-eth2-client/api"
-	"github.com/attestantio/go-eth2-client/spec/phase0"
+	"github.com/ethpandaops/go-eth2-client/api"
+	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 )
 
 // SlotFromStateID parses the state ID and returns the relevant slot.

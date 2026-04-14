@@ -17,8 +17,8 @@ import (
 	"bytes"
 	"context"
 
-	client "github.com/attestantio/go-eth2-client"
-	"github.com/attestantio/go-eth2-client/api"
+	client "github.com/ethpandaops/go-eth2-client"
+	"github.com/ethpandaops/go-eth2-client/api"
 )
 
 type nodeVersionJSON struct {

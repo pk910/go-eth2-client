@@ -16,7 +16,7 @@ package mock
 import (
 	"context"
 
-	spec "github.com/attestantio/go-eth2-client/spec/phase0"
+	spec "github.com/ethpandaops/go-eth2-client/spec/phase0"
 )
 
 // FarFutureEpoch provides the values for FAR_FUTURE_EPOCH of the chain.

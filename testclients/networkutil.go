@@ -18,8 +18,8 @@ import (
 	"encoding/hex"
 	"strings"
 
-	"github.com/attestantio/go-eth2-client/api"
-	apiv1 "github.com/attestantio/go-eth2-client/api/v1"
+	"github.com/ethpandaops/go-eth2-client/api"
+	apiv1 "github.com/ethpandaops/go-eth2-client/api/v1"
 )
 
 // NetworkName returns the network name (Mainnet, Sepolia, Holesky, or Hoodi) for the given service.

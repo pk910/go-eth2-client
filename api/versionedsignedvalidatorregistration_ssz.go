@@ -4,8 +4,8 @@
 package api
 
 import (
-	apiv1 "github.com/attestantio/go-eth2-client/api/v1"
-	"github.com/attestantio/go-eth2-client/spec"
+	apiv1 "github.com/ethpandaops/go-eth2-client/api/v1"
+	"github.com/ethpandaops/go-eth2-client/spec"
 	ssz "github.com/ferranbt/fastssz"
 )
 

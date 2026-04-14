@@ -16,7 +16,7 @@ package mock
 import (
 	"context"
 
-	"github.com/attestantio/go-eth2-client/api"
+	"github.com/ethpandaops/go-eth2-client/api"
 )
 
 // SubmitBlindedBeaconBlock submits a blinded beacon block.

@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/attestantio/go-eth2-client/spec/capella"
+	"github.com/ethpandaops/go-eth2-client/spec/capella"
 	"github.com/goccy/go-yaml"
 	"github.com/pkg/errors"
 )

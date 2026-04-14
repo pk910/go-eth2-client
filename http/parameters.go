@@ -18,7 +18,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/attestantio/go-eth2-client/metrics"
+	"github.com/ethpandaops/go-eth2-client/metrics"
 	"github.com/rs/zerolog"
 )
 

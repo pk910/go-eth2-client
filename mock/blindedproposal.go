@@ -17,10 +17,10 @@ import (
 	"context"
 
 	"github.com/OffchainLabs/go-bitfield"
-	"github.com/attestantio/go-eth2-client/api"
-	apiv1bellatrix "github.com/attestantio/go-eth2-client/api/v1/bellatrix"
-	"github.com/attestantio/go-eth2-client/spec"
-	"github.com/attestantio/go-eth2-client/spec/phase0"
+	"github.com/ethpandaops/go-eth2-client/api"
+	apiv1bellatrix "github.com/ethpandaops/go-eth2-client/api/v1/bellatrix"
+	"github.com/ethpandaops/go-eth2-client/spec"
+	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 )
 
 // BlindedProposal fetches a blinded proposal for signing.

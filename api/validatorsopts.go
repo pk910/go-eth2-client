@@ -14,8 +14,8 @@
 package api
 
 import (
-	apiv1 "github.com/attestantio/go-eth2-client/api/v1"
-	"github.com/attestantio/go-eth2-client/spec/phase0"
+	apiv1 "github.com/ethpandaops/go-eth2-client/api/v1"
+	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 )
 
 // ValidatorsOpts are the options for obtaining validators.

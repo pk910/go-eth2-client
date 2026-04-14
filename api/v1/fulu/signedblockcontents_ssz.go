@@ -4,8 +4,8 @@
 package fulu
 
 import (
-	"github.com/attestantio/go-eth2-client/spec/deneb"
-	"github.com/attestantio/go-eth2-client/spec/electra"
+	"github.com/ethpandaops/go-eth2-client/spec/deneb"
+	"github.com/ethpandaops/go-eth2-client/spec/electra"
 	ssz "github.com/ferranbt/fastssz"
 )
 

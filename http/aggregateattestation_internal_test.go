@@ -16,7 +16,7 @@ package http
 import (
 	"testing"
 
-	"github.com/attestantio/go-eth2-client/spec"
+	"github.com/ethpandaops/go-eth2-client/spec"
 	"github.com/stretchr/testify/require"
 )
 

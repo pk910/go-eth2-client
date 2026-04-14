@@ -17,7 +17,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/attestantio/go-eth2-client/api"
+	"github.com/ethpandaops/go-eth2-client/api"
 )
 
 // SlotDuration provides the duration of a slot for the chain.

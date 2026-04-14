@@ -13,7 +13,7 @@
 
 package electra
 
-import "github.com/attestantio/go-eth2-client/spec/electra"
+import "github.com/ethpandaops/go-eth2-client/spec/electra"
 
 // WithdrawalRequests provides information about execution layer withdrawal requests.
 type WithdrawalRequests struct {

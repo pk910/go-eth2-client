@@ -17,7 +17,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/attestantio/go-eth2-client/api"
+	"github.com/ethpandaops/go-eth2-client/api"
 )
 
 // GenesisTime provides the genesis time of the chain.

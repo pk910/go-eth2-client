@@ -17,7 +17,7 @@ import (
 	"context"
 	"time"
 
-	consensusclient "github.com/attestantio/go-eth2-client"
+	consensusclient "github.com/ethpandaops/go-eth2-client"
 	"github.com/pkg/errors"
 )
 

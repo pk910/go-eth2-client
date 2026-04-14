@@ -14,7 +14,7 @@
 package api
 
 import (
-	"github.com/attestantio/go-eth2-client/spec/phase0"
+	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 )
 
 // AttestationDataOpts are the options for obtaining attestation data.

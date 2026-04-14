@@ -16,7 +16,7 @@ package bellatrix_test
 import (
 	"testing"
 
-	"github.com/attestantio/go-eth2-client/spec/bellatrix"
+	"github.com/ethpandaops/go-eth2-client/spec/bellatrix"
 	"github.com/stretchr/testify/require"
 )
 
