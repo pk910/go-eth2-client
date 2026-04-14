@@ -19,11 +19,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ethpandaops/go-eth2-client/spec/gloas"
-
 	client "github.com/ethpandaops/go-eth2-client"
 	"github.com/ethpandaops/go-eth2-client/api"
 	"github.com/ethpandaops/go-eth2-client/spec"
+	"github.com/ethpandaops/go-eth2-client/spec/gloas"
 	dynssz "github.com/pk910/dynamic-ssz"
 )
 
