@@ -16,9 +16,9 @@ package multi
 import (
 	"context"
 
-	consensusclient "github.com/attestantio/go-eth2-client"
-	"github.com/attestantio/go-eth2-client/api"
-	"github.com/attestantio/go-eth2-client/spec/altair"
+	consensusclient "github.com/ethpandaops/go-eth2-client"
+	"github.com/ethpandaops/go-eth2-client/api"
+	"github.com/ethpandaops/go-eth2-client/spec/altair"
 )
 
 // SyncCommitteeContribution provides a sync committee contribution.

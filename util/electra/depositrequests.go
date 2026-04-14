@@ -13,7 +13,7 @@
 
 package electra
 
-import "github.com/attestantio/go-eth2-client/spec/electra"
+import "github.com/ethpandaops/go-eth2-client/spec/electra"
 
 // DepositRequests provides information about deposit requests.
 type DepositRequests struct {

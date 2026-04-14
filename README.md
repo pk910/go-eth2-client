@@ -1,10 +1,10 @@
 # go-eth2-client
 
-[![Tag](https://img.shields.io/github/tag/attestantio/go-eth2-client.svg)](https://github.com/attestantio/go-eth2-client/releases/)
+[![Tag](https://img.shields.io/github/tag/attestantio/go-eth2-client.svg)](https://github.com/ethpandaops/go-eth2-client/releases/)
 [![License](https://img.shields.io/github/license/attestantio/go-eth2-client.svg)](LICENSE)
-[![GoDoc](https://godoc.org/github.com/attestantio/go-eth2-client?status.svg)](https://godoc.org/github.com/attestantio/go-eth2-client)
-![Lint](https://github.com/attestantio/go-eth2-client/workflows/golangci-lint/badge.svg)
-[![Go Report Card](https://goreportcard.com/badge/github.com/attestantio/go-eth2-client)](https://goreportcard.com/report/github.com/attestantio/go-eth2-client)
+[![GoDoc](https://godoc.org/github.com/ethpandaops/go-eth2-client?status.svg)](https://godoc.org/github.com/ethpandaops/go-eth2-client)
+![Lint](https://github.com/ethpandaops/go-eth2-client/workflows/golangci-lint/badge.svg)
+[![Go Report Card](https://goreportcard.com/badge/github.com/ethpandaops/go-eth2-client)](https://goreportcard.com/report/github.com/ethpandaops/go-eth2-client)
 
 Go library providing an abstraction to multiple Ethereum 2 beacon nodes.  Its external API follows the official [Ethereum beacon APIs](https://github.com/ethereum/beacon-APIs) specification.
 
@@ -25,7 +25,7 @@ This library is under development; expect APIs and data structures to change unt
 `go-eth2-client` is a standard Go module which can be installed with:
 
 ```sh
-go get github.com/attestantio/go-eth2-client
+go get github.com/ethpandaops/go-eth2-client
 ```
 
 ## Support
@@ -39,7 +39,7 @@ go get github.com/attestantio/go-eth2-client
 
 ## Usage
 
-Please read the [Go documentation for this library](https://godoc.org/github.com/attestantio/go-eth2-client) for interface information.
+Please read the [Go documentation for this library](https://godoc.org/github.com/ethpandaops/go-eth2-client) for interface information.
 
 ## Example
 
@@ -52,9 +52,9 @@ import (
     "context"
     "fmt"
     
-    eth2client "github.com/attestantio/go-eth2-client"
-    "github.com/attestantio/go-eth2-client/api"
-    "github.com/attestantio/go-eth2-client/http"
+    eth2client "github.com/ethpandaops/go-eth2-client"
+    "github.com/ethpandaops/go-eth2-client/api"
+    "github.com/ethpandaops/go-eth2-client/http"
     "github.com/rs/zerolog"
 )
 
@@ -115,7 +115,7 @@ Chris Berry: [@bez625](https://github.com/Bez625).
 
 ## Contribute
 
-Contributions welcome. Please check out [the issues](https://github.com/attestantio/go-eth2-client/issues).
+Contributions welcome. Please check out [the issues](https://github.com/ethpandaops/go-eth2-client/issues).
 
 ## License
 

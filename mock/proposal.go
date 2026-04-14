@@ -17,9 +17,9 @@ import (
 	"context"
 
 	"github.com/OffchainLabs/go-bitfield"
-	"github.com/attestantio/go-eth2-client/api"
-	"github.com/attestantio/go-eth2-client/spec"
-	"github.com/attestantio/go-eth2-client/spec/phase0"
+	"github.com/ethpandaops/go-eth2-client/api"
+	"github.com/ethpandaops/go-eth2-client/spec"
+	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 )
 
 // Proposal fetches a proposal for signing.

@@ -19,8 +19,8 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/attestantio/go-eth2-client/api"
-	"github.com/attestantio/go-eth2-client/spec/phase0"
+	"github.com/ethpandaops/go-eth2-client/api"
+	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 )
 
 // SubmitProposalSlashing submits a proposal slashing.

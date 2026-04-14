@@ -17,7 +17,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/attestantio/go-eth2-client/spec/electra"
+	"github.com/ethpandaops/go-eth2-client/spec/electra"
 	"github.com/goccy/go-yaml"
 	"github.com/stretchr/testify/assert"
 	require "github.com/stretchr/testify/require"

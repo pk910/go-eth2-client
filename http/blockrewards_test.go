@@ -19,9 +19,9 @@ import (
 	"strconv"
 	"testing"
 
-	client "github.com/attestantio/go-eth2-client"
-	"github.com/attestantio/go-eth2-client/api"
-	"github.com/attestantio/go-eth2-client/testclients"
+	client "github.com/ethpandaops/go-eth2-client"
+	"github.com/ethpandaops/go-eth2-client/api"
+	"github.com/ethpandaops/go-eth2-client/testclients"
 	"github.com/stretchr/testify/require"
 )
 

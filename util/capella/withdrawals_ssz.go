@@ -6,7 +6,7 @@ package capella
 import (
 	"encoding/binary"
 
-	"github.com/attestantio/go-eth2-client/spec/capella"
+	"github.com/ethpandaops/go-eth2-client/spec/capella"
 	dynssz "github.com/pk910/dynamic-ssz"
 	"github.com/pk910/dynamic-ssz/hasher"
 	"github.com/pk910/dynamic-ssz/sszutils"
@@ -108,6 +108,7 @@ func (t *ExecutionPayloadWithdrawals) HashTreeRoot() (root [32]byte, err error) 
 	})
 	return
 }
+
 // HashTreeRootWith computes the SSZ hash tree root of the *ExecutionPayloadWithdrawals using the given hash walker.
 func (t *ExecutionPayloadWithdrawals) HashTreeRootWith(hh sszutils.HashWalker) error {
 	if t == nil {

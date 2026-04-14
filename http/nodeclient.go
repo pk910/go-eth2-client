@@ -17,7 +17,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/attestantio/go-eth2-client/api"
+	"github.com/ethpandaops/go-eth2-client/api"
 )
 
 // NodeClient provides the client for the node.

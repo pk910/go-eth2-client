@@ -6,11 +6,11 @@ package api
 import (
 	"encoding/binary"
 
-	"github.com/attestantio/go-eth2-client/api/v1/bellatrix"
-	"github.com/attestantio/go-eth2-client/api/v1/capella"
-	"github.com/attestantio/go-eth2-client/api/v1/deneb"
-	"github.com/attestantio/go-eth2-client/api/v1/electra"
-	"github.com/attestantio/go-eth2-client/spec"
+	"github.com/ethpandaops/go-eth2-client/api/v1/bellatrix"
+	"github.com/ethpandaops/go-eth2-client/api/v1/capella"
+	"github.com/ethpandaops/go-eth2-client/api/v1/deneb"
+	"github.com/ethpandaops/go-eth2-client/api/v1/electra"
+	"github.com/ethpandaops/go-eth2-client/spec"
 	dynssz "github.com/pk910/dynamic-ssz"
 	"github.com/pk910/dynamic-ssz/hasher"
 	"github.com/pk910/dynamic-ssz/sszutils"
@@ -217,6 +217,7 @@ func (t *VersionedBlindedBeaconBlock) HashTreeRoot() (root [32]byte, err error) 
 	})
 	return
 }
+
 // HashTreeRootWith computes the SSZ hash tree root of the *VersionedBlindedBeaconBlock using the given hash walker.
 func (t *VersionedBlindedBeaconBlock) HashTreeRootWith(hh sszutils.HashWalker) error {
 	if t == nil {

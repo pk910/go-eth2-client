@@ -19,8 +19,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/attestantio/go-eth2-client/http"
-	"github.com/attestantio/go-eth2-client/testclients"
+	"github.com/ethpandaops/go-eth2-client/http"
+	"github.com/ethpandaops/go-eth2-client/testclients"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/require"
 )

@@ -16,7 +16,7 @@ package phase0_test
 import (
 	"testing"
 
-	"github.com/attestantio/go-eth2-client/spec/phase0"
+	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 	"github.com/stretchr/testify/require"
 )
 

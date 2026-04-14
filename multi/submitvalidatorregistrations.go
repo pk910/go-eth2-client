@@ -16,8 +16,8 @@ package multi
 import (
 	"context"
 
-	consensusclient "github.com/attestantio/go-eth2-client"
-	"github.com/attestantio/go-eth2-client/api"
+	consensusclient "github.com/ethpandaops/go-eth2-client"
+	"github.com/ethpandaops/go-eth2-client/api"
 )
 
 // SubmitValidatorRegistrations submits a validator registration.

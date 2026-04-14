@@ -20,8 +20,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/attestantio/go-eth2-client/spec/bellatrix"
-	"github.com/attestantio/go-eth2-client/spec/phase0"
+	"github.com/ethpandaops/go-eth2-client/spec/bellatrix"
+	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 	"github.com/pkg/errors"
 )
 

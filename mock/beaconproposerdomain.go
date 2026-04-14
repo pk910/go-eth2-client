@@ -16,7 +16,7 @@ package mock
 import (
 	"context"
 
-	spec "github.com/attestantio/go-eth2-client/spec/phase0"
+	spec "github.com/ethpandaops/go-eth2-client/spec/phase0"
 )
 
 // BeaconProposerDomain provides the beacon proposer domain.

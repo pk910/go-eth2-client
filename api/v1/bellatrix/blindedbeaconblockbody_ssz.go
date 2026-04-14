@@ -6,9 +6,9 @@ package bellatrix
 import (
 	"encoding/binary"
 
-	"github.com/attestantio/go-eth2-client/spec/altair"
-	"github.com/attestantio/go-eth2-client/spec/bellatrix"
-	"github.com/attestantio/go-eth2-client/spec/phase0"
+	"github.com/ethpandaops/go-eth2-client/spec/altair"
+	"github.com/ethpandaops/go-eth2-client/spec/bellatrix"
+	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 	dynssz "github.com/pk910/dynamic-ssz"
 	"github.com/pk910/dynamic-ssz/hasher"
 	"github.com/pk910/dynamic-ssz/sszutils"
@@ -445,6 +445,7 @@ func (t *BlindedBeaconBlockBody) HashTreeRoot() (root [32]byte, err error) {
 	})
 	return
 }
+
 // HashTreeRootWith computes the SSZ hash tree root of the *BlindedBeaconBlockBody using the given hash walker.
 func (t *BlindedBeaconBlockBody) HashTreeRootWith(hh sszutils.HashWalker) error {
 	if t == nil {

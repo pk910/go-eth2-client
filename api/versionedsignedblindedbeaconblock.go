@@ -14,13 +14,13 @@
 package api
 
 import (
-	apiv1bellatrix "github.com/attestantio/go-eth2-client/api/v1/bellatrix"
-	apiv1capella "github.com/attestantio/go-eth2-client/api/v1/capella"
-	apiv1deneb "github.com/attestantio/go-eth2-client/api/v1/deneb"
-	apiv1electra "github.com/attestantio/go-eth2-client/api/v1/electra"
-	"github.com/attestantio/go-eth2-client/spec"
-	"github.com/attestantio/go-eth2-client/spec/deneb"
-	"github.com/attestantio/go-eth2-client/spec/phase0"
+	apiv1bellatrix "github.com/ethpandaops/go-eth2-client/api/v1/bellatrix"
+	apiv1capella "github.com/ethpandaops/go-eth2-client/api/v1/capella"
+	apiv1deneb "github.com/ethpandaops/go-eth2-client/api/v1/deneb"
+	apiv1electra "github.com/ethpandaops/go-eth2-client/api/v1/electra"
+	"github.com/ethpandaops/go-eth2-client/spec"
+	"github.com/ethpandaops/go-eth2-client/spec/deneb"
+	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 )
 
 // VersionedSignedBlindedBeaconBlock contains a versioned signed blinded beacon block.

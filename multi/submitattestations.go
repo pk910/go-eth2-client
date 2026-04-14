@@ -17,8 +17,8 @@ import (
 	"context"
 	"strings"
 
-	consensusclient "github.com/attestantio/go-eth2-client"
-	"github.com/attestantio/go-eth2-client/api"
+	consensusclient "github.com/ethpandaops/go-eth2-client"
+	"github.com/ethpandaops/go-eth2-client/api"
 )
 
 // SubmitAttestations submits attestations.

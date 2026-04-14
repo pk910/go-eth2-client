@@ -16,8 +16,8 @@ package multi
 import (
 	"context"
 
-	consensusclient "github.com/attestantio/go-eth2-client"
-	api "github.com/attestantio/go-eth2-client/api/v1"
+	consensusclient "github.com/ethpandaops/go-eth2-client"
+	api "github.com/ethpandaops/go-eth2-client/api/v1"
 )
 
 // SubmitBeaconCommitteeSubscriptions subscribes to beacon committees.

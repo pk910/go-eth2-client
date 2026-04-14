@@ -16,7 +16,7 @@ package bellatrix
 import (
 	"fmt"
 
-	"github.com/attestantio/go-eth2-client/spec/phase0"
+	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 	"github.com/goccy/go-yaml"
 )
 

@@ -13,7 +13,7 @@
 
 package api
 
-import "github.com/attestantio/go-eth2-client/spec/phase0"
+import "github.com/ethpandaops/go-eth2-client/spec/phase0"
 
 // SyncCommitteeContributionOpts are the options for obtaining sync committee contributions.
 type SyncCommitteeContributionOpts struct {

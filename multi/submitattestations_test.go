@@ -15,15 +15,16 @@ package multi_test
 
 import (
 	"context"
-	"github.com/attestantio/go-eth2-client/api"
-	"github.com/attestantio/go-eth2-client/spec"
 	"testing"
 
-	consensusclient "github.com/attestantio/go-eth2-client"
-	"github.com/attestantio/go-eth2-client/mock"
-	"github.com/attestantio/go-eth2-client/multi"
-	"github.com/attestantio/go-eth2-client/spec/phase0"
-	"github.com/attestantio/go-eth2-client/testclients"
+	"github.com/ethpandaops/go-eth2-client/api"
+	"github.com/ethpandaops/go-eth2-client/spec"
+
+	consensusclient "github.com/ethpandaops/go-eth2-client"
+	"github.com/ethpandaops/go-eth2-client/mock"
+	"github.com/ethpandaops/go-eth2-client/multi"
+	"github.com/ethpandaops/go-eth2-client/spec/phase0"
+	"github.com/ethpandaops/go-eth2-client/testclients"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/require"
 )

@@ -16,7 +16,7 @@ package deneb
 import (
 	"fmt"
 
-	"github.com/attestantio/go-eth2-client/spec/deneb"
+	"github.com/ethpandaops/go-eth2-client/spec/deneb"
 	"github.com/goccy/go-yaml"
 )
 

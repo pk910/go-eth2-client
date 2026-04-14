@@ -17,9 +17,9 @@ import (
 	"context"
 	"testing"
 
-	client "github.com/attestantio/go-eth2-client"
-	"github.com/attestantio/go-eth2-client/mock"
-	"github.com/attestantio/go-eth2-client/multi"
+	client "github.com/ethpandaops/go-eth2-client"
+	"github.com/ethpandaops/go-eth2-client/mock"
+	"github.com/ethpandaops/go-eth2-client/multi"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

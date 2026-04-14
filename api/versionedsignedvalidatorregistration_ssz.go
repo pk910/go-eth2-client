@@ -6,8 +6,8 @@ package api
 import (
 	"encoding/binary"
 
-	"github.com/attestantio/go-eth2-client/api/v1"
-	"github.com/attestantio/go-eth2-client/spec"
+	v1 "github.com/ethpandaops/go-eth2-client/api/v1"
+	"github.com/ethpandaops/go-eth2-client/spec"
 	dynssz "github.com/pk910/dynamic-ssz"
 	"github.com/pk910/dynamic-ssz/hasher"
 	"github.com/pk910/dynamic-ssz/sszutils"
@@ -79,6 +79,7 @@ func (t *VersionedSignedValidatorRegistration) HashTreeRoot() (root [32]byte, er
 	})
 	return
 }
+
 // HashTreeRootWith computes the SSZ hash tree root of the *VersionedSignedValidatorRegistration using the given hash walker.
 func (t *VersionedSignedValidatorRegistration) HashTreeRootWith(hh sszutils.HashWalker) error {
 	if t == nil {
