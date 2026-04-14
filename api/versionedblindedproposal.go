@@ -24,6 +24,10 @@ import (
 )
 
 // VersionedBlindedProposal contains a versioned blinded proposal.
+//
+// Gloas and later hard forks do not have blinded proposals: EIP-7732 delivers
+// the execution payload as a standalone ExecutionPayloadEnvelope, so the
+// beacon block itself never carries a payload header that could be blinded.
 type VersionedBlindedProposal struct {
 	Version   spec.DataVersion
 	Bellatrix *apiv1bellatrix.BlindedBeaconBlock
@@ -31,7 +35,6 @@ type VersionedBlindedProposal struct {
 	Deneb     *apiv1deneb.BlindedBeaconBlock
 	Electra   *apiv1electra.BlindedBeaconBlock
 	Fulu      *apiv1electra.BlindedBeaconBlock
-	Gloas     *apiv1electra.BlindedBeaconBlock
 }
 
 // IsEmpty returns true if there is no proposal.

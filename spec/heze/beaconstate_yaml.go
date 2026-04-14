@@ -120,7 +120,7 @@ func (b *BeaconState) MarshalYAML() ([]byte, error) {
 		Builders:                      b.Builders,
 		NextWithdrawalBuilderIndex:    b.NextWithdrawalBuilderIndex,
 		LatestBlockHash:               b.LatestBlockHash,
-		ExecutionPayloadAvailability:  fmt.Sprintf("%#x", b.ExecutionPayloadAvailability[:]),
+		ExecutionPayloadAvailability:  fmt.Sprintf("%#x", b.ExecutionPayloadAvailability),
 		BuilderPendingPayments:        b.BuilderPendingPayments,
 		BuilderPendingWithdrawals:     b.BuilderPendingWithdrawals,
 		PayloadExpectedWithdrawals:    b.PayloadExpectedWithdrawals,

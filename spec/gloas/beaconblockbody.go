@@ -34,7 +34,7 @@ type BeaconBlockBody struct {
 	Deposits                  []*phase0.Deposit             `dynssz-max:"MAX_DEPOSITS"                   ssz-max:"16"`
 	VoluntaryExits            []*phase0.SignedVoluntaryExit `dynssz-max:"MAX_VOLUNTARY_EXITS"            ssz-max:"16"`
 	SyncAggregate             *altair.SyncAggregate
-	BLSToExecutionChanges     []*capella.SignedBLSToExecutionChange `dynssz-max:"MAX_BLS_TO_EXECUTION_CHANGES"   ssz-max:"16"`
+	BLSToExecutionChanges     []*capella.SignedBLSToExecutionChange `dynssz-max:"MAX_BLS_TO_EXECUTION_CHANGES" ssz-max:"16"`
 	SignedExecutionPayloadBid *SignedExecutionPayloadBid
 	PayloadAttestations       []*PayloadAttestation `dynssz-max:"MAX_PAYLOAD_ATTESTATIONS" ssz-max:"4"`
 }
