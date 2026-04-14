@@ -30,17 +30,18 @@ func (e *ExecutionPayloadBid) MarshalYAML() ([]byte, error) {
 	}
 
 	yamlBytes, err := yaml.MarshalWithOptions(&executionPayloadBidJSON{
-		ParentBlockHash:    fmt.Sprintf("%#x", e.ParentBlockHash),
-		ParentBlockRoot:    fmt.Sprintf("%#x", e.ParentBlockRoot),
-		BlockHash:          fmt.Sprintf("%#x", e.BlockHash),
-		PrevRandao:         fmt.Sprintf("%#x", e.PrevRandao),
-		FeeRecipient:       fmt.Sprintf("%#x", e.FeeRecipient),
-		GasLimit:           fmt.Sprintf("%d", e.GasLimit),
-		BuilderIndex:       fmt.Sprintf("%d", e.BuilderIndex),
-		Slot:               fmt.Sprintf("%d", e.Slot),
-		Value:              fmt.Sprintf("%d", e.Value),
-		ExecutionPayment:   fmt.Sprintf("%d", e.ExecutionPayment),
-		BlobKZGCommitments: blobKZGCommitments,
+		ParentBlockHash:       fmt.Sprintf("%#x", e.ParentBlockHash),
+		ParentBlockRoot:       fmt.Sprintf("%#x", e.ParentBlockRoot),
+		BlockHash:             fmt.Sprintf("%#x", e.BlockHash),
+		PrevRandao:            fmt.Sprintf("%#x", e.PrevRandao),
+		FeeRecipient:          fmt.Sprintf("%#x", e.FeeRecipient),
+		GasLimit:              fmt.Sprintf("%d", e.GasLimit),
+		BuilderIndex:          fmt.Sprintf("%d", e.BuilderIndex),
+		Slot:                  fmt.Sprintf("%d", e.Slot),
+		Value:                 fmt.Sprintf("%d", e.Value),
+		ExecutionPayment:      fmt.Sprintf("%d", e.ExecutionPayment),
+		BlobKZGCommitments:    blobKZGCommitments,
+		ExecutionRequestsRoot: fmt.Sprintf("%#x", e.ExecutionRequestsRoot),
 	}, yaml.Flow(true))
 	if err != nil {
 		return nil, err
