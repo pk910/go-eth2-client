@@ -29,7 +29,6 @@ type ExecutionPayloadEnvelope struct {
 	BuilderIndex      BuilderIndex
 	BeaconBlockRoot   phase0.Root `ssz-size:"32"`
 	Slot              phase0.Slot
-	StateRoot         phase0.Root `ssz-size:"32"`
 }
 
 // String returns a string version of the structure.

@@ -33,7 +33,6 @@ type executionPayloadEnvelopeJSON struct {
 	BuilderIndex      string                     `json:"builder_index"`
 	BeaconBlockRoot   string                     `json:"beacon_block_root"`
 	Slot              string                     `json:"slot"`
-	StateRoot         string                     `json:"state_root"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -44,7 +43,6 @@ func (e *ExecutionPayloadEnvelope) MarshalJSON() ([]byte, error) {
 		BuilderIndex:      fmt.Sprintf("%d", e.BuilderIndex),
 		BeaconBlockRoot:   fmt.Sprintf("%#x", e.BeaconBlockRoot),
 		Slot:              fmt.Sprintf("%d", e.Slot),
-		StateRoot:         fmt.Sprintf("%#x", e.StateRoot),
 	})
 }
 
@@ -91,15 +89,6 @@ func (e *ExecutionPayloadEnvelope) UnmarshalJSON(input []byte) error {
 		return errors.Wrap(err, "invalid slot")
 	}
 	e.Slot = phase0.Slot(slot)
-
-	if data.StateRoot == "" {
-		return errors.New("state root missing")
-	}
-	stateRoot, err := hex.DecodeString(strings.TrimPrefix(data.StateRoot, "0x"))
-	if err != nil {
-		return errors.Wrap(err, "invalid state root")
-	}
-	copy(e.StateRoot[:], stateRoot)
 
 	return nil
 }
