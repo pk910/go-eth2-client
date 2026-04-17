@@ -1,4 +1,5 @@
 0.28.1:
+  - update to HTTP tests
   - add beacon committee selections endpoint for distributed validators
 
 0.28.0:
