@@ -591,7 +591,8 @@ func (v *VersionedBeaconState) PendingConsolidations() ([]*electra.PendingConsol
 // Builders returns the builders of the state.
 func (v *VersionedBeaconState) Builders() ([]*gloas.Builder, error) {
 	switch v.Version {
-	case DataVersionPhase0, DataVersionAltair, DataVersionBellatrix, DataVersionCapella, DataVersionDeneb, DataVersionElectra, DataVersionFulu:
+	case DataVersionPhase0, DataVersionAltair, DataVersionBellatrix, DataVersionCapella,
+		DataVersionDeneb, DataVersionElectra, DataVersionFulu:
 		return nil, errors.New("state does not provide builders")
 	case DataVersionGloas:
 		if v.Gloas == nil {
@@ -613,7 +614,8 @@ func (v *VersionedBeaconState) Builders() ([]*gloas.Builder, error) {
 // ExecutionPayloadAvailability returns the execution payload availability of the state.
 func (v *VersionedBeaconState) ExecutionPayloadAvailability() ([]uint8, error) {
 	switch v.Version {
-	case DataVersionPhase0, DataVersionAltair, DataVersionBellatrix, DataVersionCapella, DataVersionDeneb, DataVersionElectra, DataVersionFulu:
+	case DataVersionPhase0, DataVersionAltair, DataVersionBellatrix, DataVersionCapella,
+		DataVersionDeneb, DataVersionElectra, DataVersionFulu:
 		return nil, errors.New("state does not provide execution payload availability")
 	case DataVersionGloas:
 		if v.Gloas == nil {

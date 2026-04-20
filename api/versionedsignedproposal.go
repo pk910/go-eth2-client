@@ -26,10 +26,17 @@ import (
 	"github.com/ethpandaops/go-eth2-client/spec/altair"
 	"github.com/ethpandaops/go-eth2-client/spec/bellatrix"
 	"github.com/ethpandaops/go-eth2-client/spec/capella"
+	"github.com/ethpandaops/go-eth2-client/spec/gloas"
+	"github.com/ethpandaops/go-eth2-client/spec/heze"
 	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 )
 
 // VersionedSignedProposal contains a versioned signed beacon node proposal.
+//
+// Gloas and Heze proposals do not have blinded variants: EIP-7732 separates
+// the execution payload into a standalone ExecutionPayloadEnvelope delivered
+// by the builder, so the beacon block itself carries only a SignedExecutionPayloadBid.
+// The Blinded flag is therefore ignored for those versions.
 type VersionedSignedProposal struct {
 	Version          spec.DataVersion
 	Blinded          bool
@@ -47,6 +54,8 @@ type VersionedSignedProposal struct {
 	ElectraBlinded   *apiv1electra.SignedBlindedBeaconBlock
 	Fulu             *apiv1fulu.SignedBlockContents
 	FuluBlinded      *apiv1electra.SignedBlindedBeaconBlock
+	Gloas            *gloas.SignedBeaconBlock
+	Heze             *heze.SignedBeaconBlock
 }
 
 // AssertPresent throws an error if the expected proposal
@@ -101,6 +110,14 @@ func (v *VersionedSignedProposal) AssertPresent() error {
 		if v.FuluBlinded == nil && v.Blinded {
 			return errors.New("blinded fulu proposal not present")
 		}
+	case spec.DataVersionGloas:
+		if v.Gloas == nil {
+			return errors.New("gloas proposal not present")
+		}
+	case spec.DataVersionHeze:
+		if v.Heze == nil {
+			return errors.New("heze proposal not present")
+		}
 	default:
 		return errors.New("unsupported version")
 	}
@@ -150,6 +167,10 @@ func (v *VersionedSignedProposal) Slot() (phase0.Slot, error) {
 		}
 
 		return v.Fulu.SignedBlock.Message.Slot, nil
+	case spec.DataVersionGloas:
+		return v.Gloas.Message.Slot, nil
+	case spec.DataVersionHeze:
+		return v.Heze.Message.Slot, nil
 	default:
 		return 0, ErrUnsupportedVersion
 	}
@@ -196,6 +217,10 @@ func (v *VersionedSignedProposal) ProposerIndex() (phase0.ValidatorIndex, error)
 		}
 
 		return v.Fulu.SignedBlock.Message.ProposerIndex, nil
+	case spec.DataVersionGloas:
+		return v.Gloas.Message.ProposerIndex, nil
+	case spec.DataVersionHeze:
+		return v.Heze.Message.ProposerIndex, nil
 	default:
 		return 0, ErrUnsupportedVersion
 	}
@@ -238,6 +263,10 @@ func (v *VersionedSignedProposal) ExecutionBlockHash() (phase0.Hash32, error) {
 		}
 
 		return v.Fulu.SignedBlock.Message.Body.ExecutionPayload.BlockHash, nil
+	case spec.DataVersionGloas:
+		return v.Gloas.Message.Body.SignedExecutionPayloadBid.Message.BlockHash, nil
+	case spec.DataVersionHeze:
+		return v.Heze.Message.Body.SignedExecutionPayloadBid.Message.BlockHash, nil
 	default:
 		return phase0.Hash32{}, ErrUnsupportedVersion
 	}
@@ -328,6 +357,18 @@ func (v *VersionedSignedProposal) String() string {
 		}
 
 		return v.Fulu.String()
+	case spec.DataVersionGloas:
+		if v.Gloas == nil {
+			return ""
+		}
+
+		return v.Gloas.String()
+	case spec.DataVersionHeze:
+		if v.Heze == nil {
+			return ""
+		}
+
+		return v.Heze.String()
 	default:
 		return "unsupported version"
 	}
@@ -401,6 +442,14 @@ func (v *VersionedSignedProposal) assertMessagePresent() error {
 				v.Fulu.SignedBlock.Message == nil {
 				return ErrDataMissing
 			}
+		}
+	case spec.DataVersionGloas:
+		if v.Gloas == nil || v.Gloas.Message == nil {
+			return ErrDataMissing
+		}
+	case spec.DataVersionHeze:
+		if v.Heze == nil || v.Heze.Message == nil {
+			return ErrDataMissing
 		}
 	default:
 		return ErrUnsupportedVersion
@@ -495,6 +544,22 @@ func (v *VersionedSignedProposal) assertExecutionPayloadPresent() error {
 				v.Fulu.SignedBlock.Message.Body.ExecutionPayload == nil {
 				return ErrDataMissing
 			}
+		}
+	case spec.DataVersionGloas:
+		if v.Gloas == nil ||
+			v.Gloas.Message == nil ||
+			v.Gloas.Message.Body == nil ||
+			v.Gloas.Message.Body.SignedExecutionPayloadBid == nil ||
+			v.Gloas.Message.Body.SignedExecutionPayloadBid.Message == nil {
+			return ErrDataMissing
+		}
+	case spec.DataVersionHeze:
+		if v.Heze == nil ||
+			v.Heze.Message == nil ||
+			v.Heze.Message.Body == nil ||
+			v.Heze.Message.Body.SignedExecutionPayloadBid == nil ||
+			v.Heze.Message.Body.SignedExecutionPayloadBid.Message == nil {
+			return ErrDataMissing
 		}
 	default:
 		return ErrUnsupportedVersion

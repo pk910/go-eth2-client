@@ -66,7 +66,7 @@ type BeaconState struct {
 	PendingPartialWithdrawals     []*electra.PendingPartialWithdrawal `ssz-max:"134217728"`
 	PendingConsolidations         []*electra.PendingConsolidation     `ssz-max:"262144"`
 	ProposerLookahead             []phase0.ValidatorIndex             `dynssz-size:"(MIN_SEED_LOOKAHEAD+1)*SLOTS_PER_EPOCH" ssz-size:"64"`
-	Builders                      []*Builder                          `dynssz-max:"BUILDER_REGISTRY_LIMIT" ssz-max:"1099511627776"`
+	Builders                      []*Builder                          `dynssz-max:"BUILDER_REGISTRY_LIMIT"                  ssz-max:"1099511627776"`
 	NextWithdrawalBuilderIndex    BuilderIndex
 	ExecutionPayloadAvailability  []uint8                     `dynssz-size:"SLOTS_PER_HISTORICAL_ROOT/8" ssz-size:"1024"`
 	BuilderPendingPayments        []*BuilderPendingPayment    `dynssz-size:"SLOTS_PER_EPOCH*2" ssz-size:"64"`

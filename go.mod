@@ -45,8 +45,10 @@ require (
 	github.com/prometheus/procfs v0.10.1 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	go.opentelemetry.io/otel/metric v1.16.0 // indirect
+	golang.org/x/mod v0.23.0 // indirect
 	golang.org/x/net v0.44.0 // indirect
 	golang.org/x/sys v0.36.0 // indirect
+	golang.org/x/tools v0.30.0 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/cenkalti/backoff.v1 v1.1.0 // indirect
@@ -57,3 +59,5 @@ retract (
 	v1.15.2 // Retraction for 1.15.1.
 	v1.15.1 // Incorrect release number.
 )
+
+tool github.com/pk910/dynamic-ssz/dynssz-gen
