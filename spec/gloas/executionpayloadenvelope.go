@@ -16,7 +16,6 @@ package gloas
 import (
 	"fmt"
 
-	"github.com/attestantio/go-eth2-client/spec/deneb"
 	"github.com/attestantio/go-eth2-client/spec/electra"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 	"github.com/goccy/go-yaml"
@@ -24,11 +23,10 @@ import (
 
 // ExecutionPayloadEnvelope represents an execution payload envelope.
 type ExecutionPayloadEnvelope struct {
-	Payload           *deneb.ExecutionPayload
+	Payload           *ExecutionPayload
 	ExecutionRequests *electra.ExecutionRequests
 	BuilderIndex      BuilderIndex
 	BeaconBlockRoot   phase0.Root `ssz-size:"32"`
-	Slot              phase0.Slot
 }
 
 // String returns a string version of the structure.

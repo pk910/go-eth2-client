@@ -25,6 +25,8 @@ import (
 )
 
 // BeaconState represents a beacon state for EIP-7732.
+//
+//nolint:revive
 type BeaconState struct {
 	GenesisTime                   uint64
 	GenesisValidatorsRoot         phase0.Root `ssz-size:"32"`
@@ -50,7 +52,7 @@ type BeaconState struct {
 	InactivityScores              []uint64 `ssz-max:"1099511627776"`
 	CurrentSyncCommittee          *altair.SyncCommittee
 	NextSyncCommittee             *altair.SyncCommittee
-	LatestExecutionPayloadBid     *ExecutionPayloadBid
+	LatestBlockHash               phase0.Hash32 `ssz-size:"32"`
 	NextWithdrawalIndex           capella.WithdrawalIndex
 	NextWithdrawalValidatorIndex  phase0.ValidatorIndex
 	HistoricalSummaries           []*capella.HistoricalSummary `ssz-max:"16777216"`
@@ -69,9 +71,9 @@ type BeaconState struct {
 	ExecutionPayloadAvailability  []uint8                     `dynssz-size:"SLOTS_PER_HISTORICAL_ROOT/8" ssz-size:"1024"`
 	BuilderPendingPayments        []*BuilderPendingPayment    `dynssz-size:"SLOTS_PER_EPOCH*2" ssz-size:"64"`
 	BuilderPendingWithdrawals     []*BuilderPendingWithdrawal `dynssz-max:"BUILDER_PENDING_WITHDRAWALS_LIMIT" ssz-max:"1048576"`
-	LatestBlockHash               phase0.Hash32               `ssz-size:"32"`
-	PayloadExpectedWithdrawals    []*capella.Withdrawal       `dynssz-max:"MAX_WITHDRAWALS_PER_PAYLOAD"       ssz-max:"16"`
-	PTCWindow                     [][]phase0.ValidatorIndex   `dynssz-size:"(2+MIN_SEED_LOOKAHEAD)*SLOTS_PER_EPOCH,PTC_SIZE" ssz-size:"96,512"`
+	LatestExecutionPayloadBid     *ExecutionPayloadBid
+	PayloadExpectedWithdrawals    []*capella.Withdrawal     `dynssz-max:"MAX_WITHDRAWALS_PER_PAYLOAD"                      ssz-max:"16"`
+	PTCWindow                     [][]phase0.ValidatorIndex `dynssz-size:"(2+MIN_SEED_LOOKAHEAD)*SLOTS_PER_EPOCH,PTC_SIZE" ssz-size:"96,512"`
 }
 
 // String returns a string version of the structure.

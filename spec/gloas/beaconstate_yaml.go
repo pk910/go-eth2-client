@@ -52,7 +52,7 @@ type beaconStateYAML struct {
 	InactivityScores              []uint64                            `yaml:"inactivity_scores"`
 	CurrentSyncCommittee          *altair.SyncCommittee               `yaml:"current_sync_committee"`
 	NextSyncCommittee             *altair.SyncCommittee               `yaml:"next_sync_committee"`
-	LatestExecutionPayloadBid     *ExecutionPayloadBid                `yaml:"latest_execution_payload_bid"`
+	LatestBlockHash               phase0.Hash32                       `yaml:"latest_block_hash"`
 	NextWithdrawalIndex           capella.WithdrawalIndex             `yaml:"next_withdrawal_index"`
 	NextWithdrawalValidatorIndex  phase0.ValidatorIndex               `yaml:"next_withdrawal_validator_index"`
 	HistoricalSummaries           []*capella.HistoricalSummary        `yaml:"historical_summaries"`
@@ -71,7 +71,7 @@ type beaconStateYAML struct {
 	ExecutionPayloadAvailability  string                              `yaml:"execution_payload_availability"`
 	BuilderPendingPayments        []*BuilderPendingPayment            `yaml:"builder_pending_payments"`
 	BuilderPendingWithdrawals     []*BuilderPendingWithdrawal         `yaml:"builder_pending_withdrawals"`
-	LatestBlockHash               phase0.Hash32                       `yaml:"latest_block_hash"`
+	LatestExecutionPayloadBid     *ExecutionPayloadBid                `yaml:"latest_execution_payload_bid"`
 	PayloadExpectedWithdrawals    []*capella.Withdrawal               `yaml:"payload_expected_withdrawals"`
 	PTCWindow                     [][]phase0.ValidatorIndex           `yaml:"ptc_window"`
 }
@@ -103,7 +103,7 @@ func (b *BeaconState) MarshalYAML() ([]byte, error) {
 		InactivityScores:              b.InactivityScores,
 		CurrentSyncCommittee:          b.CurrentSyncCommittee,
 		NextSyncCommittee:             b.NextSyncCommittee,
-		LatestExecutionPayloadBid:     b.LatestExecutionPayloadBid,
+		LatestBlockHash:               b.LatestBlockHash,
 		NextWithdrawalIndex:           b.NextWithdrawalIndex,
 		NextWithdrawalValidatorIndex:  b.NextWithdrawalValidatorIndex,
 		HistoricalSummaries:           b.HistoricalSummaries,
@@ -119,10 +119,10 @@ func (b *BeaconState) MarshalYAML() ([]byte, error) {
 		ProposerLookahead:             b.ProposerLookahead,
 		Builders:                      b.Builders,
 		NextWithdrawalBuilderIndex:    b.NextWithdrawalBuilderIndex,
-		LatestBlockHash:               b.LatestBlockHash,
 		ExecutionPayloadAvailability:  fmt.Sprintf("%#x", b.ExecutionPayloadAvailability[:]),
 		BuilderPendingPayments:        b.BuilderPendingPayments,
 		BuilderPendingWithdrawals:     b.BuilderPendingWithdrawals,
+		LatestExecutionPayloadBid:     b.LatestExecutionPayloadBid,
 		PayloadExpectedWithdrawals:    b.PayloadExpectedWithdrawals,
 		PTCWindow:                     b.PTCWindow,
 	}, yaml.Flow(true))
