@@ -120,7 +120,6 @@ func (t *BlindedBeaconBlock) HashTreeRoot() (root [32]byte, err error) {
 	})
 	return
 }
-
 // HashTreeRootWith computes the SSZ hash tree root of the *BlindedBeaconBlock using the given hash walker.
 func (t *BlindedBeaconBlock) HashTreeRootWith(hh sszutils.HashWalker) error {
 	if t == nil {

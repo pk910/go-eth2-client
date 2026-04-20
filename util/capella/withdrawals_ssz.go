@@ -108,7 +108,6 @@ func (t *ExecutionPayloadWithdrawals) HashTreeRoot() (root [32]byte, err error) 
 	})
 	return
 }
-
 // HashTreeRootWith computes the SSZ hash tree root of the *ExecutionPayloadWithdrawals using the given hash walker.
 func (t *ExecutionPayloadWithdrawals) HashTreeRootWith(hh sszutils.HashWalker) error {
 	if t == nil {

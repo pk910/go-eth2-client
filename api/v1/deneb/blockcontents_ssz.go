@@ -165,7 +165,6 @@ func (t *BlockContents) HashTreeRoot() (root [32]byte, err error) {
 	})
 	return
 }
-
 // HashTreeRootWith computes the SSZ hash tree root of the *BlockContents using the given hash walker.
 func (t *BlockContents) HashTreeRootWith(hh sszutils.HashWalker) error {
 	if t == nil {

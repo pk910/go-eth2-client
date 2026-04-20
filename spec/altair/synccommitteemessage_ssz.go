@@ -81,7 +81,6 @@ func (t *SyncCommitteeMessage) HashTreeRoot() (root [32]byte, err error) {
 	})
 	return
 }
-
 // HashTreeRootWith computes the SSZ hash tree root of the *SyncCommitteeMessage using the given hash walker.
 func (t *SyncCommitteeMessage) HashTreeRootWith(hh sszutils.HashWalker) error {
 	if t == nil {

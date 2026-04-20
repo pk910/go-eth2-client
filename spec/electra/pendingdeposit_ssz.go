@@ -96,7 +96,6 @@ func (t *PendingDeposit) HashTreeRoot() (root [32]byte, err error) {
 	})
 	return
 }
-
 // HashTreeRootWith computes the SSZ hash tree root of the *PendingDeposit using the given hash walker.
 func (t *PendingDeposit) HashTreeRootWith(hh sszutils.HashWalker) error {
 	if t == nil {

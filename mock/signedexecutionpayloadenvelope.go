@@ -19,7 +19,6 @@ import (
 	"github.com/ethpandaops/go-eth2-client/api"
 	"github.com/ethpandaops/go-eth2-client/spec/bellatrix"
 	"github.com/ethpandaops/go-eth2-client/spec/capella"
-	"github.com/ethpandaops/go-eth2-client/spec/deneb"
 	"github.com/ethpandaops/go-eth2-client/spec/electra"
 	"github.com/ethpandaops/go-eth2-client/spec/gloas"
 )
@@ -38,7 +37,7 @@ func (s *Service) SignedExecutionPayloadEnvelope(ctx context.Context,
 	return &api.Response[*gloas.SignedExecutionPayloadEnvelope]{
 		Data: &gloas.SignedExecutionPayloadEnvelope{
 			Message: &gloas.ExecutionPayloadEnvelope{
-				Payload: &deneb.ExecutionPayload{
+				Payload: &gloas.ExecutionPayload{
 					Transactions: []bellatrix.Transaction{},
 					Withdrawals:  []*capella.Withdrawal{},
 				},

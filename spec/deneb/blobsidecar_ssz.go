@@ -122,7 +122,6 @@ func (t *BlobSidecar) HashTreeRoot() (root [32]byte, err error) {
 	})
 	return
 }
-
 // HashTreeRootWith computes the SSZ hash tree root of the *BlobSidecar using the given hash walker.
 func (t *BlobSidecar) HashTreeRootWith(hh sszutils.HashWalker) error {
 	if t == nil {

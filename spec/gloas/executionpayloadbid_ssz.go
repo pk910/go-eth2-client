@@ -185,7 +185,6 @@ func (t *ExecutionPayloadBid) HashTreeRoot() (root [32]byte, err error) {
 	})
 	return
 }
-
 // HashTreeRootWith computes the SSZ hash tree root of the *ExecutionPayloadBid using the given hash walker.
 func (t *ExecutionPayloadBid) HashTreeRootWith(hh sszutils.HashWalker) error {
 	if t == nil {

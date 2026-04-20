@@ -74,7 +74,6 @@ func (t *PendingPartialWithdrawal) HashTreeRoot() (root [32]byte, err error) {
 	})
 	return
 }
-
 // HashTreeRootWith computes the SSZ hash tree root of the *PendingPartialWithdrawal using the given hash walker.
 func (t *PendingPartialWithdrawal) HashTreeRootWith(hh sszutils.HashWalker) error {
 	if t == nil {

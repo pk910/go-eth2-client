@@ -95,7 +95,6 @@ func (t *Builder) HashTreeRoot() (root [32]byte, err error) {
 	})
 	return
 }
-
 // HashTreeRootWith computes the SSZ hash tree root of the *Builder using the given hash walker.
 func (t *Builder) HashTreeRootWith(hh sszutils.HashWalker) error {
 	if t == nil {
