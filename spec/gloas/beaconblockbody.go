@@ -37,6 +37,7 @@ type BeaconBlockBody struct {
 	BLSToExecutionChanges     []*capella.SignedBLSToExecutionChange `dynssz-max:"MAX_BLS_TO_EXECUTION_CHANGES" ssz-max:"16"`
 	SignedExecutionPayloadBid *SignedExecutionPayloadBid
 	PayloadAttestations       []*PayloadAttestation `dynssz-max:"MAX_PAYLOAD_ATTESTATIONS" ssz-max:"4"`
+	ParentExecutionRequests   *electra.ExecutionRequests
 }
 
 // String returns a string version of the structure.

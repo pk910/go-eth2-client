@@ -27,17 +27,18 @@ import (
 
 // executionPayloadBidJSON is the spec representation of the struct.
 type executionPayloadBidJSON struct {
-	ParentBlockHash    string   `json:"parent_block_hash"`
-	ParentBlockRoot    string   `json:"parent_block_root"`
-	BlockHash          string   `json:"block_hash"`
-	PrevRandao         string   `json:"prev_randao"`
-	FeeRecipient       string   `json:"fee_recipient"`
-	GasLimit           string   `json:"gas_limit"`
-	BuilderIndex       string   `json:"builder_index"`
-	Slot               string   `json:"slot"`
-	Value              string   `json:"value"`
-	ExecutionPayment   string   `json:"execution_payment"`
-	BlobKZGCommitments []string `json:"blob_kzg_commitments"`
+	ParentBlockHash       string   `json:"parent_block_hash"`
+	ParentBlockRoot       string   `json:"parent_block_root"`
+	BlockHash             string   `json:"block_hash"`
+	PrevRandao            string   `json:"prev_randao"`
+	FeeRecipient          string   `json:"fee_recipient"`
+	GasLimit              string   `json:"gas_limit"`
+	BuilderIndex          string   `json:"builder_index"`
+	Slot                  string   `json:"slot"`
+	Value                 string   `json:"value"`
+	ExecutionPayment      string   `json:"execution_payment"`
+	BlobKZGCommitments    []string `json:"blob_kzg_commitments"`
+	ExecutionRequestsRoot string   `json:"execution_requests_root"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -48,17 +49,18 @@ func (e *ExecutionPayloadBid) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal(&executionPayloadBidJSON{
-		ParentBlockHash:    fmt.Sprintf("%#x", e.ParentBlockHash),
-		ParentBlockRoot:    fmt.Sprintf("%#x", e.ParentBlockRoot),
-		BlockHash:          fmt.Sprintf("%#x", e.BlockHash),
-		PrevRandao:         fmt.Sprintf("%#x", e.PrevRandao),
-		FeeRecipient:       fmt.Sprintf("%#x", e.FeeRecipient),
-		GasLimit:           fmt.Sprintf("%d", e.GasLimit),
-		BuilderIndex:       fmt.Sprintf("%d", e.BuilderIndex),
-		Slot:               fmt.Sprintf("%d", e.Slot),
-		Value:              fmt.Sprintf("%d", e.Value),
-		ExecutionPayment:   fmt.Sprintf("%d", e.ExecutionPayment),
-		BlobKZGCommitments: blobKZGCommitments,
+		ParentBlockHash:       fmt.Sprintf("%#x", e.ParentBlockHash),
+		ParentBlockRoot:       fmt.Sprintf("%#x", e.ParentBlockRoot),
+		BlockHash:             fmt.Sprintf("%#x", e.BlockHash),
+		PrevRandao:            fmt.Sprintf("%#x", e.PrevRandao),
+		FeeRecipient:          fmt.Sprintf("%#x", e.FeeRecipient),
+		GasLimit:              fmt.Sprintf("%d", e.GasLimit),
+		BuilderIndex:          fmt.Sprintf("%d", e.BuilderIndex),
+		Slot:                  fmt.Sprintf("%d", e.Slot),
+		Value:                 fmt.Sprintf("%d", e.Value),
+		ExecutionPayment:      fmt.Sprintf("%d", e.ExecutionPayment),
+		BlobKZGCommitments:    blobKZGCommitments,
+		ExecutionRequestsRoot: fmt.Sprintf("%#x", e.ExecutionRequestsRoot),
 	})
 }
 
@@ -184,6 +186,16 @@ func (e *ExecutionPayloadBid) UnmarshalJSON(input []byte) error {
 		}
 		copy(e.BlobKZGCommitments[i][:], commitmentBytes)
 	}
+
+	// Execution requests root
+	if data.ExecutionRequestsRoot == "" {
+		return errors.New("execution requests root missing")
+	}
+	executionRequestsRoot, err := hex.DecodeString(strings.TrimPrefix(data.ExecutionRequestsRoot, "0x"))
+	if err != nil {
+		return errors.Wrap(err, "invalid execution requests root")
+	}
+	copy(e.ExecutionRequestsRoot[:], executionRequestsRoot)
 
 	return nil
 }

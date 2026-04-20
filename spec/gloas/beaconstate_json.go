@@ -56,7 +56,7 @@ type beaconStateJSON struct {
 	InactivityScores              []string                            `json:"inactivity_scores"`
 	CurrentSyncCommittee          *altair.SyncCommittee               `json:"current_sync_committee"`
 	NextSyncCommittee             *altair.SyncCommittee               `json:"next_sync_committee"`
-	LatestExecutionPayloadBid     *ExecutionPayloadBid                `json:"latest_execution_payload_bid"`
+	LatestBlockHash               string                              `json:"latest_block_hash"`
 	NextWithdrawalIndex           string                              `json:"next_withdrawal_index"`
 	NextWithdrawalValidatorIndex  string                              `json:"next_withdrawal_validator_index"`
 	HistoricalSummaries           []*capella.HistoricalSummary        `json:"historical_summaries"`
@@ -75,7 +75,7 @@ type beaconStateJSON struct {
 	ExecutionPayloadAvailability  []string                            `json:"execution_payload_availability"`
 	BuilderPendingPayments        []*BuilderPendingPayment            `json:"builder_pending_payments"`
 	BuilderPendingWithdrawals     []*BuilderPendingWithdrawal         `json:"builder_pending_withdrawals"`
-	LatestBlockHash               string                              `json:"latest_block_hash"`
+	LatestExecutionPayloadBid     *ExecutionPayloadBid                `json:"latest_execution_payload_bid"`
 	PayloadExpectedWithdrawals    []*capella.Withdrawal               `json:"payload_expected_withdrawals"`
 	PTCWindow                     [][]string                          `json:"ptc_window"`
 }
@@ -147,7 +147,7 @@ func (b *BeaconState) MarshalJSON() ([]byte, error) {
 		InactivityScores:              inactivityScores,
 		CurrentSyncCommittee:          b.CurrentSyncCommittee,
 		NextSyncCommittee:             b.NextSyncCommittee,
-		LatestExecutionPayloadBid:     b.LatestExecutionPayloadBid,
+		LatestBlockHash:               fmt.Sprintf("%#x", b.LatestBlockHash),
 		NextWithdrawalIndex:           fmt.Sprintf("%d", b.NextWithdrawalIndex),
 		NextWithdrawalValidatorIndex:  fmt.Sprintf("%d", b.NextWithdrawalValidatorIndex),
 		HistoricalSummaries:           b.HistoricalSummaries,
@@ -166,7 +166,7 @@ func (b *BeaconState) MarshalJSON() ([]byte, error) {
 		ExecutionPayloadAvailability:  executionPayloadAvailability,
 		BuilderPendingPayments:        b.BuilderPendingPayments,
 		BuilderPendingWithdrawals:     b.BuilderPendingWithdrawals,
-		LatestBlockHash:               fmt.Sprintf("%#x", b.LatestBlockHash),
+		LatestExecutionPayloadBid:     b.LatestExecutionPayloadBid,
 		PayloadExpectedWithdrawals:    b.PayloadExpectedWithdrawals,
 		PTCWindow:                     ptcWindow,
 	})
@@ -308,10 +308,16 @@ func (b *BeaconState) UnmarshalJSON(input []byte) error {
 		return errors.Wrap(err, "next_sync_committee")
 	}
 
-	b.LatestExecutionPayloadBid = &ExecutionPayloadBid{}
-	if err := b.LatestExecutionPayloadBid.UnmarshalJSON(raw["latest_execution_payload_bid"]); err != nil {
-		return errors.Wrap(err, "latest_execution_payload_bid")
+	if raw["latest_block_hash"] == nil {
+		return errors.New("latest block hash missing")
 	}
+	latestBlockHash, err := hex.DecodeString(
+		strings.TrimPrefix(string(bytes.Trim(raw["latest_block_hash"], `"`)), "0x"),
+	)
+	if err != nil {
+		return errors.Wrap(err, "invalid latest block hash")
+	}
+	copy(b.LatestBlockHash[:], latestBlockHash)
 
 	if err := b.NextWithdrawalIndex.UnmarshalJSON(raw["next_withdrawal_index"]); err != nil {
 		return errors.Wrap(err, "next_withdrawal_index")
@@ -421,16 +427,10 @@ func (b *BeaconState) UnmarshalJSON(input []byte) error {
 		}
 	}
 
-	if raw["latest_block_hash"] == nil {
-		return errors.New("latest block hash missing")
+	b.LatestExecutionPayloadBid = &ExecutionPayloadBid{}
+	if err := b.LatestExecutionPayloadBid.UnmarshalJSON(raw["latest_execution_payload_bid"]); err != nil {
+		return errors.Wrap(err, "latest_execution_payload_bid")
 	}
-	latestBlockHash, err := hex.DecodeString(
-		strings.TrimPrefix(string(bytes.Trim(raw["latest_block_hash"], `"`)), "0x"),
-	)
-	if err != nil {
-		return errors.Wrap(err, "invalid latest block hash")
-	}
-	copy(b.LatestBlockHash[:], latestBlockHash)
 
 	if err := json.Unmarshal(raw["payload_expected_withdrawals"], &b.PayloadExpectedWithdrawals); err != nil {
 		return errors.Wrap(err, "payload_expected_withdrawals")
