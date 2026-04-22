@@ -13,5 +13,5 @@
 
 package fulu
 
-//go:generate rm -f blockcontents_ssz.go signedblockcontents_ssz.go
-//go:generate go tool dynssz-gen -package . -legacy -without-dynamic-expressions -types BlockContents:blockcontents_ssz.go,SignedBlockContents:signedblockcontents_ssz.go
+//go:generate rm -f *_ssz.go
+//go:generate go tool dynssz-gen -config generate.yaml

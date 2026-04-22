@@ -13,5 +13,5 @@
 
 package v1
 
-//go:generate rm -f blobs_ssz.go signedvalidatorregistration_ssz.go validatorregistration_ssz.go
-//go:generate go tool dynssz-gen -package . -legacy -without-dynamic-expressions -types Blobs:blobs_ssz.go,SignedValidatorRegistration:signedvalidatorregistration_ssz.go,ValidatorRegistration:validatorregistration_ssz.go
+//go:generate rm -f *_ssz.go
+//go:generate go tool dynssz-gen -config generate.yaml

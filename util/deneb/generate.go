@@ -13,5 +13,5 @@
 
 package deneb
 
-//go:generate rm -f blob_ssz.go
-//go:generate go tool dynssz-gen -package . -legacy -without-dynamic-expressions -types BeaconBlockBlob:blob_ssz.go
+//go:generate rm -f *_ssz.go
+//go:generate go tool dynssz-gen -config generate.yaml

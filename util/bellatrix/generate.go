@@ -13,5 +13,5 @@
 
 package bellatrix
 
-//go:generate rm -f transactions_ssz.go
-//go:generate go tool dynssz-gen -package . -legacy -without-dynamic-expressions -types ExecutionPayloadTransactions:transactions_ssz.go
+//go:generate rm -f *_ssz.go
+//go:generate go tool dynssz-gen -config generate.yaml

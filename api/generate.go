@@ -13,5 +13,5 @@
 
 package api
 
-//go:generate rm -f versionedblindedbeaconblock_ssz.go versionedsignedblindedbeaconblock_ssz.go versionedsignedvalidatorregistration_ssz.go
-//go:generate go tool dynssz-gen -package . -legacy -without-dynamic-expressions -types VersionedBlindedBeaconBlock:versionedblindedbeaconblock_ssz.go,VersionedSignedBlindedBeaconBlock:versionedsignedblindedbeaconblock_ssz.go,VersionedSignedValidatorRegistration:versionedsignedvalidatorregistration_ssz.go
+//go:generate rm -f *_ssz.go
+//go:generate go tool dynssz-gen -config generate.yaml
