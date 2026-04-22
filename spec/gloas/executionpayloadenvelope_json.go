@@ -20,20 +20,16 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/attestantio/go-eth2-client/spec/deneb"
 	"github.com/attestantio/go-eth2-client/spec/electra"
-	"github.com/attestantio/go-eth2-client/spec/phase0"
 	"github.com/pkg/errors"
 )
 
 // executionPayloadEnvelopeJSON is the spec representation of the struct.
 type executionPayloadEnvelopeJSON struct {
-	Payload           *deneb.ExecutionPayload    `json:"payload"`
+	Payload           *ExecutionPayload          `json:"payload"`
 	ExecutionRequests *electra.ExecutionRequests `json:"execution_requests"`
 	BuilderIndex      string                     `json:"builder_index"`
 	BeaconBlockRoot   string                     `json:"beacon_block_root"`
-	Slot              string                     `json:"slot"`
-	StateRoot         string                     `json:"state_root"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -43,8 +39,6 @@ func (e *ExecutionPayloadEnvelope) MarshalJSON() ([]byte, error) {
 		ExecutionRequests: e.ExecutionRequests,
 		BuilderIndex:      fmt.Sprintf("%d", e.BuilderIndex),
 		BeaconBlockRoot:   fmt.Sprintf("%#x", e.BeaconBlockRoot),
-		Slot:              fmt.Sprintf("%d", e.Slot),
-		StateRoot:         fmt.Sprintf("%#x", e.StateRoot),
 	})
 }
 
@@ -82,24 +76,6 @@ func (e *ExecutionPayloadEnvelope) UnmarshalJSON(input []byte) error {
 		return errors.Wrap(err, "invalid beacon block root")
 	}
 	copy(e.BeaconBlockRoot[:], root)
-
-	if data.Slot == "" {
-		return errors.New("slot missing")
-	}
-	slot, err := strconv.ParseUint(data.Slot, 10, 64)
-	if err != nil {
-		return errors.Wrap(err, "invalid slot")
-	}
-	e.Slot = phase0.Slot(slot)
-
-	if data.StateRoot == "" {
-		return errors.New("state root missing")
-	}
-	stateRoot, err := hex.DecodeString(strings.TrimPrefix(data.StateRoot, "0x"))
-	if err != nil {
-		return errors.Wrap(err, "invalid state root")
-	}
-	copy(e.StateRoot[:], stateRoot)
 
 	return nil
 }

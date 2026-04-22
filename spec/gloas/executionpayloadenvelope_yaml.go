@@ -29,8 +29,6 @@ func (e *ExecutionPayloadEnvelope) MarshalYAML() ([]byte, error) {
 		ExecutionRequests: e.ExecutionRequests,
 		BuilderIndex:      fmt.Sprintf("%d", e.BuilderIndex),
 		BeaconBlockRoot:   fmt.Sprintf("%#x", e.BeaconBlockRoot),
-		Slot:              fmt.Sprintf("%d", e.Slot),
-		StateRoot:         fmt.Sprintf("%#x", e.StateRoot),
 	}, yaml.Flow(true))
 	if err != nil {
 		return nil, err
