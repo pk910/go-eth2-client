@@ -121,8 +121,6 @@ func (*Service) submitProposalJSON(_ context.Context,
 		specJSON, err = json.Marshal(proposal.Electra)
 	case spec.DataVersionFulu:
 		specJSON, err = json.Marshal(proposal.Fulu)
-	case spec.DataVersionGloas:
-		specJSON, err = json.Marshal(proposal.Fulu)
 	default:
 		err = errors.New("unknown proposal version")
 	}
@@ -162,8 +160,6 @@ func (*Service) submitProposalSSZ(_ context.Context,
 	case spec.DataVersionElectra:
 		specSSZ, err = proposal.Electra.MarshalSSZ()
 	case spec.DataVersionFulu:
-		specSSZ, err = proposal.Fulu.MarshalSSZ()
-	case spec.DataVersionGloas:
 		specSSZ, err = proposal.Fulu.MarshalSSZ()
 	default:
 		err = errors.New("unknown proposal version")

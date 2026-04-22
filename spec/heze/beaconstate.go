@@ -65,10 +65,10 @@ type BeaconState struct {
 	PendingPartialWithdrawals     []*electra.PendingPartialWithdrawal `ssz-max:"134217728"`
 	PendingConsolidations         []*electra.PendingConsolidation     `ssz-max:"262144"`
 	ProposerLookahead             []phase0.ValidatorIndex             `dynssz-size:"(MIN_SEED_LOOKAHEAD+1)*SLOTS_PER_EPOCH" ssz-size:"64"`
-	Builders                      []*gloas.Builder                    `dynssz-max:"BUILDER_REGISTRY_LIMIT" ssz-max:"1099511627776"`
+	Builders                      []*gloas.Builder                    `dynssz-max:"BUILDER_REGISTRY_LIMIT"                  ssz-max:"1099511627776"`
 	NextWithdrawalBuilderIndex    gloas.BuilderIndex
-	ExecutionPayloadAvailability  []uint8                           `dynssz-size:"SLOTS_PER_HISTORICAL_ROOT/8" ssz-size:"1024"`
-	BuilderPendingPayments        []*gloas.BuilderPendingPayment    `dynssz-size:"SLOTS_PER_EPOCH*2" ssz-size:"64"`
+	ExecutionPayloadAvailability  []uint8                           `dynssz-size:"SLOTS_PER_HISTORICAL_ROOT/8"      ssz-size:"1024"`
+	BuilderPendingPayments        []*gloas.BuilderPendingPayment    `dynssz-size:"SLOTS_PER_EPOCH*2"                ssz-size:"64"`
 	BuilderPendingWithdrawals     []*gloas.BuilderPendingWithdrawal `dynssz-max:"BUILDER_PENDING_WITHDRAWALS_LIMIT" ssz-max:"1048576"`
 	LatestBlockHash               phase0.Hash32                     `ssz-size:"32"`
 	PayloadExpectedWithdrawals    []*capella.Withdrawal             `dynssz-max:"MAX_WITHDRAWALS_PER_PAYLOAD"       ssz-max:"16"`

@@ -23,7 +23,7 @@ import (
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 )
 
-// VersionedBeaconBlockBody contains a versioned beacon block body.
+// VersionedSignedExecutionPayloadBid contains a versioned signed execution payload bid.
 type VersionedSignedExecutionPayloadBid struct {
 	Version DataVersion
 	Gloas   *gloas.SignedExecutionPayloadBid
@@ -33,7 +33,8 @@ type VersionedSignedExecutionPayloadBid struct {
 // String returns a string version of the structure.
 func (v *VersionedSignedExecutionPayloadBid) String() string {
 	switch v.Version {
-	case DataVersionPhase0, DataVersionAltair, DataVersionBellatrix, DataVersionCapella, DataVersionDeneb, DataVersionElectra, DataVersionFulu:
+	case DataVersionPhase0, DataVersionAltair, DataVersionBellatrix, DataVersionCapella,
+		DataVersionDeneb, DataVersionElectra, DataVersionFulu:
 		return ""
 	case DataVersionGloas:
 		if v.Gloas == nil {
@@ -86,7 +87,7 @@ func (v *VersionedSignedExecutionPayloadBid) ParentBlockHash() (phase0.Hash32, e
 	}
 }
 
-// ParentBlockHash returns the parent block hash of the execution payload bid.
+// ParentBlockRoot returns the parent block root of the execution payload bid.
 func (v *VersionedSignedExecutionPayloadBid) ParentBlockRoot() (phase0.Root, error) {
 	switch v.Version {
 	case DataVersionPhase0:
@@ -379,11 +380,13 @@ func (v *VersionedSignedExecutionPayloadBid) BlobKZGCommitments() ([]deneb.KZGCo
 		if v.Gloas == nil || v.Gloas.Message == nil {
 			return nil, errors.New("no gloas execution payload bid")
 		}
+
 		return v.Gloas.Message.BlobKZGCommitments, nil
 	case DataVersionHeze:
 		if v.Heze == nil || v.Heze.Message == nil {
 			return nil, errors.New("no heze execution payload bid")
 		}
+
 		return v.Heze.Message.BlobKZGCommitments, nil
 	default:
 		return nil, errors.New("unknown version")
@@ -411,11 +414,13 @@ func (v *VersionedSignedExecutionPayloadBid) Signature() (phase0.BLSSignature, e
 		if v.Gloas == nil {
 			return phase0.BLSSignature{}, errors.New("no gloas execution payload bid")
 		}
+
 		return v.Gloas.Signature, nil
 	case DataVersionHeze:
 		if v.Heze == nil {
 			return phase0.BLSSignature{}, errors.New("no heze execution payload bid")
 		}
+
 		return v.Heze.Signature, nil
 	default:
 		return phase0.BLSSignature{}, errors.New("unknown version")

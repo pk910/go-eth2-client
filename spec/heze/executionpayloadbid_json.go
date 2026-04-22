@@ -196,7 +196,7 @@ func (e *ExecutionPayloadBid) UnmarshalJSON(input []byte) error {
 	if err != nil {
 		return errors.Wrap(err, "invalid inclusion list bits")
 	}
-	copy(e.InclusionListBits[:], inclusionListBits)
+	copy(e.InclusionListBits, inclusionListBits)
 
 	return nil
 }

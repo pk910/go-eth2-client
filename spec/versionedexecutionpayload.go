@@ -38,7 +38,9 @@ type VersionedExecutionPayload struct {
 
 // IsEmpty returns true if there is no block.
 func (v *VersionedExecutionPayload) IsEmpty() bool {
-	return v.Version < DataVersionBellatrix || (v.Bellatrix == nil && v.Capella == nil && v.Deneb == nil && v.Electra == nil && v.Fulu == nil && v.Gloas == nil && v.Heze == nil)
+	return v.Version < DataVersionBellatrix ||
+		(v.Bellatrix == nil && v.Capella == nil && v.Deneb == nil && v.Electra == nil &&
+			v.Fulu == nil && v.Gloas == nil && v.Heze == nil)
 }
 
 // ParentHash returns the parent hash of the execution payload.
