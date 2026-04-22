@@ -19,6 +19,7 @@ import (
 	"github.com/attestantio/go-eth2-client/spec/bellatrix"
 	"github.com/attestantio/go-eth2-client/spec/capella"
 	"github.com/attestantio/go-eth2-client/spec/deneb"
+	"github.com/attestantio/go-eth2-client/spec/gloas"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 	"github.com/holiman/uint256"
 )
@@ -31,7 +32,7 @@ type VersionedExecutionPayload struct {
 	Deneb     *deneb.ExecutionPayload
 	Electra   *deneb.ExecutionPayload
 	Fulu      *deneb.ExecutionPayload
-	Gloas     *deneb.ExecutionPayload
+	Gloas     *gloas.ExecutionPayload
 }
 
 // IsEmpty returns true if there is no block.
