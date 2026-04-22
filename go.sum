@@ -65,8 +65,6 @@ github.com/mattn/go-isatty v0.0.20 h1:xfD0iDuEKnDkl03q4limB+vH+GxLEtL/jb4xVJSWWE
 github.com/mattn/go-isatty v0.0.20/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
 github.com/matttproud/golang_protobuf_extensions v1.0.4 h1:mmDVorXM7PCGKw94cs5zkfA9PSy5pEvNWRP0ET0TIVo=
 github.com/matttproud/golang_protobuf_extensions v1.0.4/go.mod h1:BSXmuO+STAnVfrANrmjBb36TMTDstsz7MSK+HVaYKv4=
-github.com/pk910/dynamic-ssz v1.3.0 h1:b6v5v3HWAmdxSVKWk4GS7Y/lhURZPAHRQ7EEMUparQk=
-github.com/pk910/dynamic-ssz v1.3.0/go.mod h1:NmeFF4jxzVwWC8cnEhUB7xMI++8hd/0OZvZHFrUvFfs=
 github.com/pk910/dynamic-ssz v1.3.1 h1:S/no7kRA5FSORmfybG4Cs49CjPgP94fePKPxt8uKkdI=
 github.com/pk910/dynamic-ssz v1.3.1/go.mod h1:ARK5qDyrJ/MHpaZHGJYvCKElvaMYTE9pXOQbvPDeE0U=
 github.com/pk910/hashtree-bindings v0.1.0 h1:w7NyRWFi2OaYEFvo9ADcE/QU6PMuVLl3hBgx92KiH9c=
