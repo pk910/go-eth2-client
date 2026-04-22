@@ -13,5 +13,5 @@
 
 package fulu
 
-//go:generate rm -f beaconstate_ssz.go
-//go:generate go tool dynssz-gen -package . -legacy -without-dynamic-expressions -types BeaconState:beaconstate_ssz.go
+//go:generate rm -f *_ssz.go
+//go:generate go tool dynssz-gen -config generate.yaml
