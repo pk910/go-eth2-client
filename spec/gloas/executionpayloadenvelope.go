@@ -23,10 +23,11 @@ import (
 
 // ExecutionPayloadEnvelope represents an execution payload envelope.
 type ExecutionPayloadEnvelope struct {
-	Payload           *ExecutionPayload
-	ExecutionRequests *electra.ExecutionRequests
-	BuilderIndex      BuilderIndex
-	BeaconBlockRoot   phase0.Root `ssz-size:"32"`
+	Payload               *ExecutionPayload
+	ExecutionRequests     *electra.ExecutionRequests
+	BuilderIndex          BuilderIndex
+	BeaconBlockRoot       phase0.Root `ssz-size:"32"`
+	ParentBeaconBlockRoot phase0.Root `ssz-size:"32"`
 }
 
 // String returns a string version of the structure.
