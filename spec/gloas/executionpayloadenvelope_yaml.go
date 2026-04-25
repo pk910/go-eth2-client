@@ -25,10 +25,11 @@ import (
 // MarshalYAML implements yaml.Marshaler.
 func (e *ExecutionPayloadEnvelope) MarshalYAML() ([]byte, error) {
 	yamlBytes, err := yaml.MarshalWithOptions(&executionPayloadEnvelopeJSON{
-		Payload:           e.Payload,
-		ExecutionRequests: e.ExecutionRequests,
-		BuilderIndex:      fmt.Sprintf("%d", e.BuilderIndex),
-		BeaconBlockRoot:   fmt.Sprintf("%#x", e.BeaconBlockRoot),
+		Payload:               e.Payload,
+		ExecutionRequests:     e.ExecutionRequests,
+		BuilderIndex:          fmt.Sprintf("%d", e.BuilderIndex),
+		BeaconBlockRoot:       fmt.Sprintf("%#x", e.BeaconBlockRoot),
+		ParentBeaconBlockRoot: fmt.Sprintf("%#x", e.ParentBeaconBlockRoot),
 	}, yaml.Flow(true))
 	if err != nil {
 		return nil, err

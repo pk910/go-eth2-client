@@ -26,19 +26,21 @@ import (
 
 // executionPayloadEnvelopeJSON is the spec representation of the struct.
 type executionPayloadEnvelopeJSON struct {
-	Payload           *ExecutionPayload          `json:"payload"`
-	ExecutionRequests *electra.ExecutionRequests `json:"execution_requests"`
-	BuilderIndex      string                     `json:"builder_index"`
-	BeaconBlockRoot   string                     `json:"beacon_block_root"`
+	Payload               *ExecutionPayload          `json:"payload"`
+	ExecutionRequests     *electra.ExecutionRequests `json:"execution_requests"`
+	BuilderIndex          string                     `json:"builder_index"`
+	BeaconBlockRoot       string                     `json:"beacon_block_root"`
+	ParentBeaconBlockRoot string                     `json:"parent_beacon_block_root"`
 }
 
 // MarshalJSON implements json.Marshaler.
 func (e *ExecutionPayloadEnvelope) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&executionPayloadEnvelopeJSON{
-		Payload:           e.Payload,
-		ExecutionRequests: e.ExecutionRequests,
-		BuilderIndex:      fmt.Sprintf("%d", e.BuilderIndex),
-		BeaconBlockRoot:   fmt.Sprintf("%#x", e.BeaconBlockRoot),
+		Payload:               e.Payload,
+		ExecutionRequests:     e.ExecutionRequests,
+		BuilderIndex:          fmt.Sprintf("%d", e.BuilderIndex),
+		BeaconBlockRoot:       fmt.Sprintf("%#x", e.BeaconBlockRoot),
+		ParentBeaconBlockRoot: fmt.Sprintf("%#x", e.ParentBeaconBlockRoot),
 	})
 }
 
@@ -76,6 +78,15 @@ func (e *ExecutionPayloadEnvelope) UnmarshalJSON(input []byte) error {
 		return errors.Wrap(err, "invalid beacon block root")
 	}
 	copy(e.BeaconBlockRoot[:], root)
+
+	if data.ParentBeaconBlockRoot == "" {
+		return errors.New("parent beacon block root missing")
+	}
+	parentRoot, err := hex.DecodeString(strings.TrimPrefix(data.ParentBeaconBlockRoot, "0x"))
+	if err != nil {
+		return errors.Wrap(err, "invalid parent beacon block root")
+	}
+	copy(e.ParentBeaconBlockRoot[:], parentRoot)
 
 	return nil
 }
