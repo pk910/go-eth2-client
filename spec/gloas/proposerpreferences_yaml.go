@@ -25,6 +25,7 @@ import (
 // MarshalYAML implements yaml.Marshaler.
 func (p *ProposerPreferences) MarshalYAML() ([]byte, error) {
 	yamlBytes, err := yaml.MarshalWithOptions(&proposerPreferencesJSON{
+		DependentRoot:  fmt.Sprintf("%#x", p.DependentRoot),
 		ProposalSlot:   fmt.Sprintf("%d", p.ProposalSlot),
 		ValidatorIndex: fmt.Sprintf("%d", p.ValidatorIndex),
 		FeeRecipient:   fmt.Sprintf("%#x", p.FeeRecipient),

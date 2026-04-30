@@ -26,6 +26,7 @@ import (
 
 // proposerPreferencesJSON is the spec representation of the struct.
 type proposerPreferencesJSON struct {
+	DependentRoot  string `json:"dependent_root"`
 	ProposalSlot   string `json:"proposal_slot"`
 	ValidatorIndex string `json:"validator_index"`
 	FeeRecipient   string `json:"fee_recipient"`
@@ -35,6 +36,7 @@ type proposerPreferencesJSON struct {
 // MarshalJSON implements json.Marshaler.
 func (p *ProposerPreferences) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&proposerPreferencesJSON{
+		DependentRoot:  fmt.Sprintf("%#x", p.DependentRoot),
 		ProposalSlot:   fmt.Sprintf("%d", p.ProposalSlot),
 		ValidatorIndex: fmt.Sprintf("%d", p.ValidatorIndex),
 		FeeRecipient:   fmt.Sprintf("%#x", p.FeeRecipient),
@@ -48,6 +50,19 @@ func (p *ProposerPreferences) UnmarshalJSON(input []byte) error {
 	if err := json.Unmarshal(input, &data); err != nil {
 		return errors.Wrap(err, "invalid JSON")
 	}
+
+	// Dependent root.
+	if data.DependentRoot == "" {
+		return errors.New("dependent root missing")
+	}
+	dependentRoot, err := hex.DecodeString(strings.TrimPrefix(data.DependentRoot, "0x"))
+	if err != nil {
+		return errors.Wrap(err, "invalid dependent root")
+	}
+	if len(dependentRoot) != phase0.RootLength {
+		return errors.New("incorrect length for dependent root")
+	}
+	copy(p.DependentRoot[:], dependentRoot)
 
 	// Proposal slot.
 	if data.ProposalSlot == "" {

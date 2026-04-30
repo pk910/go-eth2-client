@@ -23,6 +23,7 @@ import (
 
 // ProposerPreferences represents a proposer's preferences for execution payload construction.
 type ProposerPreferences struct {
+	DependentRoot  phase0.Root `ssz-size:"32"`
 	ProposalSlot   phase0.Slot
 	ValidatorIndex phase0.ValidatorIndex
 	FeeRecipient   bellatrix.ExecutionAddress `ssz-size:"20"`
