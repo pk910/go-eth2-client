@@ -57,7 +57,7 @@ type beaconStateJSON struct {
 	InactivityScores              []string                            `json:"inactivity_scores"`
 	CurrentSyncCommittee          *altair.SyncCommittee               `json:"current_sync_committee"`
 	NextSyncCommittee             *altair.SyncCommittee               `json:"next_sync_committee"`
-	LatestExecutionPayloadBid     *ExecutionPayloadBid                `json:"latest_execution_payload_bid"`
+	LatestBlockHash               string                              `json:"latest_block_hash"`
 	NextWithdrawalIndex           string                              `json:"next_withdrawal_index"`
 	NextWithdrawalValidatorIndex  string                              `json:"next_withdrawal_validator_index"`
 	HistoricalSummaries           []*capella.HistoricalSummary        `json:"historical_summaries"`
@@ -71,13 +71,14 @@ type beaconStateJSON struct {
 	PendingPartialWithdrawals     []*electra.PendingPartialWithdrawal `json:"pending_partial_withdrawals"`
 	PendingConsolidations         []*electra.PendingConsolidation     `json:"pending_consolidations"`
 	ProposerLookahead             []string                            `json:"proposer_lookahead"`
-	Builders                      []*gloas.Builder                    `json:"builders"`
+	Builders                      []*gloas.Builder                          `json:"builders"`
 	NextWithdrawalBuilderIndex    string                              `json:"next_withdrawal_builder_index"`
 	ExecutionPayloadAvailability  []string                            `json:"execution_payload_availability"`
-	BuilderPendingPayments        []*gloas.BuilderPendingPayment      `json:"builder_pending_payments"`
-	BuilderPendingWithdrawals     []*gloas.BuilderPendingWithdrawal   `json:"builder_pending_withdrawals"`
-	LatestBlockHash               string                              `json:"latest_block_hash"`
+	BuilderPendingPayments        []*gloas.BuilderPendingPayment            `json:"builder_pending_payments"`
+	BuilderPendingWithdrawals     []*gloas.BuilderPendingWithdrawal         `json:"builder_pending_withdrawals"`
+	LatestExecutionPayloadBid     *ExecutionPayloadBid                `json:"latest_execution_payload_bid"`
 	PayloadExpectedWithdrawals    []*capella.Withdrawal               `json:"payload_expected_withdrawals"`
+	PTCWindow                     [][]string                          `json:"ptc_window"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -114,6 +115,13 @@ func (b *BeaconState) MarshalJSON() ([]byte, error) {
 	for i := range b.ExecutionPayloadAvailability {
 		executionPayloadAvailability[i] = fmt.Sprintf("%d", b.ExecutionPayloadAvailability[i])
 	}
+	ptcWindow := make([][]string, len(b.PTCWindow))
+	for i := range b.PTCWindow {
+		ptcWindow[i] = make([]string, len(b.PTCWindow[i]))
+		for j := range b.PTCWindow[i] {
+			ptcWindow[i][j] = fmt.Sprintf("%d", b.PTCWindow[i][j])
+		}
+	}
 
 	return json.Marshal(&beaconStateJSON{
 		GenesisTime:                   strconv.FormatUint(b.GenesisTime, 10),
@@ -140,7 +148,7 @@ func (b *BeaconState) MarshalJSON() ([]byte, error) {
 		InactivityScores:              inactivityScores,
 		CurrentSyncCommittee:          b.CurrentSyncCommittee,
 		NextSyncCommittee:             b.NextSyncCommittee,
-		LatestExecutionPayloadBid:     b.LatestExecutionPayloadBid,
+		LatestBlockHash:               fmt.Sprintf("%#x", b.LatestBlockHash),
 		NextWithdrawalIndex:           fmt.Sprintf("%d", b.NextWithdrawalIndex),
 		NextWithdrawalValidatorIndex:  fmt.Sprintf("%d", b.NextWithdrawalValidatorIndex),
 		HistoricalSummaries:           b.HistoricalSummaries,
@@ -159,8 +167,9 @@ func (b *BeaconState) MarshalJSON() ([]byte, error) {
 		ExecutionPayloadAvailability:  executionPayloadAvailability,
 		BuilderPendingPayments:        b.BuilderPendingPayments,
 		BuilderPendingWithdrawals:     b.BuilderPendingWithdrawals,
-		LatestBlockHash:               fmt.Sprintf("%#x", b.LatestBlockHash),
+		LatestExecutionPayloadBid:     b.LatestExecutionPayloadBid,
 		PayloadExpectedWithdrawals:    b.PayloadExpectedWithdrawals,
+		PTCWindow:                     ptcWindow,
 	})
 }
 
@@ -300,10 +309,16 @@ func (b *BeaconState) UnmarshalJSON(input []byte) error {
 		return errors.Wrap(err, "next_sync_committee")
 	}
 
-	b.LatestExecutionPayloadBid = &ExecutionPayloadBid{}
-	if err := b.LatestExecutionPayloadBid.UnmarshalJSON(raw["latest_execution_payload_bid"]); err != nil {
-		return errors.Wrap(err, "latest_execution_payload_bid")
+	if raw["latest_block_hash"] == nil {
+		return errors.New("latest block hash missing")
 	}
+	latestBlockHash, err := hex.DecodeString(
+		strings.TrimPrefix(string(bytes.Trim(raw["latest_block_hash"], `"`)), "0x"),
+	)
+	if err != nil {
+		return errors.Wrap(err, "invalid latest block hash")
+	}
+	copy(b.LatestBlockHash[:], latestBlockHash)
 
 	if err := b.NextWithdrawalIndex.UnmarshalJSON(raw["next_withdrawal_index"]); err != nil {
 		return errors.Wrap(err, "next_withdrawal_index")
@@ -413,16 +428,10 @@ func (b *BeaconState) UnmarshalJSON(input []byte) error {
 		}
 	}
 
-	if raw["latest_block_hash"] == nil {
-		return errors.New("latest block hash missing")
+	b.LatestExecutionPayloadBid = &ExecutionPayloadBid{}
+	if err := b.LatestExecutionPayloadBid.UnmarshalJSON(raw["latest_execution_payload_bid"]); err != nil {
+		return errors.Wrap(err, "latest_execution_payload_bid")
 	}
-	latestBlockHash, err := hex.DecodeString(
-		strings.TrimPrefix(string(bytes.Trim(raw["latest_block_hash"], `"`)), "0x"),
-	)
-	if err != nil {
-		return errors.Wrap(err, "invalid latest block hash")
-	}
-	copy(b.LatestBlockHash[:], latestBlockHash)
 
 	if err := json.Unmarshal(raw["payload_expected_withdrawals"], &b.PayloadExpectedWithdrawals); err != nil {
 		return errors.Wrap(err, "payload_expected_withdrawals")
@@ -430,6 +439,22 @@ func (b *BeaconState) UnmarshalJSON(input []byte) error {
 	for i := range b.PayloadExpectedWithdrawals {
 		if b.PayloadExpectedWithdrawals[i] == nil {
 			return fmt.Errorf("payload expected withdrawals entry %d missing", i)
+		}
+	}
+
+	ptcWindowStr := make([][]string, 0)
+	if err := json.Unmarshal(raw["ptc_window"], &ptcWindowStr); err != nil {
+		return errors.Wrap(err, "ptc_window")
+	}
+	b.PTCWindow = make([][]phase0.ValidatorIndex, len(ptcWindowStr))
+	for i := range ptcWindowStr {
+		b.PTCWindow[i] = make([]phase0.ValidatorIndex, len(ptcWindowStr[i]))
+		for j := range ptcWindowStr[i] {
+			idx, parseErr := strconv.ParseUint(ptcWindowStr[i][j], 10, 64)
+			if parseErr != nil {
+				return errors.Wrap(parseErr, fmt.Sprintf("ptc_window[%d][%d]", i, j))
+			}
+			b.PTCWindow[i][j] = phase0.ValidatorIndex(idx)
 		}
 	}
 

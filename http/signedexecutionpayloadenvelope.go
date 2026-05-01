@@ -85,7 +85,7 @@ func (s *Service) signedExecutionPayloadEnvelopeFromSSZ(ctx context.Context,
 		dynSSZ = dynssz.NewDynSsz(specs.Data)
 	}
 
-	if res.consensusVersion != spec.DataVersionGloas {
+	if res.consensusVersion != spec.DataVersionGloas && res.consensusVersion != spec.DataVersionHeze {
 		return nil, fmt.Errorf("execution payload envelope not available for block version %s", res.consensusVersion)
 	}
 
@@ -109,7 +109,7 @@ func (*Service) signedExecutionPayloadEnvelopeFromJSON(res *httpResponse) (
 ) {
 	response := &api.Response[*gloas.SignedExecutionPayloadEnvelope]{}
 
-	if res.consensusVersion != spec.DataVersionGloas {
+	if res.consensusVersion != spec.DataVersionGloas && res.consensusVersion != spec.DataVersionHeze {
 		return nil, fmt.Errorf("execution payload envelope not available for block version %s", res.consensusVersion)
 	}
 

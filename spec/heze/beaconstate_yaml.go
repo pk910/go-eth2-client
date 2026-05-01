@@ -53,7 +53,7 @@ type beaconStateYAML struct {
 	InactivityScores              []uint64                            `yaml:"inactivity_scores"`
 	CurrentSyncCommittee          *altair.SyncCommittee               `yaml:"current_sync_committee"`
 	NextSyncCommittee             *altair.SyncCommittee               `yaml:"next_sync_committee"`
-	LatestExecutionPayloadBid     *ExecutionPayloadBid                `yaml:"latest_execution_payload_bid"`
+	LatestBlockHash               phase0.Hash32                       `yaml:"latest_block_hash"`
 	NextWithdrawalIndex           capella.WithdrawalIndex             `yaml:"next_withdrawal_index"`
 	NextWithdrawalValidatorIndex  phase0.ValidatorIndex               `yaml:"next_withdrawal_validator_index"`
 	HistoricalSummaries           []*capella.HistoricalSummary        `yaml:"historical_summaries"`
@@ -67,13 +67,14 @@ type beaconStateYAML struct {
 	PendingPartialWithdrawals     []*electra.PendingPartialWithdrawal `yaml:"pending_partial_withdrawals"`
 	PendingConsolidations         []*electra.PendingConsolidation     `yaml:"pending_consolidations"`
 	ProposerLookahead             []phase0.ValidatorIndex             `yaml:"proposer_lookahead"`
-	Builders                      []*gloas.Builder                    `yaml:"builders"`
+	Builders                      []*gloas.Builder                          `yaml:"builders"`
 	NextWithdrawalBuilderIndex    gloas.BuilderIndex                  `yaml:"next_withdrawal_builder_index"`
 	ExecutionPayloadAvailability  string                              `yaml:"execution_payload_availability"`
-	BuilderPendingPayments        []*gloas.BuilderPendingPayment      `yaml:"builder_pending_payments"`
-	BuilderPendingWithdrawals     []*gloas.BuilderPendingWithdrawal   `yaml:"builder_pending_withdrawals"`
-	LatestBlockHash               phase0.Hash32                       `yaml:"latest_block_hash"`
+	BuilderPendingPayments        []*gloas.BuilderPendingPayment            `yaml:"builder_pending_payments"`
+	BuilderPendingWithdrawals     []*gloas.BuilderPendingWithdrawal         `yaml:"builder_pending_withdrawals"`
+	LatestExecutionPayloadBid     *ExecutionPayloadBid                `yaml:"latest_execution_payload_bid"`
 	PayloadExpectedWithdrawals    []*capella.Withdrawal               `yaml:"payload_expected_withdrawals"`
+	PTCWindow                     [][]phase0.ValidatorIndex           `yaml:"ptc_window"`
 }
 
 // MarshalYAML implements yaml.Marshaler.
@@ -103,7 +104,7 @@ func (b *BeaconState) MarshalYAML() ([]byte, error) {
 		InactivityScores:              b.InactivityScores,
 		CurrentSyncCommittee:          b.CurrentSyncCommittee,
 		NextSyncCommittee:             b.NextSyncCommittee,
-		LatestExecutionPayloadBid:     b.LatestExecutionPayloadBid,
+		LatestBlockHash:               b.LatestBlockHash,
 		NextWithdrawalIndex:           b.NextWithdrawalIndex,
 		NextWithdrawalValidatorIndex:  b.NextWithdrawalValidatorIndex,
 		HistoricalSummaries:           b.HistoricalSummaries,
@@ -119,11 +120,12 @@ func (b *BeaconState) MarshalYAML() ([]byte, error) {
 		ProposerLookahead:             b.ProposerLookahead,
 		Builders:                      b.Builders,
 		NextWithdrawalBuilderIndex:    b.NextWithdrawalBuilderIndex,
-		LatestBlockHash:               b.LatestBlockHash,
 		ExecutionPayloadAvailability:  fmt.Sprintf("%#x", b.ExecutionPayloadAvailability),
 		BuilderPendingPayments:        b.BuilderPendingPayments,
 		BuilderPendingWithdrawals:     b.BuilderPendingWithdrawals,
+		LatestExecutionPayloadBid:     b.LatestExecutionPayloadBid,
 		PayloadExpectedWithdrawals:    b.PayloadExpectedWithdrawals,
+		PTCWindow:                     b.PTCWindow,
 	}, yaml.Flow(true))
 	if err != nil {
 		return nil, err

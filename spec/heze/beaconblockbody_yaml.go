@@ -37,6 +37,7 @@ func (b *BeaconBlockBody) MarshalYAML() ([]byte, error) {
 		BLSToExecutionChanges:     b.BLSToExecutionChanges,
 		SignedExecutionPayloadBid: b.SignedExecutionPayloadBid,
 		PayloadAttestations:       b.PayloadAttestations,
+		ParentExecutionRequests:   b.ParentExecutionRequests,
 	}, yaml.Flow(true))
 	if err != nil {
 		return nil, err

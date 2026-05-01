@@ -41,6 +41,7 @@ type beaconBlockBodyJSON struct {
 	BLSToExecutionChanges     []*capella.SignedBLSToExecutionChange `json:"bls_to_execution_changes"`
 	SignedExecutionPayloadBid *SignedExecutionPayloadBid            `json:"signed_execution_payload_bid"`
 	PayloadAttestations       []*gloas.PayloadAttestation           `json:"payload_attestations"`
+	ParentExecutionRequests   *electra.ExecutionRequests            `json:"parent_execution_requests"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -58,6 +59,7 @@ func (b *BeaconBlockBody) MarshalJSON() ([]byte, error) {
 		BLSToExecutionChanges:     b.BLSToExecutionChanges,
 		SignedExecutionPayloadBid: b.SignedExecutionPayloadBid,
 		PayloadAttestations:       b.PayloadAttestations,
+		ParentExecutionRequests:   b.ParentExecutionRequests,
 	})
 }
 
@@ -99,6 +101,11 @@ func (b *BeaconBlockBody) UnmarshalJSON(input []byte) error {
 	b.BLSToExecutionChanges = data.BLSToExecutionChanges
 	b.SignedExecutionPayloadBid = data.SignedExecutionPayloadBid
 	b.PayloadAttestations = data.PayloadAttestations
+
+	if data.ParentExecutionRequests == nil {
+		return errors.New("parent execution requests missing")
+	}
+	b.ParentExecutionRequests = data.ParentExecutionRequests
 
 	return nil
 }
