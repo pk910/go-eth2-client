@@ -71,11 +71,11 @@ type beaconStateJSON struct {
 	PendingPartialWithdrawals     []*electra.PendingPartialWithdrawal `json:"pending_partial_withdrawals"`
 	PendingConsolidations         []*electra.PendingConsolidation     `json:"pending_consolidations"`
 	ProposerLookahead             []string                            `json:"proposer_lookahead"`
-	Builders                      []*gloas.Builder                          `json:"builders"`
+	Builders                      []*gloas.Builder                    `json:"builders"`
 	NextWithdrawalBuilderIndex    string                              `json:"next_withdrawal_builder_index"`
 	ExecutionPayloadAvailability  []string                            `json:"execution_payload_availability"`
-	BuilderPendingPayments        []*gloas.BuilderPendingPayment            `json:"builder_pending_payments"`
-	BuilderPendingWithdrawals     []*gloas.BuilderPendingWithdrawal         `json:"builder_pending_withdrawals"`
+	BuilderPendingPayments        []*gloas.BuilderPendingPayment      `json:"builder_pending_payments"`
+	BuilderPendingWithdrawals     []*gloas.BuilderPendingWithdrawal   `json:"builder_pending_withdrawals"`
 	LatestExecutionPayloadBid     *ExecutionPayloadBid                `json:"latest_execution_payload_bid"`
 	PayloadExpectedWithdrawals    []*capella.Withdrawal               `json:"payload_expected_withdrawals"`
 	PTCWindow                     [][]string                          `json:"ptc_window"`

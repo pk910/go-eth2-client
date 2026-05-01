@@ -67,11 +67,11 @@ type beaconStateYAML struct {
 	PendingPartialWithdrawals     []*electra.PendingPartialWithdrawal `yaml:"pending_partial_withdrawals"`
 	PendingConsolidations         []*electra.PendingConsolidation     `yaml:"pending_consolidations"`
 	ProposerLookahead             []phase0.ValidatorIndex             `yaml:"proposer_lookahead"`
-	Builders                      []*gloas.Builder                          `yaml:"builders"`
+	Builders                      []*gloas.Builder                    `yaml:"builders"`
 	NextWithdrawalBuilderIndex    gloas.BuilderIndex                  `yaml:"next_withdrawal_builder_index"`
 	ExecutionPayloadAvailability  string                              `yaml:"execution_payload_availability"`
-	BuilderPendingPayments        []*gloas.BuilderPendingPayment            `yaml:"builder_pending_payments"`
-	BuilderPendingWithdrawals     []*gloas.BuilderPendingWithdrawal         `yaml:"builder_pending_withdrawals"`
+	BuilderPendingPayments        []*gloas.BuilderPendingPayment      `yaml:"builder_pending_payments"`
+	BuilderPendingWithdrawals     []*gloas.BuilderPendingWithdrawal   `yaml:"builder_pending_withdrawals"`
 	LatestExecutionPayloadBid     *ExecutionPayloadBid                `yaml:"latest_execution_payload_bid"`
 	PayloadExpectedWithdrawals    []*capella.Withdrawal               `yaml:"payload_expected_withdrawals"`
 	PTCWindow                     [][]phase0.ValidatorIndex           `yaml:"ptc_window"`
