@@ -109,7 +109,27 @@ func (a *AttesterSlashing) UnmarshalSSZDyn(ds sszutils.DynamicSpecs, buf []byte)
 		return fmt.Errorf("AttesterSlashing: no view unmarshaler for version %d", a.Version)
 	}
 
-	return fn(ds, buf)
+	if err := fn(ds, buf); err != nil {
+		return err
+	}
+
+	a.populateVersion(a.Version)
+
+	return nil
+}
+
+// populateVersion sets Version and propagates it to the inner indexed
+// attestations.
+func (a *AttesterSlashing) populateVersion(v version.DataVersion) {
+	a.Version = v
+
+	if a.Attestation1 != nil {
+		a.Attestation1.populateVersion(v)
+	}
+
+	if a.Attestation2 != nil {
+		a.Attestation2.populateVersion(v)
+	}
 }
 
 // HashTreeRootWithDyn computes the SSZ hash tree root using the active Version's view.

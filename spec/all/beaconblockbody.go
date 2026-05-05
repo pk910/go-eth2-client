@@ -135,7 +135,39 @@ func (b *BeaconBlockBody) UnmarshalSSZDyn(ds sszutils.DynamicSpecs, buf []byte) 
 		return fmt.Errorf("BeaconBlockBody: no view unmarshaler for version %d", b.Version)
 	}
 
-	return fn(ds, buf)
+	if err := fn(ds, buf); err != nil {
+		return err
+	}
+
+	b.populateVersion(b.Version)
+
+	return nil
+}
+
+// populateVersion sets Version and propagates it to any nested versionable
+// children allocated by the SSZ unmarshal.
+func (b *BeaconBlockBody) populateVersion(v version.DataVersion) {
+	b.Version = v
+
+	for _, as := range b.AttesterSlashings {
+		if as != nil {
+			as.populateVersion(v)
+		}
+	}
+
+	for _, a := range b.Attestations {
+		if a != nil {
+			a.populateVersion(v)
+		}
+	}
+
+	if b.ExecutionPayload != nil {
+		b.ExecutionPayload.populateVersion(v)
+	}
+
+	if b.SignedExecutionPayloadBid != nil {
+		b.SignedExecutionPayloadBid.populateVersion(v)
+	}
 }
 
 // HashTreeRootWithDyn computes the SSZ hash tree root using the active Version's view.

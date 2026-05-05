@@ -110,7 +110,19 @@ func (i *IndexedAttestation) UnmarshalSSZDyn(ds sszutils.DynamicSpecs, buf []byt
 		return fmt.Errorf("IndexedAttestation: no view unmarshaler for version %d", i.Version)
 	}
 
-	return fn(ds, buf)
+	if err := fn(ds, buf); err != nil {
+		return err
+	}
+
+	i.populateVersion(i.Version)
+
+	return nil
+}
+
+// populateVersion sets Version. IndexedAttestation has no nested versionable
+// children.
+func (i *IndexedAttestation) populateVersion(v version.DataVersion) {
+	i.Version = v
 }
 
 // HashTreeRootWithDyn computes the SSZ hash tree root using the active Version's view.

@@ -124,7 +124,19 @@ func (e *ExecutionPayloadHeader) UnmarshalSSZDyn(ds sszutils.DynamicSpecs, buf [
 		return fmt.Errorf("ExecutionPayloadHeader: no view unmarshaler for version %d", e.Version)
 	}
 
-	return fn(ds, buf)
+	if err := fn(ds, buf); err != nil {
+		return err
+	}
+
+	e.populateVersion(e.Version)
+
+	return nil
+}
+
+// populateVersion sets Version. ExecutionPayloadHeader has no nested
+// versionable children.
+func (e *ExecutionPayloadHeader) populateVersion(v version.DataVersion) {
+	e.Version = v
 }
 
 // HashTreeRootWithDyn computes the SSZ hash tree root using the active Version's view.

@@ -110,7 +110,22 @@ func (a *AggregateAndProof) UnmarshalSSZDyn(ds sszutils.DynamicSpecs, buf []byte
 		return fmt.Errorf("AggregateAndProof: no view unmarshaler for version %d", a.Version)
 	}
 
-	return fn(ds, buf)
+	if err := fn(ds, buf); err != nil {
+		return err
+	}
+
+	a.populateVersion(a.Version)
+
+	return nil
+}
+
+// populateVersion sets Version and propagates it to the inner attestation.
+func (a *AggregateAndProof) populateVersion(v version.DataVersion) {
+	a.Version = v
+
+	if a.Aggregate != nil {
+		a.Aggregate.populateVersion(v)
+	}
 }
 
 // HashTreeRootWithDyn computes the SSZ hash tree root using the active Version's view.
