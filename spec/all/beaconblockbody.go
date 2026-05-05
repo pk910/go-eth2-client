@@ -221,3 +221,37 @@ func (b *BeaconBlockBody) HashTreeRoot() (phase0.Root, error) {
 func (b *BeaconBlockBody) HashTreeRootWith(hh sszutils.HashWalker) error {
 	return b.HashTreeRootWithDyn(dynssz.GetGlobalDynSsz(), hh)
 }
+
+// MarshalJSON delegates to the per-fork BeaconBlockBody that matches Version.
+func (b *BeaconBlockBody) MarshalJSON() ([]byte, error) {
+	return marshalAsView(b)
+}
+
+// UnmarshalJSON delegates to the per-fork BeaconBlockBody that matches Version.
+// Caller must set Version before calling.
+func (b *BeaconBlockBody) UnmarshalJSON(data []byte) error {
+	if err := unmarshalAsView(b, data); err != nil {
+		return err
+	}
+
+	b.populateVersion(b.Version)
+
+	return nil
+}
+
+// MarshalYAML delegates to the per-fork BeaconBlockBody that matches Version.
+func (b *BeaconBlockBody) MarshalYAML() ([]byte, error) {
+	return marshalAsViewYAML(b)
+}
+
+// UnmarshalYAML delegates to the per-fork BeaconBlockBody that matches Version.
+// Caller must set Version before calling.
+func (b *BeaconBlockBody) UnmarshalYAML(data []byte) error {
+	if err := unmarshalAsViewYAML(b, data); err != nil {
+		return err
+	}
+
+	b.populateVersion(b.Version)
+
+	return nil
+}

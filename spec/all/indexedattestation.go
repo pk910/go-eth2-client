@@ -176,3 +176,37 @@ func (i *IndexedAttestation) HashTreeRoot() (phase0.Root, error) {
 func (i *IndexedAttestation) HashTreeRootWith(hh sszutils.HashWalker) error {
 	return i.HashTreeRootWithDyn(dynssz.GetGlobalDynSsz(), hh)
 }
+
+// MarshalJSON delegates to the per-fork IndexedAttestation that matches Version.
+func (i *IndexedAttestation) MarshalJSON() ([]byte, error) {
+	return marshalAsView(i)
+}
+
+// UnmarshalJSON delegates to the per-fork IndexedAttestation that matches Version.
+// Caller must set Version before calling.
+func (i *IndexedAttestation) UnmarshalJSON(data []byte) error {
+	if err := unmarshalAsView(i, data); err != nil {
+		return err
+	}
+
+	i.populateVersion(i.Version)
+
+	return nil
+}
+
+// MarshalYAML delegates to the per-fork IndexedAttestation that matches Version.
+func (i *IndexedAttestation) MarshalYAML() ([]byte, error) {
+	return marshalAsViewYAML(i)
+}
+
+// UnmarshalYAML delegates to the per-fork IndexedAttestation that matches Version.
+// Caller must set Version before calling.
+func (i *IndexedAttestation) UnmarshalYAML(data []byte) error {
+	if err := unmarshalAsViewYAML(i, data); err != nil {
+		return err
+	}
+
+	i.populateVersion(i.Version)
+
+	return nil
+}

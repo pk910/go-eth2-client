@@ -177,3 +177,37 @@ func (s *SignedAggregateAndProof) HashTreeRoot() (phase0.Root, error) {
 func (s *SignedAggregateAndProof) HashTreeRootWith(hh sszutils.HashWalker) error {
 	return s.HashTreeRootWithDyn(dynssz.GetGlobalDynSsz(), hh)
 }
+
+// MarshalJSON delegates to the per-fork SignedAggregateAndProof that matches Version.
+func (s *SignedAggregateAndProof) MarshalJSON() ([]byte, error) {
+	return marshalAsView(s)
+}
+
+// UnmarshalJSON delegates to the per-fork SignedAggregateAndProof that matches Version.
+// Caller must set Version before calling.
+func (s *SignedAggregateAndProof) UnmarshalJSON(data []byte) error {
+	if err := unmarshalAsView(s, data); err != nil {
+		return err
+	}
+
+	s.populateVersion(s.Version)
+
+	return nil
+}
+
+// MarshalYAML delegates to the per-fork SignedAggregateAndProof that matches Version.
+func (s *SignedAggregateAndProof) MarshalYAML() ([]byte, error) {
+	return marshalAsViewYAML(s)
+}
+
+// UnmarshalYAML delegates to the per-fork SignedAggregateAndProof that matches Version.
+// Caller must set Version before calling.
+func (s *SignedAggregateAndProof) UnmarshalYAML(data []byte) error {
+	if err := unmarshalAsViewYAML(s, data); err != nil {
+		return err
+	}
+
+	s.populateVersion(s.Version)
+
+	return nil
+}

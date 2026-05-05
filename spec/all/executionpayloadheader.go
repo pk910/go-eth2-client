@@ -190,3 +190,37 @@ func (e *ExecutionPayloadHeader) HashTreeRoot() (phase0.Root, error) {
 func (e *ExecutionPayloadHeader) HashTreeRootWith(hh sszutils.HashWalker) error {
 	return e.HashTreeRootWithDyn(dynssz.GetGlobalDynSsz(), hh)
 }
+
+// MarshalJSON delegates to the per-fork ExecutionPayloadHeader that matches Version.
+func (e *ExecutionPayloadHeader) MarshalJSON() ([]byte, error) {
+	return marshalAsView(e)
+}
+
+// UnmarshalJSON delegates to the per-fork ExecutionPayloadHeader that matches Version.
+// Caller must set Version before calling.
+func (e *ExecutionPayloadHeader) UnmarshalJSON(data []byte) error {
+	if err := unmarshalAsView(e, data); err != nil {
+		return err
+	}
+
+	e.populateVersion(e.Version)
+
+	return nil
+}
+
+// MarshalYAML delegates to the per-fork ExecutionPayloadHeader that matches Version.
+func (e *ExecutionPayloadHeader) MarshalYAML() ([]byte, error) {
+	return marshalAsViewYAML(e)
+}
+
+// UnmarshalYAML delegates to the per-fork ExecutionPayloadHeader that matches Version.
+// Caller must set Version before calling.
+func (e *ExecutionPayloadHeader) UnmarshalYAML(data []byte) error {
+	if err := unmarshalAsViewYAML(e, data); err != nil {
+		return err
+	}
+
+	e.populateVersion(e.Version)
+
+	return nil
+}
