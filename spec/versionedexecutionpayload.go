@@ -649,13 +649,23 @@ func (v *VersionedExecutionPayload) BaseFeePerGas() (*uint256.Int, error) {
 			return nil, errors.New("no bellatrix execution payload")
 		}
 
-		return uint256.NewInt(0).SetBytes(v.Bellatrix.BaseFeePerGas[:]), nil
+		var baseFeePerGasBEBytes [32]byte
+		for i := range 32 {
+			baseFeePerGasBEBytes[i] = v.Bellatrix.BaseFeePerGasLE[32-1-i]
+		}
+
+		return uint256.NewInt(0).SetBytes(baseFeePerGasBEBytes[:]), nil
 	case DataVersionCapella:
 		if v.Capella == nil {
 			return nil, errors.New("no capella execution payload")
 		}
 
-		return uint256.NewInt(0).SetBytes(v.Capella.BaseFeePerGas[:]), nil
+		var baseFeePerGasBEBytes [32]byte
+		for i := range 32 {
+			baseFeePerGasBEBytes[i] = v.Capella.BaseFeePerGasLE[32-1-i]
+		}
+
+		return uint256.NewInt(0).SetBytes(baseFeePerGasBEBytes[:]), nil
 	case DataVersionDeneb:
 		if v.Deneb == nil {
 			return nil, errors.New("no deneb execution payload")

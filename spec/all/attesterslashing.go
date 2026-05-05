@@ -1,0 +1,165 @@
+// Copyright © 2023 Attestant Limited.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package all
+
+import (
+	"errors"
+	"fmt"
+
+	"github.com/ethpandaops/go-eth2-client/spec/electra"
+	"github.com/ethpandaops/go-eth2-client/spec/phase0"
+	"github.com/ethpandaops/go-eth2-client/spec/version"
+	dynssz "github.com/pk910/dynamic-ssz"
+	"github.com/pk910/dynamic-ssz/sszutils"
+)
+
+// AttesterSlashing is a fork-agnostic attester slashing. The wrapped
+// IndexedAttestation grows in capacity from Electra onwards.
+type AttesterSlashing struct {
+	Version      version.DataVersion
+	Attestation1 *IndexedAttestation
+	Attestation2 *IndexedAttestation
+}
+
+// viewType returns the fork-specific schema type pointer used as the view
+// descriptor for the active Version.
+func (a *AttesterSlashing) viewType() (any, error) {
+	switch a.Version {
+	case version.DataVersionPhase0,
+		version.DataVersionAltair,
+		version.DataVersionBellatrix,
+		version.DataVersionCapella,
+		version.DataVersionDeneb:
+		return (*phase0.AttesterSlashing)(nil), nil
+	case version.DataVersionElectra,
+		version.DataVersionFulu,
+		version.DataVersionGloas,
+		version.DataVersionHeze:
+		return (*electra.AttesterSlashing)(nil), nil
+	default:
+		return nil, fmt.Errorf("AttesterSlashing: unsupported version %d", a.Version)
+	}
+}
+
+// MarshalSSZDyn marshals the slashing using the view that matches Version.
+func (a *AttesterSlashing) MarshalSSZDyn(ds sszutils.DynamicSpecs, buf []byte) ([]byte, error) {
+	view, err := a.viewType()
+	if err != nil {
+		return nil, err
+	}
+
+	m, ok := any(a).(sszutils.DynamicViewMarshaler)
+	if !ok {
+		return nil, errors.New("AttesterSlashing: generated SSZ code missing")
+	}
+
+	fn := m.MarshalSSZDynView(view)
+	if fn == nil {
+		return nil, fmt.Errorf("AttesterSlashing: no view marshaler for version %d", a.Version)
+	}
+
+	return fn(ds, buf)
+}
+
+// SizeSSZDyn returns the SSZ size of the slashing for the active Version.
+func (a *AttesterSlashing) SizeSSZDyn(ds sszutils.DynamicSpecs) int {
+	view, err := a.viewType()
+	if err != nil {
+		return 0
+	}
+
+	s, ok := any(a).(sszutils.DynamicViewSizer)
+	if !ok {
+		return 0
+	}
+
+	fn := s.SizeSSZDynView(view)
+	if fn == nil {
+		return 0
+	}
+
+	return fn(ds)
+}
+
+// UnmarshalSSZDyn decodes the slashing into the view that matches Version.
+func (a *AttesterSlashing) UnmarshalSSZDyn(ds sszutils.DynamicSpecs, buf []byte) error {
+	view, err := a.viewType()
+	if err != nil {
+		return err
+	}
+
+	u, ok := any(a).(sszutils.DynamicViewUnmarshaler)
+	if !ok {
+		return errors.New("AttesterSlashing: generated SSZ code missing")
+	}
+
+	fn := u.UnmarshalSSZDynView(view)
+	if fn == nil {
+		return fmt.Errorf("AttesterSlashing: no view unmarshaler for version %d", a.Version)
+	}
+
+	return fn(ds, buf)
+}
+
+// HashTreeRootWithDyn computes the SSZ hash tree root using the active Version's view.
+func (a *AttesterSlashing) HashTreeRootWithDyn(ds sszutils.DynamicSpecs, hh sszutils.HashWalker) error {
+	view, err := a.viewType()
+	if err != nil {
+		return err
+	}
+
+	h, ok := any(a).(sszutils.DynamicViewHashRoot)
+	if !ok {
+		return errors.New("AttesterSlashing: generated SSZ code missing")
+	}
+
+	fn := h.HashTreeRootWithDynView(view)
+	if fn == nil {
+		return fmt.Errorf("AttesterSlashing: no view hasher for version %d", a.Version)
+	}
+
+	return fn(ds, hh)
+}
+
+// MarshalSSZ implements the fastssz.Marshaler interface.
+func (a *AttesterSlashing) MarshalSSZ() ([]byte, error) {
+	ds := dynssz.GetGlobalDynSsz()
+
+	return a.MarshalSSZDyn(ds, make([]byte, 0, a.SizeSSZDyn(ds)))
+}
+
+// MarshalSSZTo implements the fastssz.Marshaler interface.
+func (a *AttesterSlashing) MarshalSSZTo(dst []byte) ([]byte, error) {
+	return a.MarshalSSZDyn(dynssz.GetGlobalDynSsz(), dst)
+}
+
+// UnmarshalSSZ implements the fastssz.Unmarshaler interface.
+func (a *AttesterSlashing) UnmarshalSSZ(buf []byte) error {
+	return a.UnmarshalSSZDyn(dynssz.GetGlobalDynSsz(), buf)
+}
+
+// SizeSSZ implements the fastssz.Marshaler interface.
+func (a *AttesterSlashing) SizeSSZ() int {
+	return a.SizeSSZDyn(dynssz.GetGlobalDynSsz())
+}
+
+// HashTreeRoot implements the fastssz.HashRoot interface.
+func (a *AttesterSlashing) HashTreeRoot() (phase0.Root, error) {
+	return dynssz.GetGlobalDynSsz().HashTreeRoot(a)
+}
+
+// HashTreeRootWith implements the fastssz.HashRoot interface.
+func (a *AttesterSlashing) HashTreeRootWith(hh sszutils.HashWalker) error {
+	return a.HashTreeRootWithDyn(dynssz.GetGlobalDynSsz(), hh)
+}
