@@ -55,7 +55,9 @@ func (b *BeaconBlock) viewType() (any, error) {
 		return (*capella.BeaconBlock)(nil), nil
 	case version.DataVersionDeneb:
 		return (*deneb.BeaconBlock)(nil), nil
-	case version.DataVersionElectra:
+	case version.DataVersionElectra,
+		version.DataVersionFulu:
+		// Fulu reuses the Electra block schema unchanged.
 		return (*electra.BeaconBlock)(nil), nil
 	case version.DataVersionGloas:
 		return (*gloas.BeaconBlock)(nil), nil
@@ -192,7 +194,7 @@ func (b *BeaconBlock) ToView() (any, error) {
 		}
 
 		return &deneb.BeaconBlock{Slot: b.Slot, ProposerIndex: b.ProposerIndex, ParentRoot: b.ParentRoot, StateRoot: b.StateRoot, Body: db}, nil
-	case version.DataVersionElectra:
+	case version.DataVersionElectra, version.DataVersionFulu:
 		eb, err := assertView[*electra.BeaconBlockBody](body, "BeaconBlock.Body")
 		if err != nil {
 			return nil, err

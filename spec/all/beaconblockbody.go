@@ -68,7 +68,9 @@ func (b *BeaconBlockBody) viewType() (any, error) {
 		return (*capella.BeaconBlockBody)(nil), nil
 	case version.DataVersionDeneb:
 		return (*deneb.BeaconBlockBody)(nil), nil
-	case version.DataVersionElectra:
+	case version.DataVersionElectra,
+		version.DataVersionFulu:
+		// Fulu reuses the Electra block-body schema unchanged.
 		return (*electra.BeaconBlockBody)(nil), nil
 	case version.DataVersionGloas:
 		return (*gloas.BeaconBlockBody)(nil), nil
@@ -305,7 +307,9 @@ func (b *BeaconBlockBody) ToView() (any, error) {
 			BLSToExecutionChanges: b.BLSToExecutionChanges,
 			BlobKZGCommitments:    b.BlobKZGCommitments,
 		}, nil
-	case version.DataVersionElectra:
+	case version.DataVersionElectra,
+		version.DataVersionFulu:
+		// Fulu reuses the Electra block-body schema unchanged.
 		as, err := toViewSlice[*electra.AttesterSlashing](b.AttesterSlashings, "BeaconBlockBody.AttesterSlashings")
 		if err != nil {
 			return nil, err

@@ -63,7 +63,10 @@ func (e *ExecutionPayload) viewType() (any, error) {
 		return (*bellatrix.ExecutionPayload)(nil), nil
 	case version.DataVersionCapella:
 		return (*capella.ExecutionPayload)(nil), nil
-	case version.DataVersionDeneb:
+	case version.DataVersionDeneb,
+		version.DataVersionElectra,
+		version.DataVersionFulu:
+		// Electra and Fulu reuse the Deneb execution-payload schema unchanged.
 		return (*deneb.ExecutionPayload)(nil), nil
 	case version.DataVersionGloas:
 		return (*gloas.ExecutionPayload)(nil), nil
@@ -183,7 +186,10 @@ func (e *ExecutionPayload) ToView() (any, error) {
 			Transactions:    e.Transactions,
 			Withdrawals:     e.Withdrawals,
 		}, nil
-	case version.DataVersionDeneb:
+	case version.DataVersionDeneb,
+		version.DataVersionElectra,
+		version.DataVersionFulu:
+		// Electra and Fulu reuse the Deneb execution-payload schema unchanged.
 		return &deneb.ExecutionPayload{
 			ParentHash:    e.ParentHash,
 			FeeRecipient:  e.FeeRecipient,

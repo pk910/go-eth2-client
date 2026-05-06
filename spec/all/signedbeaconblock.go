@@ -51,7 +51,9 @@ func (s *SignedBeaconBlock) viewType() (any, error) {
 		return (*capella.SignedBeaconBlock)(nil), nil
 	case version.DataVersionDeneb:
 		return (*deneb.SignedBeaconBlock)(nil), nil
-	case version.DataVersionElectra:
+	case version.DataVersionElectra,
+		version.DataVersionFulu:
+		// Fulu reuses the Electra signed block schema unchanged.
 		return (*electra.SignedBeaconBlock)(nil), nil
 	case version.DataVersionGloas:
 		return (*gloas.SignedBeaconBlock)(nil), nil
@@ -188,7 +190,9 @@ func (s *SignedBeaconBlock) ToView() (any, error) {
 		}
 
 		return &deneb.SignedBeaconBlock{Message: m, Signature: s.Signature}, nil
-	case version.DataVersionElectra:
+	case version.DataVersionElectra,
+		version.DataVersionFulu:
+		// Fulu reuses the Electra signed-block schema unchanged.
 		m, err := assertView[*electra.BeaconBlock](msg, "SignedBeaconBlock.Message")
 		if err != nil {
 			return nil, err
