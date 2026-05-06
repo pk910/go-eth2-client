@@ -126,6 +126,86 @@ func (s *SignedAggregateAndProof) populateVersion(v version.DataVersion) {
 	}
 }
 
+// ToView returns a fresh fork-specific SignedAggregateAndProof populated with
+// s's fields, recursing into Message via its ToView.
+func (s *SignedAggregateAndProof) ToView() (any, error) {
+	var msg any
+
+	var err error
+
+	if s.Message != nil {
+		msg, err = s.Message.ToView()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	switch s.Version {
+	case version.DataVersionPhase0,
+		version.DataVersionAltair,
+		version.DataVersionBellatrix,
+		version.DataVersionCapella,
+		version.DataVersionDeneb:
+		pm, err := assertView[*phase0.AggregateAndProof](msg, "SignedAggregateAndProof.Message")
+		if err != nil {
+			return nil, err
+		}
+
+		return &phase0.SignedAggregateAndProof{Message: pm, Signature: s.Signature}, nil
+	case version.DataVersionElectra,
+		version.DataVersionFulu,
+		version.DataVersionGloas,
+		version.DataVersionHeze:
+		em, err := assertView[*electra.AggregateAndProof](msg, "SignedAggregateAndProof.Message")
+		if err != nil {
+			return nil, err
+		}
+
+		return &electra.SignedAggregateAndProof{Message: em, Signature: s.Signature}, nil
+	default:
+		return nil, fmt.Errorf("SignedAggregateAndProof: unsupported version %d", s.Version)
+	}
+}
+
+// FromView populates s from a fork-specific SignedAggregateAndProof.
+func (s *SignedAggregateAndProof) FromView(view any) error {
+	var msgView any
+
+	switch v := view.(type) {
+	case *phase0.SignedAggregateAndProof:
+		if s.Version == version.DataVersionUnknown {
+			s.Version = version.DataVersionPhase0
+		}
+
+		s.Signature = v.Signature
+		msgView = v.Message
+	case *electra.SignedAggregateAndProof:
+		if s.Version == version.DataVersionUnknown {
+			s.Version = version.DataVersionElectra
+		}
+
+		s.Signature = v.Signature
+
+		if v.Message != nil {
+			msgView = v.Message
+		}
+	default:
+		return fmt.Errorf("SignedAggregateAndProof: unsupported view type %T", view)
+	}
+
+	if msgView == nil {
+		s.Message = nil
+
+		return nil
+	}
+
+	if s.Message == nil {
+		s.Message = &AggregateAndProof{Version: s.Version}
+	}
+
+	return s.Message.FromView(msgView)
+}
+
 // HashTreeRootWithDyn computes the SSZ hash tree root using the active Version's view.
 func (s *SignedAggregateAndProof) HashTreeRootWithDyn(ds sszutils.DynamicSpecs, hh sszutils.HashWalker) error {
 	view, err := s.viewType()

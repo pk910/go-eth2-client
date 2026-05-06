@@ -138,6 +138,152 @@ func (s *SignedBeaconBlock) populateVersion(v version.DataVersion) {
 	}
 }
 
+// ToView returns a fresh fork-specific SignedBeaconBlock populated with s's
+// fields, recursing into Message via its ToView.
+func (s *SignedBeaconBlock) ToView() (any, error) {
+	var msg any
+
+	var err error
+
+	if s.Message != nil {
+		msg, err = s.Message.ToView()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	switch s.Version {
+	case version.DataVersionPhase0:
+		m, err := assertView[*phase0.BeaconBlock](msg, "SignedBeaconBlock.Message")
+		if err != nil {
+			return nil, err
+		}
+
+		return &phase0.SignedBeaconBlock{Message: m, Signature: s.Signature}, nil
+	case version.DataVersionAltair:
+		m, err := assertView[*altair.BeaconBlock](msg, "SignedBeaconBlock.Message")
+		if err != nil {
+			return nil, err
+		}
+
+		return &altair.SignedBeaconBlock{Message: m, Signature: s.Signature}, nil
+	case version.DataVersionBellatrix:
+		m, err := assertView[*bellatrix.BeaconBlock](msg, "SignedBeaconBlock.Message")
+		if err != nil {
+			return nil, err
+		}
+
+		return &bellatrix.SignedBeaconBlock{Message: m, Signature: s.Signature}, nil
+	case version.DataVersionCapella:
+		m, err := assertView[*capella.BeaconBlock](msg, "SignedBeaconBlock.Message")
+		if err != nil {
+			return nil, err
+		}
+
+		return &capella.SignedBeaconBlock{Message: m, Signature: s.Signature}, nil
+	case version.DataVersionDeneb:
+		m, err := assertView[*deneb.BeaconBlock](msg, "SignedBeaconBlock.Message")
+		if err != nil {
+			return nil, err
+		}
+
+		return &deneb.SignedBeaconBlock{Message: m, Signature: s.Signature}, nil
+	case version.DataVersionElectra:
+		m, err := assertView[*electra.BeaconBlock](msg, "SignedBeaconBlock.Message")
+		if err != nil {
+			return nil, err
+		}
+
+		return &electra.SignedBeaconBlock{Message: m, Signature: s.Signature}, nil
+	case version.DataVersionGloas:
+		m, err := assertView[*gloas.BeaconBlock](msg, "SignedBeaconBlock.Message")
+		if err != nil {
+			return nil, err
+		}
+
+		return &gloas.SignedBeaconBlock{Message: m, Signature: s.Signature}, nil
+	case version.DataVersionHeze:
+		m, err := assertView[*heze.BeaconBlock](msg, "SignedBeaconBlock.Message")
+		if err != nil {
+			return nil, err
+		}
+
+		return &heze.SignedBeaconBlock{Message: m, Signature: s.Signature}, nil
+	default:
+		return nil, fmt.Errorf("SignedBeaconBlock: unsupported version %d", s.Version)
+	}
+}
+
+// FromView populates s from a fork-specific SignedBeaconBlock.
+func (s *SignedBeaconBlock) FromView(view any) error {
+	var msgView any
+
+	switch v := view.(type) {
+	case *phase0.SignedBeaconBlock:
+		if s.Version == version.DataVersionUnknown {
+			s.Version = version.DataVersionPhase0
+		}
+
+		s.Signature, msgView = v.Signature, v.Message
+	case *altair.SignedBeaconBlock:
+		if s.Version == version.DataVersionUnknown {
+			s.Version = version.DataVersionAltair
+		}
+
+		s.Signature, msgView = v.Signature, v.Message
+	case *bellatrix.SignedBeaconBlock:
+		if s.Version == version.DataVersionUnknown {
+			s.Version = version.DataVersionBellatrix
+		}
+
+		s.Signature, msgView = v.Signature, v.Message
+	case *capella.SignedBeaconBlock:
+		if s.Version == version.DataVersionUnknown {
+			s.Version = version.DataVersionCapella
+		}
+
+		s.Signature, msgView = v.Signature, v.Message
+	case *deneb.SignedBeaconBlock:
+		if s.Version == version.DataVersionUnknown {
+			s.Version = version.DataVersionDeneb
+		}
+
+		s.Signature, msgView = v.Signature, v.Message
+	case *electra.SignedBeaconBlock:
+		if s.Version == version.DataVersionUnknown {
+			s.Version = version.DataVersionElectra
+		}
+
+		s.Signature, msgView = v.Signature, v.Message
+	case *gloas.SignedBeaconBlock:
+		if s.Version == version.DataVersionUnknown {
+			s.Version = version.DataVersionGloas
+		}
+
+		s.Signature, msgView = v.Signature, v.Message
+	case *heze.SignedBeaconBlock:
+		if s.Version == version.DataVersionUnknown {
+			s.Version = version.DataVersionHeze
+		}
+
+		s.Signature, msgView = v.Signature, v.Message
+	default:
+		return fmt.Errorf("SignedBeaconBlock: unsupported view type %T", view)
+	}
+
+	if msgView == nil {
+		s.Message = nil
+
+		return nil
+	}
+
+	if s.Message == nil {
+		s.Message = &BeaconBlock{Version: s.Version}
+	}
+
+	return s.Message.FromView(msgView)
+}
+
 // HashTreeRootWithDyn computes the SSZ hash tree root using the active Version's view.
 func (s *SignedBeaconBlock) HashTreeRootWithDyn(ds sszutils.DynamicSpecs, hh sszutils.HashWalker) error {
 	view, err := s.viewType()

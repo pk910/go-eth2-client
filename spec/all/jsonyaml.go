@@ -28,6 +28,80 @@ type viewProvider interface {
 	viewType() (any, error)
 }
 
+// assertView casts a view returned from a child's ToView() to the concrete
+// pointer type expected by the parent's view. Returns the zero value of T
+// (typed-nil) if v is nil, so callers can drop into nil-tolerant struct
+// literals.
+func assertView[T any](v any, ctx string) (T, error) {
+	var zero T
+
+	if v == nil {
+		return zero, nil
+	}
+
+	t, ok := v.(T)
+	if !ok {
+		return zero, fmt.Errorf("%s: view type %T mismatch", ctx, v)
+	}
+
+	return t, nil
+}
+
+// viewer is the interface satisfied by every fork-agnostic union type.
+type viewer interface {
+	ToView() (any, error)
+}
+
+// toViewSlice converts a slice of *all/X (each implementing ToView) into a
+// typed slice of fork-specific pointers. Nil entries are preserved as zero T.
+func toViewSlice[Out any, V viewer](src []V, ctx string) ([]Out, error) {
+	if src == nil {
+		return nil, nil
+	}
+
+	out := make([]Out, len(src))
+
+	for i, item := range src {
+		rv := reflect.ValueOf(item)
+		if !rv.IsValid() || (rv.Kind() == reflect.Ptr && rv.IsNil()) {
+			continue
+		}
+
+		v, err := item.ToView()
+		if err != nil {
+			return nil, fmt.Errorf("%s[%d]: %w", ctx, i, err)
+		}
+
+		t, err := assertView[Out](v, fmt.Sprintf("%s[%d]", ctx, i))
+		if err != nil {
+			return nil, err
+		}
+
+		out[i] = t
+	}
+
+	return out, nil
+}
+
+// toViewPtr converts a single *all/X via ToView to a typed pointer. Returns
+// the zero T (typed-nil) when src is nil so callers can drop into struct
+// literals without an extra nil check.
+func toViewPtr[Out any, V viewer](src V, ctx string) (Out, error) {
+	var zero Out
+
+	rv := reflect.ValueOf(src)
+	if !rv.IsValid() || (rv.Kind() == reflect.Ptr && rv.IsNil()) {
+		return zero, nil
+	}
+
+	v, err := src.ToView()
+	if err != nil {
+		return zero, fmt.Errorf("%s: %w", ctx, err)
+	}
+
+	return assertView[Out](v, ctx)
+}
+
 // marshalAsView delegates JSON marshaling to the per-fork type that matches
 // src.Version. It allocates a fresh fork-specific instance, copies matching
 // fields from src into it via copyByName, and lets json.Marshal route through

@@ -12,7 +12,7 @@ require (
 	github.com/holiman/uint256 v1.3.2
 	github.com/huandu/go-clone v1.6.0
 	github.com/huandu/go-clone/generic v1.6.0
-	github.com/pk910/dynamic-ssz v1.3.1
+	github.com/pk910/dynamic-ssz v1.3.2-0.20260505131440-111bcb265c8f
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.16.0
 	github.com/r3labs/sse/v2 v2.10.0

@@ -120,6 +120,82 @@ func (s *SignedExecutionPayloadBid) populateVersion(v version.DataVersion) {
 	}
 }
 
+// ToView returns a fresh fork-specific SignedExecutionPayloadBid populated
+// with s's fields, recursing into Message via its ToView.
+func (s *SignedExecutionPayloadBid) ToView() (any, error) {
+	var msg any
+
+	var err error
+
+	if s.Message != nil {
+		msg, err = s.Message.ToView()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	switch s.Version {
+	case version.DataVersionGloas:
+		gm, err := assertView[*gloas.ExecutionPayloadBid](msg, "SignedExecutionPayloadBid.Message")
+		if err != nil {
+			return nil, err
+		}
+
+		return &gloas.SignedExecutionPayloadBid{Message: gm, Signature: s.Signature}, nil
+	case version.DataVersionHeze:
+		hm, err := assertView[*heze.ExecutionPayloadBid](msg, "SignedExecutionPayloadBid.Message")
+		if err != nil {
+			return nil, err
+		}
+
+		return &heze.SignedExecutionPayloadBid{Message: hm, Signature: s.Signature}, nil
+	default:
+		return nil, fmt.Errorf("SignedExecutionPayloadBid: unsupported version %d", s.Version)
+	}
+}
+
+// FromView populates s from a fork-specific SignedExecutionPayloadBid.
+func (s *SignedExecutionPayloadBid) FromView(view any) error {
+	var msgView any
+
+	switch v := view.(type) {
+	case *gloas.SignedExecutionPayloadBid:
+		if s.Version == version.DataVersionUnknown {
+			s.Version = version.DataVersionGloas
+		}
+
+		s.Signature = v.Signature
+
+		if v.Message != nil {
+			msgView = v.Message
+		}
+	case *heze.SignedExecutionPayloadBid:
+		if s.Version == version.DataVersionUnknown {
+			s.Version = version.DataVersionHeze
+		}
+
+		s.Signature = v.Signature
+
+		if v.Message != nil {
+			msgView = v.Message
+		}
+	default:
+		return fmt.Errorf("SignedExecutionPayloadBid: unsupported view type %T", view)
+	}
+
+	if msgView == nil {
+		s.Message = nil
+
+		return nil
+	}
+
+	if s.Message == nil {
+		s.Message = &ExecutionPayloadBid{Version: s.Version}
+	}
+
+	return s.Message.FromView(msgView)
+}
+
 // HashTreeRootWithDyn computes the SSZ hash tree root using the active Version's view.
 func (s *SignedExecutionPayloadBid) HashTreeRootWithDyn(ds sszutils.DynamicSpecs, hh sszutils.HashWalker) error {
 	view, err := s.viewType()

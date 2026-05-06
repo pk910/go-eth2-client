@@ -132,6 +132,93 @@ func (e *ExecutionPayloadBid) populateVersion(v version.DataVersion) {
 	e.Version = v
 }
 
+// ToView returns a fresh fork-specific ExecutionPayloadBid populated with e's
+// fields.
+func (e *ExecutionPayloadBid) ToView() (any, error) {
+	switch e.Version {
+	case version.DataVersionGloas:
+		return &gloas.ExecutionPayloadBid{
+			ParentBlockHash:       e.ParentBlockHash,
+			ParentBlockRoot:       e.ParentBlockRoot,
+			BlockHash:             e.BlockHash,
+			PrevRandao:            e.PrevRandao,
+			FeeRecipient:          e.FeeRecipient,
+			GasLimit:              e.GasLimit,
+			BuilderIndex:          e.BuilderIndex,
+			Slot:                  e.Slot,
+			Value:                 e.Value,
+			ExecutionPayment:      e.ExecutionPayment,
+			BlobKZGCommitments:    e.BlobKZGCommitments,
+			ExecutionRequestsRoot: e.ExecutionRequestsRoot,
+		}, nil
+	case version.DataVersionHeze:
+		return &heze.ExecutionPayloadBid{
+			ParentBlockHash:       e.ParentBlockHash,
+			ParentBlockRoot:       e.ParentBlockRoot,
+			BlockHash:             e.BlockHash,
+			PrevRandao:            e.PrevRandao,
+			FeeRecipient:          e.FeeRecipient,
+			GasLimit:              e.GasLimit,
+			BuilderIndex:          e.BuilderIndex,
+			Slot:                  e.Slot,
+			Value:                 e.Value,
+			ExecutionPayment:      e.ExecutionPayment,
+			BlobKZGCommitments:    e.BlobKZGCommitments,
+			ExecutionRequestsRoot: e.ExecutionRequestsRoot,
+			InclusionListBits:     e.InclusionListBits,
+		}, nil
+	default:
+		return nil, fmt.Errorf("ExecutionPayloadBid: unsupported version %d", e.Version)
+	}
+}
+
+// FromView populates e from a fork-specific ExecutionPayloadBid.
+func (e *ExecutionPayloadBid) FromView(view any) error {
+	switch v := view.(type) {
+	case *gloas.ExecutionPayloadBid:
+		if e.Version == version.DataVersionUnknown {
+			e.Version = version.DataVersionGloas
+		}
+
+		e.ParentBlockHash = v.ParentBlockHash
+		e.ParentBlockRoot = v.ParentBlockRoot
+		e.BlockHash = v.BlockHash
+		e.PrevRandao = v.PrevRandao
+		e.FeeRecipient = v.FeeRecipient
+		e.GasLimit = v.GasLimit
+		e.BuilderIndex = v.BuilderIndex
+		e.Slot = v.Slot
+		e.Value = v.Value
+		e.ExecutionPayment = v.ExecutionPayment
+		e.BlobKZGCommitments = v.BlobKZGCommitments
+		e.ExecutionRequestsRoot = v.ExecutionRequestsRoot
+
+		return nil
+	case *heze.ExecutionPayloadBid:
+		if e.Version == version.DataVersionUnknown {
+			e.Version = version.DataVersionHeze
+		}
+
+		e.ParentBlockHash = v.ParentBlockHash
+		e.ParentBlockRoot = v.ParentBlockRoot
+		e.BlockHash = v.BlockHash
+		e.PrevRandao = v.PrevRandao
+		e.FeeRecipient = v.FeeRecipient
+		e.GasLimit = v.GasLimit
+		e.BuilderIndex = v.BuilderIndex
+		e.Slot = v.Slot
+		e.Value = v.Value
+		e.ExecutionPayment = v.ExecutionPayment
+		e.BlobKZGCommitments = v.BlobKZGCommitments
+		e.ExecutionRequestsRoot = v.ExecutionRequestsRoot
+		e.InclusionListBits = v.InclusionListBits
+
+		return nil
+	default:
+		return fmt.Errorf("ExecutionPayloadBid: unsupported view type %T", view)
+	}
+}
+
 // HashTreeRootWithDyn computes the SSZ hash tree root using the active Version's view.
 func (e *ExecutionPayloadBid) HashTreeRootWithDyn(ds sszutils.DynamicSpecs, hh sszutils.HashWalker) error {
 	view, err := e.viewType()

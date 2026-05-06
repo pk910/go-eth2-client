@@ -144,6 +144,195 @@ func (e *ExecutionPayload) populateVersion(v version.DataVersion) {
 	e.Version = v
 }
 
+// ToView returns a fresh fork-specific ExecutionPayload populated with e's
+// fields.
+func (e *ExecutionPayload) ToView() (any, error) {
+	switch e.Version {
+	case version.DataVersionBellatrix:
+		return &bellatrix.ExecutionPayload{
+			ParentHash:      e.ParentHash,
+			FeeRecipient:    e.FeeRecipient,
+			StateRoot:       [32]byte(e.StateRoot),
+			ReceiptsRoot:    [32]byte(e.ReceiptsRoot),
+			LogsBloom:       e.LogsBloom,
+			PrevRandao:      e.PrevRandao,
+			BlockNumber:     e.BlockNumber,
+			GasLimit:        e.GasLimit,
+			GasUsed:         e.GasUsed,
+			Timestamp:       e.Timestamp,
+			ExtraData:       e.ExtraData,
+			BaseFeePerGasLE: e.BaseFeePerGasLE,
+			BlockHash:       e.BlockHash,
+			Transactions:    e.Transactions,
+		}, nil
+	case version.DataVersionCapella:
+		return &capella.ExecutionPayload{
+			ParentHash:      e.ParentHash,
+			FeeRecipient:    e.FeeRecipient,
+			StateRoot:       [32]byte(e.StateRoot),
+			ReceiptsRoot:    [32]byte(e.ReceiptsRoot),
+			LogsBloom:       e.LogsBloom,
+			PrevRandao:      e.PrevRandao,
+			BlockNumber:     e.BlockNumber,
+			GasLimit:        e.GasLimit,
+			GasUsed:         e.GasUsed,
+			Timestamp:       e.Timestamp,
+			ExtraData:       e.ExtraData,
+			BaseFeePerGasLE: e.BaseFeePerGasLE,
+			BlockHash:       e.BlockHash,
+			Transactions:    e.Transactions,
+			Withdrawals:     e.Withdrawals,
+		}, nil
+	case version.DataVersionDeneb:
+		return &deneb.ExecutionPayload{
+			ParentHash:    e.ParentHash,
+			FeeRecipient:  e.FeeRecipient,
+			StateRoot:     e.StateRoot,
+			ReceiptsRoot:  e.ReceiptsRoot,
+			LogsBloom:     e.LogsBloom,
+			PrevRandao:    e.PrevRandao,
+			BlockNumber:   e.BlockNumber,
+			GasLimit:      e.GasLimit,
+			GasUsed:       e.GasUsed,
+			Timestamp:     e.Timestamp,
+			ExtraData:     e.ExtraData,
+			BaseFeePerGas: e.BaseFeePerGas,
+			BlockHash:     e.BlockHash,
+			Transactions:  e.Transactions,
+			Withdrawals:   e.Withdrawals,
+			BlobGasUsed:   e.BlobGasUsed,
+			ExcessBlobGas: e.ExcessBlobGas,
+		}, nil
+	case version.DataVersionGloas:
+		return &gloas.ExecutionPayload{
+			ParentHash:      e.ParentHash,
+			FeeRecipient:    e.FeeRecipient,
+			StateRoot:       e.StateRoot,
+			ReceiptsRoot:    e.ReceiptsRoot,
+			LogsBloom:       e.LogsBloom,
+			PrevRandao:      e.PrevRandao,
+			BlockNumber:     e.BlockNumber,
+			GasLimit:        e.GasLimit,
+			GasUsed:         e.GasUsed,
+			Timestamp:       e.Timestamp,
+			ExtraData:       e.ExtraData,
+			BaseFeePerGas:   e.BaseFeePerGas,
+			BlockHash:       e.BlockHash,
+			Transactions:    e.Transactions,
+			Withdrawals:     e.Withdrawals,
+			BlobGasUsed:     e.BlobGasUsed,
+			ExcessBlobGas:   e.ExcessBlobGas,
+			BlockAccessList: e.BlockAccessList,
+			SlotNumber:      e.SlotNumber,
+		}, nil
+	default:
+		return nil, fmt.Errorf("ExecutionPayload: unsupported version %d", e.Version)
+	}
+}
+
+// FromView populates e from a fork-specific ExecutionPayload.
+//
+//nolint:dupl // explicit per-fork copies are intentional
+func (e *ExecutionPayload) FromView(view any) error {
+	switch v := view.(type) {
+	case *bellatrix.ExecutionPayload:
+		if e.Version == version.DataVersionUnknown {
+			e.Version = version.DataVersionBellatrix
+		}
+
+		e.ParentHash = v.ParentHash
+		e.FeeRecipient = v.FeeRecipient
+		e.StateRoot = phase0.Root(v.StateRoot)
+		e.ReceiptsRoot = phase0.Root(v.ReceiptsRoot)
+		e.LogsBloom = v.LogsBloom
+		e.PrevRandao = v.PrevRandao
+		e.BlockNumber = v.BlockNumber
+		e.GasLimit = v.GasLimit
+		e.GasUsed = v.GasUsed
+		e.Timestamp = v.Timestamp
+		e.ExtraData = v.ExtraData
+		e.BaseFeePerGasLE = v.BaseFeePerGasLE
+		e.BlockHash = v.BlockHash
+		e.Transactions = v.Transactions
+
+		return nil
+	case *capella.ExecutionPayload:
+		if e.Version == version.DataVersionUnknown {
+			e.Version = version.DataVersionCapella
+		}
+
+		e.ParentHash = v.ParentHash
+		e.FeeRecipient = v.FeeRecipient
+		e.StateRoot = phase0.Root(v.StateRoot)
+		e.ReceiptsRoot = phase0.Root(v.ReceiptsRoot)
+		e.LogsBloom = v.LogsBloom
+		e.PrevRandao = v.PrevRandao
+		e.BlockNumber = v.BlockNumber
+		e.GasLimit = v.GasLimit
+		e.GasUsed = v.GasUsed
+		e.Timestamp = v.Timestamp
+		e.ExtraData = v.ExtraData
+		e.BaseFeePerGasLE = v.BaseFeePerGasLE
+		e.BlockHash = v.BlockHash
+		e.Transactions = v.Transactions
+		e.Withdrawals = v.Withdrawals
+
+		return nil
+	case *deneb.ExecutionPayload:
+		if e.Version == version.DataVersionUnknown {
+			e.Version = version.DataVersionDeneb
+		}
+
+		e.ParentHash = v.ParentHash
+		e.FeeRecipient = v.FeeRecipient
+		e.StateRoot = v.StateRoot
+		e.ReceiptsRoot = v.ReceiptsRoot
+		e.LogsBloom = v.LogsBloom
+		e.PrevRandao = v.PrevRandao
+		e.BlockNumber = v.BlockNumber
+		e.GasLimit = v.GasLimit
+		e.GasUsed = v.GasUsed
+		e.Timestamp = v.Timestamp
+		e.ExtraData = v.ExtraData
+		e.BaseFeePerGas = v.BaseFeePerGas
+		e.BlockHash = v.BlockHash
+		e.Transactions = v.Transactions
+		e.Withdrawals = v.Withdrawals
+		e.BlobGasUsed = v.BlobGasUsed
+		e.ExcessBlobGas = v.ExcessBlobGas
+
+		return nil
+	case *gloas.ExecutionPayload:
+		if e.Version == version.DataVersionUnknown {
+			e.Version = version.DataVersionGloas
+		}
+
+		e.ParentHash = v.ParentHash
+		e.FeeRecipient = v.FeeRecipient
+		e.StateRoot = v.StateRoot
+		e.ReceiptsRoot = v.ReceiptsRoot
+		e.LogsBloom = v.LogsBloom
+		e.PrevRandao = v.PrevRandao
+		e.BlockNumber = v.BlockNumber
+		e.GasLimit = v.GasLimit
+		e.GasUsed = v.GasUsed
+		e.Timestamp = v.Timestamp
+		e.ExtraData = v.ExtraData
+		e.BaseFeePerGas = v.BaseFeePerGas
+		e.BlockHash = v.BlockHash
+		e.Transactions = v.Transactions
+		e.Withdrawals = v.Withdrawals
+		e.BlobGasUsed = v.BlobGasUsed
+		e.ExcessBlobGas = v.ExcessBlobGas
+		e.BlockAccessList = v.BlockAccessList
+		e.SlotNumber = v.SlotNumber
+
+		return nil
+	default:
+		return fmt.Errorf("ExecutionPayload: unsupported view type %T", view)
+	}
+}
+
 // HashTreeRootWithDyn computes the SSZ hash tree root using the active Version's view.
 func (e *ExecutionPayload) HashTreeRootWithDyn(ds sszutils.DynamicSpecs, hh sszutils.HashWalker) error {
 	view, err := e.viewType()

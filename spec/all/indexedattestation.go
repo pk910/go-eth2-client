@@ -125,6 +125,63 @@ func (i *IndexedAttestation) populateVersion(v version.DataVersion) {
 	i.Version = v
 }
 
+// ToView returns a fresh fork-specific IndexedAttestation populated with i's
+// fields. The concrete return type matches viewType().
+func (i *IndexedAttestation) ToView() (any, error) {
+	switch i.Version {
+	case version.DataVersionPhase0,
+		version.DataVersionAltair,
+		version.DataVersionBellatrix,
+		version.DataVersionCapella,
+		version.DataVersionDeneb:
+		return &phase0.IndexedAttestation{
+			AttestingIndices: i.AttestingIndices,
+			Data:             i.Data,
+			Signature:        i.Signature,
+		}, nil
+	case version.DataVersionElectra,
+		version.DataVersionFulu,
+		version.DataVersionGloas,
+		version.DataVersionHeze:
+		return &electra.IndexedAttestation{
+			AttestingIndices: i.AttestingIndices,
+			Data:             i.Data,
+			Signature:        i.Signature,
+		}, nil
+	default:
+		return nil, fmt.Errorf("IndexedAttestation: unsupported version %d", i.Version)
+	}
+}
+
+// FromView populates i from a fork-specific IndexedAttestation. Version is
+// inferred from view's concrete type if i.Version is unset.
+func (i *IndexedAttestation) FromView(view any) error {
+	switch v := view.(type) {
+	case *phase0.IndexedAttestation:
+		if i.Version == version.DataVersionUnknown {
+			i.Version = version.DataVersionPhase0
+		}
+
+		i.AttestingIndices = v.AttestingIndices
+		i.Data = v.Data
+		i.Signature = v.Signature
+
+		return nil
+	case *electra.IndexedAttestation:
+		if i.Version == version.DataVersionUnknown {
+			i.Version = version.DataVersionElectra
+		}
+
+		i.AttestingIndices = v.AttestingIndices
+		i.Data = v.Data
+		i.Signature = v.Signature
+
+		return nil
+	default:
+		return fmt.Errorf("IndexedAttestation: unsupported view type %T", view)
+	}
+}
+
 // HashTreeRootWithDyn computes the SSZ hash tree root using the active Version's view.
 func (i *IndexedAttestation) HashTreeRootWithDyn(ds sszutils.DynamicSpecs, hh sszutils.HashWalker) error {
 	view, err := i.viewType()

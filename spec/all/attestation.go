@@ -126,6 +126,63 @@ func (a *Attestation) populateVersion(v version.DataVersion) {
 	a.Version = v
 }
 
+// ToView returns a fresh fork-specific Attestation populated with a's fields.
+func (a *Attestation) ToView() (any, error) {
+	switch a.Version {
+	case version.DataVersionPhase0,
+		version.DataVersionAltair,
+		version.DataVersionBellatrix,
+		version.DataVersionCapella,
+		version.DataVersionDeneb:
+		return &phase0.Attestation{
+			AggregationBits: a.AggregationBits,
+			Data:            a.Data,
+			Signature:       a.Signature,
+		}, nil
+	case version.DataVersionElectra,
+		version.DataVersionFulu,
+		version.DataVersionGloas,
+		version.DataVersionHeze:
+		return &electra.Attestation{
+			AggregationBits: a.AggregationBits,
+			Data:            a.Data,
+			Signature:       a.Signature,
+			CommitteeBits:   a.CommitteeBits,
+		}, nil
+	default:
+		return nil, fmt.Errorf("Attestation: unsupported version %d", a.Version)
+	}
+}
+
+// FromView populates a from a fork-specific Attestation.
+func (a *Attestation) FromView(view any) error {
+	switch v := view.(type) {
+	case *phase0.Attestation:
+		if a.Version == version.DataVersionUnknown {
+			a.Version = version.DataVersionPhase0
+		}
+
+		a.AggregationBits = v.AggregationBits
+		a.Data = v.Data
+		a.Signature = v.Signature
+
+		return nil
+	case *electra.Attestation:
+		if a.Version == version.DataVersionUnknown {
+			a.Version = version.DataVersionElectra
+		}
+
+		a.AggregationBits = v.AggregationBits
+		a.Data = v.Data
+		a.Signature = v.Signature
+		a.CommitteeBits = v.CommitteeBits
+
+		return nil
+	default:
+		return fmt.Errorf("Attestation: unsupported view type %T", view)
+	}
+}
+
 // HashTreeRootWithDyn computes the SSZ hash tree root using the active Version's view.
 func (a *Attestation) HashTreeRootWithDyn(ds sszutils.DynamicSpecs, hh sszutils.HashWalker) error {
 	view, err := a.viewType()

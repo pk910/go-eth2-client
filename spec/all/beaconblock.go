@@ -142,6 +142,160 @@ func (b *BeaconBlock) populateVersion(v version.DataVersion) {
 	}
 }
 
+// ToView returns a fresh fork-specific BeaconBlock populated with b's fields,
+// recursing into Body via its ToView.
+func (b *BeaconBlock) ToView() (any, error) {
+	var body any
+
+	var err error
+
+	if b.Body != nil {
+		body, err = b.Body.ToView()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	switch b.Version {
+	case version.DataVersionPhase0:
+		pb, err := assertView[*phase0.BeaconBlockBody](body, "BeaconBlock.Body")
+		if err != nil {
+			return nil, err
+		}
+
+		return &phase0.BeaconBlock{Slot: b.Slot, ProposerIndex: b.ProposerIndex, ParentRoot: b.ParentRoot, StateRoot: b.StateRoot, Body: pb}, nil
+	case version.DataVersionAltair:
+		ab, err := assertView[*altair.BeaconBlockBody](body, "BeaconBlock.Body")
+		if err != nil {
+			return nil, err
+		}
+
+		return &altair.BeaconBlock{Slot: b.Slot, ProposerIndex: b.ProposerIndex, ParentRoot: b.ParentRoot, StateRoot: b.StateRoot, Body: ab}, nil
+	case version.DataVersionBellatrix:
+		bb, err := assertView[*bellatrix.BeaconBlockBody](body, "BeaconBlock.Body")
+		if err != nil {
+			return nil, err
+		}
+
+		return &bellatrix.BeaconBlock{Slot: b.Slot, ProposerIndex: b.ProposerIndex, ParentRoot: b.ParentRoot, StateRoot: b.StateRoot, Body: bb}, nil
+	case version.DataVersionCapella:
+		cb, err := assertView[*capella.BeaconBlockBody](body, "BeaconBlock.Body")
+		if err != nil {
+			return nil, err
+		}
+
+		return &capella.BeaconBlock{Slot: b.Slot, ProposerIndex: b.ProposerIndex, ParentRoot: b.ParentRoot, StateRoot: b.StateRoot, Body: cb}, nil
+	case version.DataVersionDeneb:
+		db, err := assertView[*deneb.BeaconBlockBody](body, "BeaconBlock.Body")
+		if err != nil {
+			return nil, err
+		}
+
+		return &deneb.BeaconBlock{Slot: b.Slot, ProposerIndex: b.ProposerIndex, ParentRoot: b.ParentRoot, StateRoot: b.StateRoot, Body: db}, nil
+	case version.DataVersionElectra:
+		eb, err := assertView[*electra.BeaconBlockBody](body, "BeaconBlock.Body")
+		if err != nil {
+			return nil, err
+		}
+
+		return &electra.BeaconBlock{Slot: b.Slot, ProposerIndex: b.ProposerIndex, ParentRoot: b.ParentRoot, StateRoot: b.StateRoot, Body: eb}, nil
+	case version.DataVersionGloas:
+		gb, err := assertView[*gloas.BeaconBlockBody](body, "BeaconBlock.Body")
+		if err != nil {
+			return nil, err
+		}
+
+		return &gloas.BeaconBlock{Slot: b.Slot, ProposerIndex: b.ProposerIndex, ParentRoot: b.ParentRoot, StateRoot: b.StateRoot, Body: gb}, nil
+	case version.DataVersionHeze:
+		hb, err := assertView[*heze.BeaconBlockBody](body, "BeaconBlock.Body")
+		if err != nil {
+			return nil, err
+		}
+
+		return &heze.BeaconBlock{Slot: b.Slot, ProposerIndex: b.ProposerIndex, ParentRoot: b.ParentRoot, StateRoot: b.StateRoot, Body: hb}, nil
+	default:
+		return nil, fmt.Errorf("BeaconBlock: unsupported version %d", b.Version)
+	}
+}
+
+// FromView populates b from a fork-specific BeaconBlock.
+func (b *BeaconBlock) FromView(view any) error {
+	var bodyView any
+
+	switch v := view.(type) {
+	case *phase0.BeaconBlock:
+		if b.Version == version.DataVersionUnknown {
+			b.Version = version.DataVersionPhase0
+		}
+
+		b.Slot, b.ProposerIndex, b.ParentRoot, b.StateRoot = v.Slot, v.ProposerIndex, v.ParentRoot, v.StateRoot
+		bodyView = v.Body
+	case *altair.BeaconBlock:
+		if b.Version == version.DataVersionUnknown {
+			b.Version = version.DataVersionAltair
+		}
+
+		b.Slot, b.ProposerIndex, b.ParentRoot, b.StateRoot = v.Slot, v.ProposerIndex, v.ParentRoot, v.StateRoot
+		bodyView = v.Body
+	case *bellatrix.BeaconBlock:
+		if b.Version == version.DataVersionUnknown {
+			b.Version = version.DataVersionBellatrix
+		}
+
+		b.Slot, b.ProposerIndex, b.ParentRoot, b.StateRoot = v.Slot, v.ProposerIndex, v.ParentRoot, v.StateRoot
+		bodyView = v.Body
+	case *capella.BeaconBlock:
+		if b.Version == version.DataVersionUnknown {
+			b.Version = version.DataVersionCapella
+		}
+
+		b.Slot, b.ProposerIndex, b.ParentRoot, b.StateRoot = v.Slot, v.ProposerIndex, v.ParentRoot, v.StateRoot
+		bodyView = v.Body
+	case *deneb.BeaconBlock:
+		if b.Version == version.DataVersionUnknown {
+			b.Version = version.DataVersionDeneb
+		}
+
+		b.Slot, b.ProposerIndex, b.ParentRoot, b.StateRoot = v.Slot, v.ProposerIndex, v.ParentRoot, v.StateRoot
+		bodyView = v.Body
+	case *electra.BeaconBlock:
+		if b.Version == version.DataVersionUnknown {
+			b.Version = version.DataVersionElectra
+		}
+
+		b.Slot, b.ProposerIndex, b.ParentRoot, b.StateRoot = v.Slot, v.ProposerIndex, v.ParentRoot, v.StateRoot
+		bodyView = v.Body
+	case *gloas.BeaconBlock:
+		if b.Version == version.DataVersionUnknown {
+			b.Version = version.DataVersionGloas
+		}
+
+		b.Slot, b.ProposerIndex, b.ParentRoot, b.StateRoot = v.Slot, v.ProposerIndex, v.ParentRoot, v.StateRoot
+		bodyView = v.Body
+	case *heze.BeaconBlock:
+		if b.Version == version.DataVersionUnknown {
+			b.Version = version.DataVersionHeze
+		}
+
+		b.Slot, b.ProposerIndex, b.ParentRoot, b.StateRoot = v.Slot, v.ProposerIndex, v.ParentRoot, v.StateRoot
+		bodyView = v.Body
+	default:
+		return fmt.Errorf("BeaconBlock: unsupported view type %T", view)
+	}
+
+	if bodyView == nil {
+		b.Body = nil
+
+		return nil
+	}
+
+	if b.Body == nil {
+		b.Body = &BeaconBlockBody{Version: b.Version}
+	}
+
+	return b.Body.FromView(bodyView)
+}
+
 // HashTreeRootWithDyn computes the SSZ hash tree root using the active Version's view.
 func (b *BeaconBlock) HashTreeRootWithDyn(ds sszutils.DynamicSpecs, hh sszutils.HashWalker) error {
 	view, err := b.viewType()
