@@ -17,6 +17,7 @@ import (
 	"context"
 
 	"github.com/ethpandaops/go-eth2-client/api"
+	"github.com/ethpandaops/go-eth2-client/spec"
 	"github.com/ethpandaops/go-eth2-client/spec/bellatrix"
 	"github.com/ethpandaops/go-eth2-client/spec/capella"
 	"github.com/ethpandaops/go-eth2-client/spec/electra"
@@ -27,24 +28,27 @@ import (
 func (s *Service) SignedExecutionPayloadEnvelope(ctx context.Context,
 	opts *api.SignedExecutionPayloadEnvelopeOpts,
 ) (
-	*api.Response[*gloas.SignedExecutionPayloadEnvelope],
+	*api.Response[*spec.VersionedSignedExecutionPayloadEnvelope],
 	error,
 ) {
 	if s.SignedExecutionPayloadEnvelopeFunc != nil {
 		return s.SignedExecutionPayloadEnvelopeFunc(ctx, opts)
 	}
 
-	return &api.Response[*gloas.SignedExecutionPayloadEnvelope]{
-		Data: &gloas.SignedExecutionPayloadEnvelope{
-			Message: &gloas.ExecutionPayloadEnvelope{
-				Payload: &gloas.ExecutionPayload{
-					Transactions: []bellatrix.Transaction{},
-					Withdrawals:  []*capella.Withdrawal{},
-				},
-				ExecutionRequests: &electra.ExecutionRequests{
-					Deposits:       []*electra.DepositRequest{},
-					Withdrawals:    []*electra.WithdrawalRequest{},
-					Consolidations: []*electra.ConsolidationRequest{},
+	return &api.Response[*spec.VersionedSignedExecutionPayloadEnvelope]{
+		Data: &spec.VersionedSignedExecutionPayloadEnvelope{
+			Version: spec.DataVersionGloas,
+			Gloas: &gloas.SignedExecutionPayloadEnvelope{
+				Message: &gloas.ExecutionPayloadEnvelope{
+					Payload: &gloas.ExecutionPayload{
+						Transactions: []bellatrix.Transaction{},
+						Withdrawals:  []*capella.Withdrawal{},
+					},
+					ExecutionRequests: &electra.ExecutionRequests{
+						Deposits:       []*electra.DepositRequest{},
+						Withdrawals:    []*electra.WithdrawalRequest{},
+						Consolidations: []*electra.ConsolidationRequest{},
+					},
 				},
 			},
 		},

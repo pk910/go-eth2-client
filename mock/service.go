@@ -23,7 +23,6 @@ import (
 	"github.com/ethpandaops/go-eth2-client/spec/all"
 	"github.com/ethpandaops/go-eth2-client/spec/altair"
 	"github.com/ethpandaops/go-eth2-client/spec/electra"
-	"github.com/ethpandaops/go-eth2-client/spec/gloas"
 	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
@@ -80,7 +79,7 @@ type Service struct {
 	ProposerDutiesFunc                 func(context.Context, *api.ProposerDutiesOpts) (*api.Response[[]*apiv1.ProposerDuty], error)
 	SignedBeaconBlockFunc              func(context.Context, *api.SignedBeaconBlockOpts) (*api.Response[*spec.VersionedSignedBeaconBlock], error)
 	AgnosticSignedBeaconBlockFunc      func(context.Context, *api.SignedBeaconBlockOpts) (*api.Response[*all.SignedBeaconBlock], error)
-	SignedExecutionPayloadEnvelopeFunc func(context.Context, *api.SignedExecutionPayloadEnvelopeOpts) (*api.Response[*gloas.SignedExecutionPayloadEnvelope], error)
+	SignedExecutionPayloadEnvelopeFunc func(context.Context, *api.SignedExecutionPayloadEnvelopeOpts) (*api.Response[*spec.VersionedSignedExecutionPayloadEnvelope], error)
 	SpecFunc                           func(context.Context, *api.SpecOpts) (*api.Response[map[string]any], error)
 	SyncCommitteeContributionFunc      func(context.Context, *api.SyncCommitteeContributionOpts) (*api.Response[*altair.SyncCommitteeContribution], error)
 	SyncCommitteeDutiesFunc            func(context.Context, *api.SyncCommitteeDutiesOpts) (*api.Response[[]*apiv1.SyncCommitteeDuty], error)

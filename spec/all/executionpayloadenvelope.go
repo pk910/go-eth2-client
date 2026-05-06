@@ -17,6 +17,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/ethpandaops/go-eth2-client/spec"
 	"github.com/ethpandaops/go-eth2-client/spec/electra"
 	"github.com/ethpandaops/go-eth2-client/spec/gloas"
 	"github.com/ethpandaops/go-eth2-client/spec/phase0"
@@ -28,10 +29,6 @@ import (
 // ExecutionPayloadEnvelope is a fork-agnostic execution payload envelope
 // (EIP-7732 and later). Currently only gloas defines this container; later
 // forks that share the schema will reuse the gloas view.
-//
-// There is no VersionedExecutionPayloadEnvelope wrapper in the spec package
-// yet, so ToVersioned/FromVersioned are not provided. Add them once the
-// Versioned* counterpart lands.
 type ExecutionPayloadEnvelope struct {
 	Version               version.DataVersion
 	Payload               *ExecutionPayload
@@ -249,4 +246,22 @@ func (e *ExecutionPayloadEnvelope) UnmarshalYAML(data []byte) error {
 	e.populateVersion(e.Version)
 
 	return nil
+}
+
+// ToVersioned converts e into a *spec.VersionedExecutionPayloadEnvelope by
+// placing the fork-specific view (via e.ToView) into the field matching
+// e.Version.
+func (e *ExecutionPayloadEnvelope) ToVersioned() (*spec.VersionedExecutionPayloadEnvelope, error) {
+	out := &spec.VersionedExecutionPayloadEnvelope{}
+	if err := toVersioned(e.Version, e, out); err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}
+
+// FromVersioned populates e from src by extracting the field matching
+// src.Version and feeding it through e.FromView.
+func (e *ExecutionPayloadEnvelope) FromVersioned(src *spec.VersionedExecutionPayloadEnvelope) error {
+	return fromVersioned(e, src)
 }

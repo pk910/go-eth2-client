@@ -25,7 +25,6 @@ import (
 	"github.com/ethpandaops/go-eth2-client/spec/capella"
 	"github.com/ethpandaops/go-eth2-client/spec/deneb"
 	"github.com/ethpandaops/go-eth2-client/spec/electra"
-	"github.com/ethpandaops/go-eth2-client/spec/gloas"
 	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 )
 
@@ -644,11 +643,13 @@ type VoluntaryExitPoolProvider interface {
 
 // ExecutionPayloadProvider is the interface for providing execution payloads.
 type ExecutionPayloadProvider interface {
-	// SignedBeaconBlock fetches a signed beacon block given a block ID.
+	// SignedExecutionPayloadEnvelope fetches a signed execution payload
+	// envelope given a block ID. Returns a versioned wrapper so callers can
+	// branch on Version regardless of which fork's envelope is populated.
 	SignedExecutionPayloadEnvelope(ctx context.Context,
 		opts *api.SignedExecutionPayloadEnvelopeOpts,
 	) (
-		*api.Response[*gloas.SignedExecutionPayloadEnvelope],
+		*api.Response[*spec.VersionedSignedExecutionPayloadEnvelope],
 		error,
 	)
 

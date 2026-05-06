@@ -30,7 +30,7 @@ import (
 func (s *Service) SignedExecutionPayloadEnvelope(ctx context.Context,
 	opts *api.SignedExecutionPayloadEnvelopeOpts,
 ) (
-	*api.Response[*gloas.SignedExecutionPayloadEnvelope],
+	*api.Response[*spec.VersionedSignedExecutionPayloadEnvelope],
 	error,
 ) {
 	if err := s.assertIsActive(ctx); err != nil {
@@ -49,7 +49,7 @@ func (s *Service) SignedExecutionPayloadEnvelope(ctx context.Context,
 		return nil, err
 	}
 
-	var response *api.Response[*gloas.SignedExecutionPayloadEnvelope]
+	var response *api.Response[*spec.VersionedSignedExecutionPayloadEnvelope]
 	switch httpResponse.contentType {
 	case ContentTypeSSZ:
 		response, err = s.signedExecutionPayloadEnvelopeFromSSZ(ctx, httpResponse)
@@ -68,13 +68,9 @@ func (s *Service) SignedExecutionPayloadEnvelope(ctx context.Context,
 func (s *Service) signedExecutionPayloadEnvelopeFromSSZ(ctx context.Context,
 	res *httpResponse,
 ) (
-	*api.Response[*gloas.SignedExecutionPayloadEnvelope],
+	*api.Response[*spec.VersionedSignedExecutionPayloadEnvelope],
 	error,
 ) {
-	response := &api.Response[*gloas.SignedExecutionPayloadEnvelope]{
-		Metadata: metadataFromHeaders(res.headers),
-	}
-
 	if res.consensusVersion != spec.DataVersionGloas && res.consensusVersion != spec.DataVersionHeze {
 		return nil, fmt.Errorf("execution payload envelope not available for block version %s", res.consensusVersion)
 	}
@@ -84,12 +80,18 @@ func (s *Service) signedExecutionPayloadEnvelopeFromSSZ(ctx context.Context,
 		return nil, err
 	}
 
-	response.Data = &gloas.SignedExecutionPayloadEnvelope{}
-	if err := dynSSZ.UnmarshalSSZ(response.Data, res.body); err != nil {
+	envelope := &gloas.SignedExecutionPayloadEnvelope{}
+	if err := dynSSZ.UnmarshalSSZ(envelope, res.body); err != nil {
 		return nil, errors.Join(errors.New("failed to decode gloas signed execution payload envelope contents"), err)
 	}
 
-	return response, nil
+	return &api.Response[*spec.VersionedSignedExecutionPayloadEnvelope]{
+		Data: &spec.VersionedSignedExecutionPayloadEnvelope{
+			Version: res.consensusVersion,
+			Gloas:   envelope,
+		},
+		Metadata: metadataFromHeaders(res.headers),
+	}, nil
 }
 
 // AgnosticExecutionPayload fetches a signed execution payload envelope and
@@ -102,49 +104,53 @@ func (s *Service) AgnosticExecutionPayload(ctx context.Context,
 	*api.Response[*all.ExecutionPayload],
 	error,
 ) {
-	envelope, err := s.SignedExecutionPayloadEnvelope(ctx, opts)
+	versioned, err := s.SignedExecutionPayloadEnvelope(ctx, opts)
 	if err != nil {
 		return nil, err
 	}
 
-	if envelope.Data == nil || envelope.Data.Message == nil || envelope.Data.Message.Payload == nil {
+	if versioned.Data == nil ||
+		versioned.Data.Gloas == nil ||
+		versioned.Data.Gloas.Message == nil ||
+		versioned.Data.Gloas.Message.Payload == nil {
 		return nil, errors.New("execution payload envelope contains no payload")
 	}
 
-	// FromView infers Version from the view's concrete type. The envelope's
-	// Payload is *gloas.ExecutionPayload regardless of whether the response
-	// was Gloas or Heze (Heze reuses the Gloas execution-payload schema), so
-	// FromView yields Version=Gloas. Callers that need to distinguish Heze
-	// should use SignedExecutionPayloadEnvelope and inspect the response
-	// metadata directly.
-	payload := &all.ExecutionPayload{}
-	if err := payload.FromView(envelope.Data.Message.Payload); err != nil {
+	// The envelope's Payload is *gloas.ExecutionPayload regardless of whether
+	// the response was Gloas or Heze (Heze reuses the Gloas execution-payload
+	// schema), so pin the Version explicitly from the versioned wrapper rather
+	// than letting FromView's type-switch downgrade Heze to Gloas.
+	payload := &all.ExecutionPayload{Version: versioned.Data.Version}
+	if err := payload.FromView(versioned.Data.Gloas.Message.Payload); err != nil {
 		return nil, errors.Join(errors.New("failed to convert execution payload to agnostic"), err)
 	}
 
 	return &api.Response[*all.ExecutionPayload]{
 		Data:     payload,
-		Metadata: envelope.Metadata,
+		Metadata: versioned.Metadata,
 	}, nil
 }
 
 func (*Service) signedExecutionPayloadEnvelopeFromJSON(res *httpResponse) (
-	*api.Response[*gloas.SignedExecutionPayloadEnvelope],
+	*api.Response[*spec.VersionedSignedExecutionPayloadEnvelope],
 	error,
 ) {
-	response := &api.Response[*gloas.SignedExecutionPayloadEnvelope]{}
-
 	if res.consensusVersion != spec.DataVersionGloas && res.consensusVersion != spec.DataVersionHeze {
 		return nil, fmt.Errorf("execution payload envelope not available for block version %s", res.consensusVersion)
 	}
 
-	var err error
-	response.Data, response.Metadata, err = decodeJSONResponse(bytes.NewReader(res.body),
+	envelope, metadata, err := decodeJSONResponse(bytes.NewReader(res.body),
 		&gloas.SignedExecutionPayloadEnvelope{},
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	return response, nil
+	return &api.Response[*spec.VersionedSignedExecutionPayloadEnvelope]{
+		Data: &spec.VersionedSignedExecutionPayloadEnvelope{
+			Version: res.consensusVersion,
+			Gloas:   envelope,
+		},
+		Metadata: metadata,
+	}, nil
 }
