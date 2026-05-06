@@ -17,6 +17,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/ethpandaops/go-eth2-client/spec"
 	"github.com/ethpandaops/go-eth2-client/spec/bellatrix"
 	"github.com/ethpandaops/go-eth2-client/spec/capella"
 	"github.com/ethpandaops/go-eth2-client/spec/deneb"
@@ -68,7 +69,9 @@ func (e *ExecutionPayload) viewType() (any, error) {
 		version.DataVersionFulu:
 		// Electra and Fulu reuse the Deneb execution-payload schema unchanged.
 		return (*deneb.ExecutionPayload)(nil), nil
-	case version.DataVersionGloas:
+	case version.DataVersionGloas,
+		version.DataVersionHeze:
+		// Heze reuses the Gloas execution-payload schema unchanged.
 		return (*gloas.ExecutionPayload)(nil), nil
 	default:
 		return nil, fmt.Errorf("ExecutionPayload: unsupported version %d", e.Version)
@@ -240,6 +243,21 @@ func (e *ExecutionPayload) HashTreeRoot() ([32]byte, error) {
 // HashTreeRootWith implements the fastssz.HashRoot interface.
 func (e *ExecutionPayload) HashTreeRootWith(hh sszutils.HashWalker) error {
 	return e.HashTreeRootWithDyn(dynssz.GetGlobalDynSsz(), hh)
+}
+
+// ToVersioned converts e into a *spec.VersionedExecutionPayload.
+func (e *ExecutionPayload) ToVersioned() (*spec.VersionedExecutionPayload, error) {
+	out := &spec.VersionedExecutionPayload{}
+	if err := toVersioned(e.Version, e, out); err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}
+
+// FromVersioned populates e from src.
+func (e *ExecutionPayload) FromVersioned(src *spec.VersionedExecutionPayload) error {
+	return fromVersioned(e, src)
 }
 
 // MarshalJSON delegates to the per-fork ExecutionPayload that matches Version.

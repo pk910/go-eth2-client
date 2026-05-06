@@ -18,6 +18,7 @@ import (
 	"fmt"
 
 	bitfield "github.com/OffchainLabs/go-bitfield"
+	"github.com/ethpandaops/go-eth2-client/spec"
 	"github.com/ethpandaops/go-eth2-client/spec/altair"
 	"github.com/ethpandaops/go-eth2-client/spec/bellatrix"
 	"github.com/ethpandaops/go-eth2-client/spec/capella"
@@ -293,6 +294,23 @@ func (b *BeaconState) HashTreeRoot() ([32]byte, error) {
 // HashTreeRootWith implements the fastssz.HashRoot interface.
 func (b *BeaconState) HashTreeRootWith(hh sszutils.HashWalker) error {
 	return b.HashTreeRootWithDyn(dynssz.GetGlobalDynSsz(), hh)
+}
+
+// ToVersioned converts b into a *spec.VersionedBeaconState by placing the
+// fork-specific view (via b.ToView) into the field matching b.Version.
+func (b *BeaconState) ToVersioned() (*spec.VersionedBeaconState, error) {
+	out := &spec.VersionedBeaconState{}
+	if err := toVersioned(b.Version, b, out); err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}
+
+// FromVersioned populates b from src by extracting the field matching
+// src.Version and feeding it through b.FromView.
+func (b *BeaconState) FromVersioned(src *spec.VersionedBeaconState) error {
+	return fromVersioned(b, src)
 }
 
 // MarshalJSON delegates to the per-fork BeaconState that matches Version.

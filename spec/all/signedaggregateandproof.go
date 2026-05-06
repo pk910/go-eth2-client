@@ -17,6 +17,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/ethpandaops/go-eth2-client/spec"
 	"github.com/ethpandaops/go-eth2-client/spec/electra"
 	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 	"github.com/ethpandaops/go-eth2-client/spec/version"
@@ -215,6 +216,21 @@ func (s *SignedAggregateAndProof) HashTreeRoot() ([32]byte, error) {
 // HashTreeRootWith implements the fastssz.HashRoot interface.
 func (s *SignedAggregateAndProof) HashTreeRootWith(hh sszutils.HashWalker) error {
 	return s.HashTreeRootWithDyn(dynssz.GetGlobalDynSsz(), hh)
+}
+
+// ToVersioned converts s into a *spec.VersionedSignedAggregateAndProof.
+func (s *SignedAggregateAndProof) ToVersioned() (*spec.VersionedSignedAggregateAndProof, error) {
+	out := &spec.VersionedSignedAggregateAndProof{}
+	if err := toVersioned(s.Version, s, out); err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}
+
+// FromVersioned populates s from src.
+func (s *SignedAggregateAndProof) FromVersioned(src *spec.VersionedSignedAggregateAndProof) error {
+	return fromVersioned(s, src)
 }
 
 // MarshalJSON delegates to the per-fork SignedAggregateAndProof that matches Version.

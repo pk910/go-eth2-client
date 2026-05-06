@@ -17,6 +17,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/ethpandaops/go-eth2-client/spec"
 	"github.com/ethpandaops/go-eth2-client/spec/electra"
 	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 	"github.com/ethpandaops/go-eth2-client/spec/version"
@@ -214,6 +215,21 @@ func (i *IndexedAttestation) HashTreeRoot() ([32]byte, error) {
 // HashTreeRootWith implements the fastssz.HashRoot interface.
 func (i *IndexedAttestation) HashTreeRootWith(hh sszutils.HashWalker) error {
 	return i.HashTreeRootWithDyn(dynssz.GetGlobalDynSsz(), hh)
+}
+
+// ToVersioned converts i into a *spec.VersionedIndexedAttestation.
+func (i *IndexedAttestation) ToVersioned() (*spec.VersionedIndexedAttestation, error) {
+	out := &spec.VersionedIndexedAttestation{}
+	if err := toVersioned(i.Version, i, out); err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}
+
+// FromVersioned populates i from src.
+func (i *IndexedAttestation) FromVersioned(src *spec.VersionedIndexedAttestation) error {
+	return fromVersioned(i, src)
 }
 
 // MarshalJSON delegates to the per-fork IndexedAttestation that matches Version.

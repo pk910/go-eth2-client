@@ -18,6 +18,7 @@ import (
 	"fmt"
 
 	bitfield "github.com/OffchainLabs/go-bitfield"
+	"github.com/ethpandaops/go-eth2-client/spec"
 	"github.com/ethpandaops/go-eth2-client/spec/electra"
 	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 	"github.com/ethpandaops/go-eth2-client/spec/version"
@@ -215,6 +216,25 @@ func (a *Attestation) HashTreeRoot() ([32]byte, error) {
 // HashTreeRootWith implements the fastssz.HashRoot interface.
 func (a *Attestation) HashTreeRootWith(hh sszutils.HashWalker) error {
 	return a.HashTreeRootWithDyn(dynssz.GetGlobalDynSsz(), hh)
+}
+
+// ToVersioned converts a into a *spec.VersionedAttestation. The
+// VersionedAttestation.ValidatorIndex field is metadata not represented on
+// the agnostic type; it is left nil and must be populated by the caller if
+// needed.
+func (a *Attestation) ToVersioned() (*spec.VersionedAttestation, error) {
+	out := &spec.VersionedAttestation{}
+	if err := toVersioned(a.Version, a, out); err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}
+
+// FromVersioned populates a from src. Note that src.ValidatorIndex is not
+// represented on the agnostic type and is silently dropped.
+func (a *Attestation) FromVersioned(src *spec.VersionedAttestation) error {
+	return fromVersioned(a, src)
 }
 
 // MarshalJSON delegates to the per-fork Attestation that matches Version.

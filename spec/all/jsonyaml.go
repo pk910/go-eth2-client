@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/ethpandaops/go-eth2-client/spec/version"
 	"github.com/goccy/go-yaml"
 )
 
@@ -26,6 +27,151 @@ import (
 // active Version to a fork-specific schema type via viewType().
 type viewProvider interface {
 	viewType() (any, error)
+}
+
+// viewer is implemented by every fork-agnostic union type's ToView method.
+type viewer interface {
+	ToView() (any, error)
+}
+
+// fromViewer is implemented by every fork-agnostic union type's FromView method.
+type fromViewer interface {
+	FromView(view any) error
+}
+
+// versionSetter is implemented by every fork-agnostic union type's
+// populateVersion method. fromVersioned uses it to pin the Version (taken
+// from the Versioned* struct's authoritative Version field) before FromView
+// runs — otherwise FromView's per-view-type inference loses precision when
+// multiple versions share a single view (e.g. phase0..deneb all use
+// *phase0.Attestation).
+type versionSetter interface {
+	populateVersion(v version.DataVersion)
+}
+
+// versionFieldName maps a DataVersion to the per-fork field name on a
+// Versioned* struct (e.g. *spec.VersionedBeaconState).
+func versionFieldName(v version.DataVersion) (string, error) {
+	switch v {
+	case version.DataVersionPhase0:
+		return "Phase0", nil
+	case version.DataVersionAltair:
+		return "Altair", nil
+	case version.DataVersionBellatrix:
+		return "Bellatrix", nil
+	case version.DataVersionCapella:
+		return "Capella", nil
+	case version.DataVersionDeneb:
+		return "Deneb", nil
+	case version.DataVersionElectra:
+		return "Electra", nil
+	case version.DataVersionFulu:
+		return "Fulu", nil
+	case version.DataVersionGloas:
+		return "Gloas", nil
+	case version.DataVersionHeze:
+		return "Heze", nil
+	default:
+		return "", fmt.Errorf("unsupported version %d", v)
+	}
+}
+
+// toVersioned populates a Versioned* struct from a fork-agnostic source.
+// It calls src.ToView to produce the fork-specific view and stores it in the
+// dst field whose name matches srcVersion (Phase0, Altair, …, Heze). The
+// Version field on dst is also set.
+//
+// dst must be a non-nil pointer to a struct shaped like the spec package's
+// Versioned* types: a Version field plus per-fork pointer fields.
+func toVersioned(srcVersion version.DataVersion, src viewer, dst any) error {
+	view, err := src.ToView()
+	if err != nil {
+		return err
+	}
+
+	dv := reflect.ValueOf(dst)
+	if dv.Kind() != reflect.Ptr || dv.IsNil() {
+		return errors.New("toVersioned: dst must be a non-nil pointer")
+	}
+
+	dv = dv.Elem()
+
+	versionField := dv.FieldByName("Version")
+	if !versionField.IsValid() {
+		return fmt.Errorf("toVersioned: %T has no Version field", dst)
+	}
+
+	versionField.Set(reflect.ValueOf(srcVersion))
+
+	fieldName, err := versionFieldName(srcVersion)
+	if err != nil {
+		return fmt.Errorf("toVersioned: %w", err)
+	}
+
+	f := dv.FieldByName(fieldName)
+	if !f.IsValid() {
+		return fmt.Errorf("toVersioned: %T has no %s field", dst, fieldName)
+	}
+
+	rv := reflect.ValueOf(view)
+	if !rv.Type().AssignableTo(f.Type()) {
+		return fmt.Errorf("toVersioned: view type %T not assignable to %s field of type %s",
+			view, fieldName, f.Type())
+	}
+
+	f.Set(rv)
+
+	return nil
+}
+
+// fromVersioned populates a fork-agnostic destination from a Versioned*
+// struct by extracting the field matching src.Version and feeding it to
+// dst.FromView.
+//
+// src must be a non-nil pointer to a struct shaped like the spec package's
+// Versioned* types.
+func fromVersioned(dst fromViewer, src any) error {
+	sv := reflect.ValueOf(src)
+	if sv.Kind() != reflect.Ptr || sv.IsNil() {
+		return errors.New("fromVersioned: src must be a non-nil pointer")
+	}
+
+	sv = sv.Elem()
+
+	versionField := sv.FieldByName("Version")
+	if !versionField.IsValid() {
+		return fmt.Errorf("fromVersioned: %T has no Version field", src)
+	}
+
+	v, ok := versionField.Interface().(version.DataVersion)
+	if !ok {
+		return fmt.Errorf("fromVersioned: Version field on %T is %T not version.DataVersion",
+			src, versionField.Interface())
+	}
+
+	fieldName, err := versionFieldName(v)
+	if err != nil {
+		return fmt.Errorf("fromVersioned: %w", err)
+	}
+
+	f := sv.FieldByName(fieldName)
+	if !f.IsValid() {
+		return fmt.Errorf("fromVersioned: %T has no %s field", src, fieldName)
+	}
+
+	if f.Kind() == reflect.Ptr && f.IsNil() {
+		return fmt.Errorf("fromVersioned: %T.%s is nil for Version=%s", src, fieldName, v)
+	}
+
+	// Pin the authoritative Version on dst before FromView, so FromView's
+	// type-switch inference doesn't downgrade it (e.g. *phase0.Attestation
+	// would otherwise always become Phase0 even when the source Versioned
+	// structure says Deneb).
+	if vs, ok := dst.(versionSetter); ok {
+		vs.populateVersion(v)
+	}
+
+	return dst.FromView(f.Interface())
 }
 
 // toViewByCopy is the generic implementation of ToView shared by every

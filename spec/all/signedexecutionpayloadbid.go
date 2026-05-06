@@ -17,6 +17,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/ethpandaops/go-eth2-client/spec"
 	"github.com/ethpandaops/go-eth2-client/spec/gloas"
 	"github.com/ethpandaops/go-eth2-client/spec/heze"
 	"github.com/ethpandaops/go-eth2-client/spec/phase0"
@@ -209,6 +210,21 @@ func (s *SignedExecutionPayloadBid) HashTreeRoot() ([32]byte, error) {
 // HashTreeRootWith implements the fastssz.HashRoot interface.
 func (s *SignedExecutionPayloadBid) HashTreeRootWith(hh sszutils.HashWalker) error {
 	return s.HashTreeRootWithDyn(dynssz.GetGlobalDynSsz(), hh)
+}
+
+// ToVersioned converts s into a *spec.VersionedSignedExecutionPayloadBid.
+func (s *SignedExecutionPayloadBid) ToVersioned() (*spec.VersionedSignedExecutionPayloadBid, error) {
+	out := &spec.VersionedSignedExecutionPayloadBid{}
+	if err := toVersioned(s.Version, s, out); err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}
+
+// FromVersioned populates s from src.
+func (s *SignedExecutionPayloadBid) FromVersioned(src *spec.VersionedSignedExecutionPayloadBid) error {
+	return fromVersioned(s, src)
 }
 
 // MarshalJSON delegates to the per-fork SignedExecutionPayloadBid that matches Version.

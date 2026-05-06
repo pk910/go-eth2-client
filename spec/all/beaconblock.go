@@ -17,6 +17,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/ethpandaops/go-eth2-client/spec"
 	"github.com/ethpandaops/go-eth2-client/spec/altair"
 	"github.com/ethpandaops/go-eth2-client/spec/bellatrix"
 	"github.com/ethpandaops/go-eth2-client/spec/capella"
@@ -244,6 +245,21 @@ func (b *BeaconBlock) HashTreeRoot() ([32]byte, error) {
 // HashTreeRootWith implements the fastssz.HashRoot interface.
 func (b *BeaconBlock) HashTreeRootWith(hh sszutils.HashWalker) error {
 	return b.HashTreeRootWithDyn(dynssz.GetGlobalDynSsz(), hh)
+}
+
+// ToVersioned converts b into a *spec.VersionedBeaconBlock.
+func (b *BeaconBlock) ToVersioned() (*spec.VersionedBeaconBlock, error) {
+	out := &spec.VersionedBeaconBlock{}
+	if err := toVersioned(b.Version, b, out); err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}
+
+// FromVersioned populates b from src.
+func (b *BeaconBlock) FromVersioned(src *spec.VersionedBeaconBlock) error {
+	return fromVersioned(b, src)
 }
 
 // MarshalJSON delegates to the per-fork BeaconBlock that matches Version.
