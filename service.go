@@ -653,16 +653,13 @@ type ExecutionPayloadProvider interface {
 		error,
 	)
 
-	// AgnosticExecutionPayload fetches a signed execution payload envelope
-	// given a block ID and returns the inner ExecutionPayload as a
-	// fork-agnostic *all.ExecutionPayload. Envelope-specific fields
-	// (BuilderIndex, BeaconBlockRoot, ExecutionRequests, …) and the
-	// signature are dropped; use SignedExecutionPayloadEnvelope when those
-	// are needed.
-	AgnosticExecutionPayload(ctx context.Context,
+	// AgnosticSignedExecutionPayloadEnvelope fetches a signed execution
+	// payload envelope given a block ID and returns it as a fork-agnostic
+	// *all.SignedExecutionPayloadEnvelope.
+	AgnosticSignedExecutionPayloadEnvelope(ctx context.Context,
 		opts *api.SignedExecutionPayloadEnvelopeOpts,
 	) (
-		*api.Response[*all.ExecutionPayload],
+		*api.Response[*all.SignedExecutionPayloadEnvelope],
 		error,
 	)
 }

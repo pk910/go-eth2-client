@@ -35,13 +35,76 @@ import (
 	dynssz "github.com/pk910/dynamic-ssz"
 )
 
-// BeaconState fetches a beacon state.
+// BeaconState fetches a beacon state given a state ID and decodes it directly
+// into the per-fork view stored on a *spec.VersionedBeaconState. No
+// intermediate copy.
 func (s *Service) BeaconState(ctx context.Context,
 	opts *api.BeaconStateOpts,
 ) (
 	*api.Response[*spec.VersionedBeaconState],
 	error,
 ) {
+	httpResponse, err := s.fetchBeaconState(ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	switch httpResponse.contentType {
+	case ContentTypeSSZ:
+		return s.beaconStateFromSSZ(ctx, httpResponse)
+	case ContentTypeJSON:
+		return s.beaconStateFromJSON(httpResponse)
+	default:
+		return nil, fmt.Errorf("unhandled content type %v", httpResponse.contentType)
+	}
+}
+
+// AgnosticBeaconState fetches a beacon state and decodes it directly into a
+// fork-agnostic *all.BeaconState. The Version is set from the consensus
+// version header before unmarshaling so the union type's view-aware codec
+// dispatches into the correct fork's schema. No intermediate copy.
+func (s *Service) AgnosticBeaconState(ctx context.Context,
+	opts *api.BeaconStateOpts,
+) (
+	*api.Response[*all.BeaconState],
+	error,
+) {
+	httpResponse, err := s.fetchBeaconState(ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	state := &all.BeaconState{Version: httpResponse.consensusVersion}
+
+	switch httpResponse.contentType {
+	case ContentTypeSSZ:
+		ds, err := s.dynSSZForRequest(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := state.UnmarshalSSZDyn(ds, httpResponse.body); err != nil {
+			return nil, errors.Join(fmt.Errorf("failed to decode %s beacon state", httpResponse.consensusVersion), err)
+		}
+	case ContentTypeJSON:
+		if err := state.UnmarshalJSON(httpResponse.body); err != nil {
+			return nil, errors.Join(fmt.Errorf("failed to decode %s beacon state", httpResponse.consensusVersion), err)
+		}
+	default:
+		return nil, fmt.Errorf("unhandled content type %v", httpResponse.contentType)
+	}
+
+	return &api.Response[*all.BeaconState]{
+		Data:     state,
+		Metadata: metadataFromHeaders(httpResponse.headers),
+	}, nil
+}
+
+// fetchBeaconState performs the GET request shared by BeaconState and
+// AgnosticBeaconState: validates opts and hits the endpoint.
+func (s *Service) fetchBeaconState(ctx context.Context,
+	opts *api.BeaconStateOpts,
+) (*httpResponse, error) {
 	if err := s.assertIsActive(ctx); err != nil {
 		return nil, err
 	}
@@ -56,19 +119,7 @@ func (s *Service) BeaconState(ctx context.Context,
 
 	endpoint := fmt.Sprintf("/eth/v2/debug/beacon/states/%s", opts.State)
 
-	httpResponse, err := s.get(ctx, endpoint, "", &opts.Common, true)
-	if err != nil {
-		return nil, err
-	}
-
-	switch httpResponse.contentType {
-	case ContentTypeSSZ:
-		return s.beaconStateFromSSZ(ctx, httpResponse)
-	case ContentTypeJSON:
-		return s.beaconStateFromJSON(httpResponse)
-	default:
-		return nil, fmt.Errorf("unhandled content type %v", httpResponse.contentType)
-	}
+	return s.get(ctx, endpoint, "", &opts.Common, true)
 }
 
 func (s *Service) beaconStateFromSSZ(ctx context.Context, res *httpResponse) (*api.Response[*spec.VersionedBeaconState], error) {
@@ -121,62 +172,6 @@ func (s *Service) beaconStateFromSSZ(ctx context.Context, res *httpResponse) (*a
 	}
 
 	return response, nil
-}
-
-// AgnosticBeaconState fetches a beacon state and decodes it directly into a
-// fork-agnostic *all.BeaconState. The Version is set from the consensus
-// version header before unmarshaling so the union type's view-aware codec
-// dispatches into the correct fork's schema without any intermediate
-// fork-specific allocation.
-func (s *Service) AgnosticBeaconState(ctx context.Context,
-	opts *api.BeaconStateOpts,
-) (
-	*api.Response[*all.BeaconState],
-	error,
-) {
-	if err := s.assertIsActive(ctx); err != nil {
-		return nil, err
-	}
-
-	if opts == nil {
-		return nil, client.ErrNoOptions
-	}
-
-	if opts.State == "" {
-		return nil, errors.Join(errors.New("no state specified"), client.ErrInvalidOptions)
-	}
-
-	endpoint := fmt.Sprintf("/eth/v2/debug/beacon/states/%s", opts.State)
-
-	httpResponse, err := s.get(ctx, endpoint, "", &opts.Common, true)
-	if err != nil {
-		return nil, err
-	}
-
-	state := &all.BeaconState{Version: httpResponse.consensusVersion}
-
-	switch httpResponse.contentType {
-	case ContentTypeSSZ:
-		ds, err := s.dynSSZForRequest(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		if err := state.UnmarshalSSZDyn(ds, httpResponse.body); err != nil {
-			return nil, errors.Join(fmt.Errorf("failed to decode %s beacon state", httpResponse.consensusVersion), err)
-		}
-	case ContentTypeJSON:
-		if err := state.UnmarshalJSON(httpResponse.body); err != nil {
-			return nil, errors.Join(fmt.Errorf("failed to decode %s beacon state", httpResponse.consensusVersion), err)
-		}
-	default:
-		return nil, fmt.Errorf("unhandled content type %v", httpResponse.contentType)
-	}
-
-	return &api.Response[*all.BeaconState]{
-		Data:     state,
-		Metadata: metadataFromHeaders(httpResponse.headers),
-	}, nil
 }
 
 // dynSSZForRequest returns the cached dynssz instance for the current spec

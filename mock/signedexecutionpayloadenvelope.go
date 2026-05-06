@@ -18,6 +18,7 @@ import (
 
 	"github.com/ethpandaops/go-eth2-client/api"
 	"github.com/ethpandaops/go-eth2-client/spec"
+	"github.com/ethpandaops/go-eth2-client/spec/all"
 	"github.com/ethpandaops/go-eth2-client/spec/bellatrix"
 	"github.com/ethpandaops/go-eth2-client/spec/capella"
 	"github.com/ethpandaops/go-eth2-client/spec/electra"
@@ -49,6 +50,39 @@ func (s *Service) SignedExecutionPayloadEnvelope(ctx context.Context,
 						Withdrawals:    []*electra.WithdrawalRequest{},
 						Consolidations: []*electra.ConsolidationRequest{},
 					},
+				},
+			},
+		},
+		Metadata: make(map[string]any),
+	}, nil
+}
+
+// AgnosticSignedExecutionPayloadEnvelope returns a stub fork-agnostic signed
+// execution payload envelope.
+func (s *Service) AgnosticSignedExecutionPayloadEnvelope(ctx context.Context,
+	opts *api.SignedExecutionPayloadEnvelopeOpts,
+) (
+	*api.Response[*all.SignedExecutionPayloadEnvelope],
+	error,
+) {
+	if s.AgnosticSignedExecutionPayloadEnvelopeFunc != nil {
+		return s.AgnosticSignedExecutionPayloadEnvelopeFunc(ctx, opts)
+	}
+
+	return &api.Response[*all.SignedExecutionPayloadEnvelope]{
+		Data: &all.SignedExecutionPayloadEnvelope{
+			Version: spec.DataVersionGloas,
+			Message: &all.ExecutionPayloadEnvelope{
+				Version: spec.DataVersionGloas,
+				Payload: &all.ExecutionPayload{
+					Version:      spec.DataVersionGloas,
+					Transactions: []bellatrix.Transaction{},
+					Withdrawals:  []*capella.Withdrawal{},
+				},
+				ExecutionRequests: &electra.ExecutionRequests{
+					Deposits:       []*electra.DepositRequest{},
+					Withdrawals:    []*electra.WithdrawalRequest{},
+					Consolidations: []*electra.ConsolidationRequest{},
 				},
 			},
 		},
