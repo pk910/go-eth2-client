@@ -30,7 +30,7 @@ import (
 func (s *Service) SignedExecutionPayloadEnvelope(ctx context.Context,
 	opts *api.SignedExecutionPayloadEnvelopeOpts,
 ) (
-	*api.Response[*gloas.SignedExecutionPayloadEnvelope],
+	*api.Response[*spec.VersionedSignedExecutionPayloadEnvelope],
 	error,
 ) {
 	if err := s.assertIsActive(ctx); err != nil {
@@ -49,7 +49,7 @@ func (s *Service) SignedExecutionPayloadEnvelope(ctx context.Context,
 		return nil, err
 	}
 
-	var response *api.Response[*gloas.SignedExecutionPayloadEnvelope]
+	var response *api.Response[*spec.VersionedSignedExecutionPayloadEnvelope]
 	switch httpResponse.contentType {
 	case ContentTypeSSZ:
 		response, err = s.signedExecutionPayloadEnvelopeFromSSZ(ctx, httpResponse)
@@ -68,10 +68,17 @@ func (s *Service) SignedExecutionPayloadEnvelope(ctx context.Context,
 func (s *Service) signedExecutionPayloadEnvelopeFromSSZ(ctx context.Context,
 	res *httpResponse,
 ) (
-	*api.Response[*gloas.SignedExecutionPayloadEnvelope],
+	*api.Response[*spec.VersionedSignedExecutionPayloadEnvelope],
 	error,
 ) {
-	response := &api.Response[*gloas.SignedExecutionPayloadEnvelope]{
+	if res.consensusVersion != spec.DataVersionGloas && res.consensusVersion != spec.DataVersionHeze {
+		return nil, fmt.Errorf("execution payload envelope not available for block version %s", res.consensusVersion)
+	}
+
+	response := &api.Response[*spec.VersionedSignedExecutionPayloadEnvelope]{
+		Data: &spec.VersionedSignedExecutionPayloadEnvelope{
+			Version: res.consensusVersion,
+		},
 		Metadata: metadataFromHeaders(res.headers),
 	}
 
@@ -85,41 +92,43 @@ func (s *Service) signedExecutionPayloadEnvelopeFromSSZ(ctx context.Context,
 		dynSSZ = dynssz.NewDynSsz(specs.Data)
 	}
 
-	if res.consensusVersion != spec.DataVersionGloas && res.consensusVersion != spec.DataVersionHeze {
-		return nil, fmt.Errorf("execution payload envelope not available for block version %s", res.consensusVersion)
-	}
+	envelope := &gloas.SignedExecutionPayloadEnvelope{}
 
 	var err error
-	response.Data = &gloas.SignedExecutionPayloadEnvelope{}
 	if s.customSpecSupport {
-		err = dynSSZ.UnmarshalSSZ(response.Data, res.body)
+		err = dynSSZ.UnmarshalSSZ(envelope, res.body)
 	} else {
-		err = response.Data.UnmarshalSSZ(res.body)
+		err = envelope.UnmarshalSSZ(res.body)
 	}
 	if err != nil {
 		return nil, errors.Join(errors.New("failed to decode gloas signed execution payload envelope contents"), err)
 	}
 
+	response.Data.Gloas = envelope
+
 	return response, nil
 }
 
 func (*Service) signedExecutionPayloadEnvelopeFromJSON(res *httpResponse) (
-	*api.Response[*gloas.SignedExecutionPayloadEnvelope],
+	*api.Response[*spec.VersionedSignedExecutionPayloadEnvelope],
 	error,
 ) {
-	response := &api.Response[*gloas.SignedExecutionPayloadEnvelope]{}
-
 	if res.consensusVersion != spec.DataVersionGloas && res.consensusVersion != spec.DataVersionHeze {
 		return nil, fmt.Errorf("execution payload envelope not available for block version %s", res.consensusVersion)
 	}
 
-	var err error
-	response.Data, response.Metadata, err = decodeJSONResponse(bytes.NewReader(res.body),
+	envelope, metadata, err := decodeJSONResponse(bytes.NewReader(res.body),
 		&gloas.SignedExecutionPayloadEnvelope{},
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	return response, nil
+	return &api.Response[*spec.VersionedSignedExecutionPayloadEnvelope]{
+		Data: &spec.VersionedSignedExecutionPayloadEnvelope{
+			Version: res.consensusVersion,
+			Gloas:   envelope,
+		},
+		Metadata: metadata,
+	}, nil
 }
