@@ -262,7 +262,7 @@ func (e *ExecutionPayloadBid) SizeSSZ() int {
 }
 
 // HashTreeRoot implements the fastssz.HashRoot interface.
-func (e *ExecutionPayloadBid) HashTreeRoot() (phase0.Root, error) {
+func (e *ExecutionPayloadBid) HashTreeRoot() ([32]byte, error) {
 	return dynssz.GetGlobalDynSsz().HashTreeRoot(e)
 }
 

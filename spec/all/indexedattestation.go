@@ -225,7 +225,7 @@ func (i *IndexedAttestation) SizeSSZ() int {
 }
 
 // HashTreeRoot implements the fastssz.HashRoot interface.
-func (i *IndexedAttestation) HashTreeRoot() (phase0.Root, error) {
+func (i *IndexedAttestation) HashTreeRoot() ([32]byte, error) {
 	return dynssz.GetGlobalDynSsz().HashTreeRoot(i)
 }
 

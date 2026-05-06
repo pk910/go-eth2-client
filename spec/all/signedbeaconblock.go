@@ -327,7 +327,7 @@ func (s *SignedBeaconBlock) SizeSSZ() int {
 }
 
 // HashTreeRoot implements the fastssz.HashRoot interface.
-func (s *SignedBeaconBlock) HashTreeRoot() (phase0.Root, error) {
+func (s *SignedBeaconBlock) HashTreeRoot() ([32]byte, error) {
 	return dynssz.GetGlobalDynSsz().HashTreeRoot(s)
 }
 
