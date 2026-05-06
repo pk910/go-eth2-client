@@ -18,14 +18,14 @@ import (
 
 	consensusclient "github.com/ethpandaops/go-eth2-client"
 	"github.com/ethpandaops/go-eth2-client/api"
-	"github.com/ethpandaops/go-eth2-client/spec/gloas"
+	"github.com/ethpandaops/go-eth2-client/spec"
 )
 
 // SignedExecutionPayloadEnvelope fetches a signed execution payload envelope given a block ID.
 func (s *Service) SignedExecutionPayloadEnvelope(ctx context.Context,
 	opts *api.SignedExecutionPayloadEnvelopeOpts,
 ) (
-	*api.Response[*gloas.SignedExecutionPayloadEnvelope],
+	*api.Response[*spec.VersionedSignedExecutionPayloadEnvelope],
 	error,
 ) {
 	res, err := s.doCall(ctx, func(ctx context.Context, client consensusclient.Service) (any, error) {
@@ -40,7 +40,7 @@ func (s *Service) SignedExecutionPayloadEnvelope(ctx context.Context,
 		return nil, err
 	}
 
-	response, isResponse := res.(*api.Response[*gloas.SignedExecutionPayloadEnvelope])
+	response, isResponse := res.(*api.Response[*spec.VersionedSignedExecutionPayloadEnvelope])
 	if !isResponse {
 		return nil, ErrIncorrectType
 	}
