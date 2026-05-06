@@ -130,7 +130,6 @@ func (s *Service) Proposal(ctx context.Context,
 	return response, nil
 }
 
-//nolint:nestif
 func (s *Service) beaconBlockProposalFromSSZ(ctx context.Context,
 	res *httpResponse,
 ) (

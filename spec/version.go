@@ -17,8 +17,10 @@ import (
 	"github.com/ethpandaops/go-eth2-client/spec/version"
 )
 
-type BuilderVersion = version.BuilderVersion
-type DataVersion = version.DataVersion
+type (
+	BuilderVersion = version.BuilderVersion
+	DataVersion    = version.DataVersion
+)
 
 var (
 	DataVersionUnknown   = version.DataVersionUnknown

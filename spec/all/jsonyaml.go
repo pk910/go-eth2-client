@@ -90,7 +90,7 @@ func toVersioned(srcVersion version.DataVersion, src viewer, dst any) error {
 	}
 
 	dv := reflect.ValueOf(dst)
-	if dv.Kind() != reflect.Ptr || dv.IsNil() {
+	if dv.Kind() != reflect.Pointer || dv.IsNil() {
 		return errors.New("toVersioned: dst must be a non-nil pointer")
 	}
 
@@ -132,7 +132,7 @@ func toVersioned(srcVersion version.DataVersion, src viewer, dst any) error {
 // Versioned* types.
 func fromVersioned(dst fromViewer, src any) error {
 	sv := reflect.ValueOf(src)
-	if sv.Kind() != reflect.Ptr || sv.IsNil() {
+	if sv.Kind() != reflect.Pointer || sv.IsNil() {
 		return errors.New("fromVersioned: src must be a non-nil pointer")
 	}
 
@@ -159,7 +159,7 @@ func fromVersioned(dst fromViewer, src any) error {
 		return fmt.Errorf("fromVersioned: %T has no %s field", src, fieldName)
 	}
 
-	if f.Kind() == reflect.Ptr && f.IsNil() {
+	if f.Kind() == reflect.Pointer && f.IsNil() {
 		return fmt.Errorf("fromVersioned: %T.%s is nil for Version=%s", src, fieldName, v)
 	}
 
@@ -277,7 +277,7 @@ func copyByName(src, dst any) error {
 	sv := reflect.ValueOf(src)
 	dv := reflect.ValueOf(dst)
 
-	if sv.Kind() == reflect.Ptr {
+	if sv.Kind() == reflect.Pointer {
 		if sv.IsNil() {
 			return nil
 		}
@@ -285,7 +285,7 @@ func copyByName(src, dst any) error {
 		sv = sv.Elem()
 	}
 
-	if dv.Kind() == reflect.Ptr {
+	if dv.Kind() == reflect.Pointer {
 		if dv.IsNil() {
 			return errors.New("copyByName: destination is a nil pointer")
 		}
@@ -327,8 +327,8 @@ func copyValue(src, dst reflect.Value) error {
 	}
 
 	switch src.Kind() {
-	case reflect.Ptr:
-		if dst.Kind() != reflect.Ptr {
+	case reflect.Pointer:
+		if dst.Kind() != reflect.Pointer {
 			return fmt.Errorf("incompatible kinds %s -> %s", src.Kind(), dst.Kind())
 		}
 
