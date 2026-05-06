@@ -22,6 +22,7 @@ import (
 	client "github.com/ethpandaops/go-eth2-client"
 	"github.com/ethpandaops/go-eth2-client/api"
 	"github.com/ethpandaops/go-eth2-client/spec"
+	"github.com/ethpandaops/go-eth2-client/spec/all"
 	"github.com/ethpandaops/go-eth2-client/spec/altair"
 	"github.com/ethpandaops/go-eth2-client/spec/bellatrix"
 	"github.com/ethpandaops/go-eth2-client/spec/capella"
@@ -75,6 +76,62 @@ func (s *Service) SignedBeaconBlock(ctx context.Context,
 	}
 
 	return response, nil
+}
+
+// AgnosticSignedBeaconBlock fetches a signed beacon block and decodes it
+// directly into a fork-agnostic *all.SignedBeaconBlock. The Version is set
+// from the consensus version header before unmarshaling so the union type's
+// view-aware codec dispatches into the correct fork's schema without any
+// intermediate fork-specific allocation.
+func (s *Service) AgnosticSignedBeaconBlock(ctx context.Context,
+	opts *api.SignedBeaconBlockOpts,
+) (
+	*api.Response[*all.SignedBeaconBlock],
+	error,
+) {
+	if err := s.assertIsActive(ctx); err != nil {
+		return nil, err
+	}
+
+	if opts == nil {
+		return nil, client.ErrNoOptions
+	}
+
+	if opts.Block == "" {
+		return nil, errors.Join(errors.New("no block specified"), client.ErrInvalidOptions)
+	}
+
+	endpoint := fmt.Sprintf("/eth/v2/beacon/blocks/%s", opts.Block)
+
+	httpResponse, err := s.get(ctx, endpoint, "", &opts.Common, true)
+	if err != nil {
+		return nil, err
+	}
+
+	block := &all.SignedBeaconBlock{Version: httpResponse.consensusVersion}
+
+	switch httpResponse.contentType {
+	case ContentTypeSSZ:
+		ds, err := s.dynSSZForRequest(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := block.UnmarshalSSZDyn(ds, httpResponse.body); err != nil {
+			return nil, errors.Join(fmt.Errorf("failed to decode %s signed beacon block", httpResponse.consensusVersion), err)
+		}
+	case ContentTypeJSON:
+		if err := block.UnmarshalJSON(httpResponse.body); err != nil {
+			return nil, errors.Join(fmt.Errorf("failed to decode %s signed beacon block", httpResponse.consensusVersion), err)
+		}
+	default:
+		return nil, fmt.Errorf("unhandled content type %v", httpResponse.contentType)
+	}
+
+	return &api.Response[*all.SignedBeaconBlock]{
+		Data:     block,
+		Metadata: metadataFromHeaders(httpResponse.headers),
+	}, nil
 }
 
 func (s *Service) signedBeaconBlockFromSSZ(ctx context.Context,

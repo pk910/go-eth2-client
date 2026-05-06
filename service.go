@@ -20,6 +20,7 @@ import (
 	"github.com/ethpandaops/go-eth2-client/api"
 	apiv1 "github.com/ethpandaops/go-eth2-client/api/v1"
 	"github.com/ethpandaops/go-eth2-client/spec"
+	"github.com/ethpandaops/go-eth2-client/spec/all"
 	"github.com/ethpandaops/go-eth2-client/spec/altair"
 	"github.com/ethpandaops/go-eth2-client/spec/capella"
 	"github.com/ethpandaops/go-eth2-client/spec/deneb"
@@ -115,6 +116,15 @@ type SignedBeaconBlockProvider interface {
 		opts *api.SignedBeaconBlockOpts,
 	) (
 		*api.Response[*spec.VersionedSignedBeaconBlock],
+		error,
+	)
+
+	// AgnosticSignedBeaconBlock fetches a signed beacon block given a block ID
+	// and returns it as a fork-agnostic *all.SignedBeaconBlock.
+	AgnosticSignedBeaconBlock(ctx context.Context,
+		opts *api.SignedBeaconBlockOpts,
+	) (
+		*api.Response[*all.SignedBeaconBlock],
 		error,
 	)
 }
@@ -395,6 +405,14 @@ type BeaconStateProvider interface {
 	BeaconState(ctx context.Context,
 		opts *api.BeaconStateOpts,
 	) (*api.Response[*spec.VersionedBeaconState],
+		error,
+	)
+
+	// AgnosticBeaconState fetches a beacon state given a state ID and returns
+	// it as a fork-agnostic *all.BeaconState.
+	AgnosticBeaconState(ctx context.Context,
+		opts *api.BeaconStateOpts,
+	) (*api.Response[*all.BeaconState],
 		error,
 	)
 }

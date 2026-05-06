@@ -18,7 +18,9 @@ import (
 
 	"github.com/ethpandaops/go-eth2-client/api"
 	"github.com/ethpandaops/go-eth2-client/spec"
+	"github.com/ethpandaops/go-eth2-client/spec/all"
 	"github.com/ethpandaops/go-eth2-client/spec/phase0"
+	"github.com/ethpandaops/go-eth2-client/spec/version"
 )
 
 // SignedBeaconBlock fetches a signed beacon block given a block ID.
@@ -40,6 +42,32 @@ func (s *Service) SignedBeaconBlock(ctx context.Context,
 					Body: &phase0.BeaconBlockBody{
 						ETH1Data: &phase0.ETH1Data{},
 					},
+				},
+			},
+		},
+		Metadata: make(map[string]any),
+	}, nil
+}
+
+// AgnosticSignedBeaconBlock returns a stub fork-agnostic signed beacon block.
+func (s *Service) AgnosticSignedBeaconBlock(ctx context.Context,
+	opts *api.SignedBeaconBlockOpts,
+) (
+	*api.Response[*all.SignedBeaconBlock],
+	error,
+) {
+	if s.AgnosticSignedBeaconBlockFunc != nil {
+		return s.AgnosticSignedBeaconBlockFunc(ctx, opts)
+	}
+
+	return &api.Response[*all.SignedBeaconBlock]{
+		Data: &all.SignedBeaconBlock{
+			Version: version.DataVersionPhase0,
+			Message: &all.BeaconBlock{
+				Version: version.DataVersionPhase0,
+				Body: &all.BeaconBlockBody{
+					Version:  version.DataVersionPhase0,
+					ETH1Data: &phase0.ETH1Data{},
 				},
 			},
 		},

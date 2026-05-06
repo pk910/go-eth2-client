@@ -20,6 +20,7 @@ import (
 	"github.com/ethpandaops/go-eth2-client/api"
 	apiv1 "github.com/ethpandaops/go-eth2-client/api/v1"
 	"github.com/ethpandaops/go-eth2-client/spec"
+	"github.com/ethpandaops/go-eth2-client/spec/all"
 	"github.com/ethpandaops/go-eth2-client/spec/altair"
 	"github.com/ethpandaops/go-eth2-client/spec/electra"
 	"github.com/ethpandaops/go-eth2-client/spec/gloas"
@@ -58,6 +59,7 @@ type Service struct {
 	BeaconBlockHeaderFunc              func(context.Context, *api.BeaconBlockHeaderOpts) (*api.Response[*apiv1.BeaconBlockHeader], error)
 	BeaconBlockRootFunc                func(context.Context, *api.BeaconBlockRootOpts) (*api.Response[*phase0.Root], error)
 	BeaconStateFunc                    func(context.Context, *api.BeaconStateOpts) (*api.Response[*spec.VersionedBeaconState], error)
+	AgnosticBeaconStateFunc            func(context.Context, *api.BeaconStateOpts) (*api.Response[*all.BeaconState], error)
 	BeaconStateRandaoFunc              func(context.Context, *api.BeaconStateRandaoOpts) (*api.Response[*phase0.Root], error)
 	BeaconStateRootFunc                func(context.Context, *api.BeaconStateRootOpts) (*api.Response[*phase0.Root], error)
 	BlockRewardsFunc                   func(context.Context, *api.BlockRewardsOpts) (*api.Response[*apiv1.BlockRewards], error)
@@ -77,6 +79,7 @@ type Service struct {
 	ProposalFunc                       func(context.Context, *api.ProposalOpts) (*api.Response[*api.VersionedProposal], error)
 	ProposerDutiesFunc                 func(context.Context, *api.ProposerDutiesOpts) (*api.Response[[]*apiv1.ProposerDuty], error)
 	SignedBeaconBlockFunc              func(context.Context, *api.SignedBeaconBlockOpts) (*api.Response[*spec.VersionedSignedBeaconBlock], error)
+	AgnosticSignedBeaconBlockFunc      func(context.Context, *api.SignedBeaconBlockOpts) (*api.Response[*all.SignedBeaconBlock], error)
 	SignedExecutionPayloadEnvelopeFunc func(context.Context, *api.SignedExecutionPayloadEnvelopeOpts) (*api.Response[*gloas.SignedExecutionPayloadEnvelope], error)
 	SpecFunc                           func(context.Context, *api.SpecOpts) (*api.Response[map[string]any], error)
 	SyncCommitteeContributionFunc      func(context.Context, *api.SyncCommitteeContributionOpts) (*api.Response[*altair.SyncCommitteeContribution], error)

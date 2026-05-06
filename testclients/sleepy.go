@@ -24,6 +24,7 @@ import (
 	"github.com/ethpandaops/go-eth2-client/api"
 	apiv1 "github.com/ethpandaops/go-eth2-client/api/v1"
 	"github.com/ethpandaops/go-eth2-client/spec"
+	"github.com/ethpandaops/go-eth2-client/spec/all"
 	"github.com/ethpandaops/go-eth2-client/spec/deneb"
 	"github.com/ethpandaops/go-eth2-client/spec/electra"
 	"github.com/ethpandaops/go-eth2-client/spec/phase0"
@@ -412,6 +413,23 @@ func (s *Sleepy) BeaconState(ctx context.Context,
 	}
 
 	return next.BeaconState(ctx, opts)
+}
+
+// AgnosticBeaconState fetches a fork-agnostic beacon state.
+func (s *Sleepy) AgnosticBeaconState(ctx context.Context,
+	opts *api.BeaconStateOpts,
+) (
+	*api.Response[*all.BeaconState],
+	error,
+) {
+	s.sleep(ctx)
+
+	next, isNext := s.next.(consensusclient.BeaconStateProvider)
+	if !isNext {
+		return nil, errors.New("next does not support this call")
+	}
+
+	return next.AgnosticBeaconState(ctx, opts)
 }
 
 // Events feeds requested events with the given topics to the supplied handler.
