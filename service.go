@@ -651,6 +651,19 @@ type ExecutionPayloadProvider interface {
 		*api.Response[*gloas.SignedExecutionPayloadEnvelope],
 		error,
 	)
+
+	// AgnosticExecutionPayload fetches a signed execution payload envelope
+	// given a block ID and returns the inner ExecutionPayload as a
+	// fork-agnostic *all.ExecutionPayload. Envelope-specific fields
+	// (BuilderIndex, BeaconBlockRoot, ExecutionRequests, …) and the
+	// signature are dropped; use SignedExecutionPayloadEnvelope when those
+	// are needed.
+	AgnosticExecutionPayload(ctx context.Context,
+		opts *api.SignedExecutionPayloadEnvelopeOpts,
+	) (
+		*api.Response[*all.ExecutionPayload],
+		error,
+	)
 }
 
 // PendingDepositProvider is the interface for providing pending deposit information.

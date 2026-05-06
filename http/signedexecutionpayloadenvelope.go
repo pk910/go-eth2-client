@@ -22,6 +22,7 @@ import (
 	client "github.com/ethpandaops/go-eth2-client"
 	"github.com/ethpandaops/go-eth2-client/api"
 	"github.com/ethpandaops/go-eth2-client/spec"
+	"github.com/ethpandaops/go-eth2-client/spec/all"
 	"github.com/ethpandaops/go-eth2-client/spec/gloas"
 )
 
@@ -89,6 +90,42 @@ func (s *Service) signedExecutionPayloadEnvelopeFromSSZ(ctx context.Context,
 	}
 
 	return response, nil
+}
+
+// AgnosticExecutionPayload fetches a signed execution payload envelope and
+// returns the inner ExecutionPayload as a fork-agnostic *all.ExecutionPayload.
+// Envelope-specific fields and the signature are dropped; use
+// SignedExecutionPayloadEnvelope when those are needed.
+func (s *Service) AgnosticExecutionPayload(ctx context.Context,
+	opts *api.SignedExecutionPayloadEnvelopeOpts,
+) (
+	*api.Response[*all.ExecutionPayload],
+	error,
+) {
+	envelope, err := s.SignedExecutionPayloadEnvelope(ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if envelope.Data == nil || envelope.Data.Message == nil || envelope.Data.Message.Payload == nil {
+		return nil, errors.New("execution payload envelope contains no payload")
+	}
+
+	// FromView infers Version from the view's concrete type. The envelope's
+	// Payload is *gloas.ExecutionPayload regardless of whether the response
+	// was Gloas or Heze (Heze reuses the Gloas execution-payload schema), so
+	// FromView yields Version=Gloas. Callers that need to distinguish Heze
+	// should use SignedExecutionPayloadEnvelope and inspect the response
+	// metadata directly.
+	payload := &all.ExecutionPayload{}
+	if err := payload.FromView(envelope.Data.Message.Payload); err != nil {
+		return nil, errors.Join(errors.New("failed to convert execution payload to agnostic"), err)
+	}
+
+	return &api.Response[*all.ExecutionPayload]{
+		Data:     payload,
+		Metadata: envelope.Metadata,
+	}, nil
 }
 
 func (*Service) signedExecutionPayloadEnvelopeFromJSON(res *httpResponse) (
