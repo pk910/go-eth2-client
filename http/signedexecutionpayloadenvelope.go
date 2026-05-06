@@ -23,7 +23,6 @@ import (
 	"github.com/ethpandaops/go-eth2-client/api"
 	"github.com/ethpandaops/go-eth2-client/spec"
 	"github.com/ethpandaops/go-eth2-client/spec/gloas"
-	dynssz "github.com/pk910/dynamic-ssz"
 )
 
 // SignedExecutionPayloadEnvelope fetches a signed execution payload envelope given a block ID.
@@ -75,28 +74,17 @@ func (s *Service) signedExecutionPayloadEnvelopeFromSSZ(ctx context.Context,
 		Metadata: metadataFromHeaders(res.headers),
 	}
 
-	var dynSSZ *dynssz.DynSsz
-	if s.customSpecSupport {
-		specs, err := s.Spec(ctx, &api.SpecOpts{})
-		if err != nil {
-			return nil, errors.Join(errors.New("failed to request specs"), err)
-		}
-
-		dynSSZ = dynssz.NewDynSsz(specs.Data)
-	}
-
 	if res.consensusVersion != spec.DataVersionGloas && res.consensusVersion != spec.DataVersionHeze {
 		return nil, fmt.Errorf("execution payload envelope not available for block version %s", res.consensusVersion)
 	}
 
-	var err error
-	response.Data = &gloas.SignedExecutionPayloadEnvelope{}
-	if s.customSpecSupport {
-		err = dynSSZ.UnmarshalSSZ(response.Data, res.body)
-	} else {
-		err = response.Data.UnmarshalSSZ(res.body)
-	}
+	dynSSZ, err := s.dynSSZForRequest(ctx)
 	if err != nil {
+		return nil, err
+	}
+
+	response.Data = &gloas.SignedExecutionPayloadEnvelope{}
+	if err := dynSSZ.UnmarshalSSZ(response.Data, res.body); err != nil {
 		return nil, errors.Join(errors.New("failed to decode gloas signed execution payload envelope contents"), err)
 	}
 
