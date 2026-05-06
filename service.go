@@ -20,11 +20,11 @@ import (
 	"github.com/ethpandaops/go-eth2-client/api"
 	apiv1 "github.com/ethpandaops/go-eth2-client/api/v1"
 	"github.com/ethpandaops/go-eth2-client/spec"
+	"github.com/ethpandaops/go-eth2-client/spec/all"
 	"github.com/ethpandaops/go-eth2-client/spec/altair"
 	"github.com/ethpandaops/go-eth2-client/spec/capella"
 	"github.com/ethpandaops/go-eth2-client/spec/deneb"
 	"github.com/ethpandaops/go-eth2-client/spec/electra"
-	"github.com/ethpandaops/go-eth2-client/spec/gloas"
 	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 )
 
@@ -115,6 +115,15 @@ type SignedBeaconBlockProvider interface {
 		opts *api.SignedBeaconBlockOpts,
 	) (
 		*api.Response[*spec.VersionedSignedBeaconBlock],
+		error,
+	)
+
+	// AgnosticSignedBeaconBlock fetches a signed beacon block given a block ID
+	// and returns it as a fork-agnostic *all.SignedBeaconBlock.
+	AgnosticSignedBeaconBlock(ctx context.Context,
+		opts *api.SignedBeaconBlockOpts,
+	) (
+		*api.Response[*all.SignedBeaconBlock],
 		error,
 	)
 }
@@ -397,6 +406,14 @@ type BeaconStateProvider interface {
 	) (*api.Response[*spec.VersionedBeaconState],
 		error,
 	)
+
+	// AgnosticBeaconState fetches a beacon state given a state ID and returns
+	// it as a fork-agnostic *all.BeaconState.
+	AgnosticBeaconState(ctx context.Context,
+		opts *api.BeaconStateOpts,
+	) (*api.Response[*all.BeaconState],
+		error,
+	)
 }
 
 // BeaconStateRandaoProvider is the interface for providing beacon state RANDAOs.
@@ -626,11 +643,23 @@ type VoluntaryExitPoolProvider interface {
 
 // ExecutionPayloadProvider is the interface for providing execution payloads.
 type ExecutionPayloadProvider interface {
-	// SignedBeaconBlock fetches a signed beacon block given a block ID.
+	// SignedExecutionPayloadEnvelope fetches a signed execution payload
+	// envelope given a block ID. Returns a versioned wrapper so callers can
+	// branch on Version regardless of which fork's envelope is populated.
 	SignedExecutionPayloadEnvelope(ctx context.Context,
 		opts *api.SignedExecutionPayloadEnvelopeOpts,
 	) (
-		*api.Response[*gloas.SignedExecutionPayloadEnvelope],
+		*api.Response[*spec.VersionedSignedExecutionPayloadEnvelope],
+		error,
+	)
+
+	// AgnosticSignedExecutionPayloadEnvelope fetches a signed execution
+	// payload envelope given a block ID and returns it as a fork-agnostic
+	// *all.SignedExecutionPayloadEnvelope.
+	AgnosticSignedExecutionPayloadEnvelope(ctx context.Context,
+		opts *api.SignedExecutionPayloadEnvelopeOpts,
+	) (
+		*api.Response[*all.SignedExecutionPayloadEnvelope],
 		error,
 	)
 }

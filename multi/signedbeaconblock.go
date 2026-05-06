@@ -19,6 +19,7 @@ import (
 	consensusclient "github.com/ethpandaops/go-eth2-client"
 	"github.com/ethpandaops/go-eth2-client/api"
 	"github.com/ethpandaops/go-eth2-client/spec"
+	"github.com/ethpandaops/go-eth2-client/spec/all"
 )
 
 // SignedBeaconBlock fetches a signed beacon block given a block ID.
@@ -41,6 +42,34 @@ func (s *Service) SignedBeaconBlock(ctx context.Context,
 	}
 
 	response, isResponse := res.(*api.Response[*spec.VersionedSignedBeaconBlock])
+	if !isResponse {
+		return nil, ErrIncorrectType
+	}
+
+	return response, nil
+}
+
+// AgnosticSignedBeaconBlock fetches a signed beacon block as a fork-agnostic
+// *all.SignedBeaconBlock.
+func (s *Service) AgnosticSignedBeaconBlock(ctx context.Context,
+	opts *api.SignedBeaconBlockOpts,
+) (
+	*api.Response[*all.SignedBeaconBlock],
+	error,
+) {
+	res, err := s.doCall(ctx, func(ctx context.Context, client consensusclient.Service) (any, error) {
+		block, err := client.(consensusclient.SignedBeaconBlockProvider).AgnosticSignedBeaconBlock(ctx, opts)
+		if err != nil {
+			return nil, err
+		}
+
+		return block, nil
+	}, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	response, isResponse := res.(*api.Response[*all.SignedBeaconBlock])
 	if !isResponse {
 		return nil, ErrIncorrectType
 	}

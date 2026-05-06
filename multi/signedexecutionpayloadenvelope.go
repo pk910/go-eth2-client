@@ -18,14 +18,15 @@ import (
 
 	consensusclient "github.com/ethpandaops/go-eth2-client"
 	"github.com/ethpandaops/go-eth2-client/api"
-	"github.com/ethpandaops/go-eth2-client/spec/gloas"
+	"github.com/ethpandaops/go-eth2-client/spec"
+	"github.com/ethpandaops/go-eth2-client/spec/all"
 )
 
 // SignedExecutionPayloadEnvelope fetches a signed execution payload envelope given a block ID.
 func (s *Service) SignedExecutionPayloadEnvelope(ctx context.Context,
 	opts *api.SignedExecutionPayloadEnvelopeOpts,
 ) (
-	*api.Response[*gloas.SignedExecutionPayloadEnvelope],
+	*api.Response[*spec.VersionedSignedExecutionPayloadEnvelope],
 	error,
 ) {
 	res, err := s.doCall(ctx, func(ctx context.Context, client consensusclient.Service) (any, error) {
@@ -40,7 +41,35 @@ func (s *Service) SignedExecutionPayloadEnvelope(ctx context.Context,
 		return nil, err
 	}
 
-	response, isResponse := res.(*api.Response[*gloas.SignedExecutionPayloadEnvelope])
+	response, isResponse := res.(*api.Response[*spec.VersionedSignedExecutionPayloadEnvelope])
+	if !isResponse {
+		return nil, ErrIncorrectType
+	}
+
+	return response, nil
+}
+
+// AgnosticSignedExecutionPayloadEnvelope fetches a signed execution payload
+// envelope as a fork-agnostic *all.SignedExecutionPayloadEnvelope.
+func (s *Service) AgnosticSignedExecutionPayloadEnvelope(ctx context.Context,
+	opts *api.SignedExecutionPayloadEnvelopeOpts,
+) (
+	*api.Response[*all.SignedExecutionPayloadEnvelope],
+	error,
+) {
+	res, err := s.doCall(ctx, func(ctx context.Context, client consensusclient.Service) (any, error) {
+		envelope, err := client.(consensusclient.ExecutionPayloadProvider).AgnosticSignedExecutionPayloadEnvelope(ctx, opts)
+		if err != nil {
+			return nil, err
+		}
+
+		return envelope, nil
+	}, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	response, isResponse := res.(*api.Response[*all.SignedExecutionPayloadEnvelope])
 	if !isResponse {
 		return nil, ErrIncorrectType
 	}

@@ -18,7 +18,9 @@ import (
 
 	"github.com/ethpandaops/go-eth2-client/api"
 	"github.com/ethpandaops/go-eth2-client/spec"
+	"github.com/ethpandaops/go-eth2-client/spec/all"
 	"github.com/ethpandaops/go-eth2-client/spec/phase0"
+	"github.com/ethpandaops/go-eth2-client/spec/version"
 )
 
 // BeaconState fetches a beacon state given a state ID.
@@ -44,6 +46,32 @@ func (s *Service) BeaconState(ctx context.Context,
 	}
 
 	return &api.Response[*spec.VersionedBeaconState]{
+		Data:     data,
+		Metadata: make(map[string]any),
+	}, nil
+}
+
+// AgnosticBeaconState returns a stub fork-agnostic beacon state.
+func (s *Service) AgnosticBeaconState(ctx context.Context,
+	opts *api.BeaconStateOpts,
+) (
+	*api.Response[*all.BeaconState],
+	error,
+) {
+	if s.AgnosticBeaconStateFunc != nil {
+		return s.AgnosticBeaconStateFunc(ctx, opts)
+	}
+
+	data := &all.BeaconState{
+		Version:                     version.DataVersionPhase0,
+		LatestBlockHeader:           &phase0.BeaconBlockHeader{},
+		ETH1Data:                    &phase0.ETH1Data{},
+		PreviousJustifiedCheckpoint: &phase0.Checkpoint{},
+		CurrentJustifiedCheckpoint:  &phase0.Checkpoint{},
+		FinalizedCheckpoint:         &phase0.Checkpoint{},
+	}
+
+	return &api.Response[*all.BeaconState]{
 		Data:     data,
 		Metadata: make(map[string]any),
 	}, nil

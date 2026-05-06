@@ -29,6 +29,7 @@ import (
 	"github.com/ethpandaops/go-eth2-client/api"
 	apiv1 "github.com/ethpandaops/go-eth2-client/api/v1"
 	"github.com/ethpandaops/go-eth2-client/spec/phase0"
+	dynssz "github.com/pk910/dynamic-ssz"
 	"github.com/rs/zerolog"
 	zerologger "github.com/rs/zerolog/log"
 	"golang.org/x/sync/semaphore"
@@ -49,6 +50,7 @@ type Service struct {
 	genesis              *apiv1.Genesis
 	genesisMutex         sync.RWMutex
 	spec                 map[string]any
+	dynSSZ               *dynssz.DynSsz
 	specMutex            sync.RWMutex
 	depositContract      *apiv1.DepositContract
 	depositContractMutex sync.RWMutex
@@ -338,6 +340,7 @@ func (s *Service) clearStaticValues() {
 	s.genesisMutex.Unlock()
 	s.specMutex.Lock()
 	s.spec = nil
+	s.dynSSZ = nil
 	s.specMutex.Unlock()
 	s.depositContractMutex.Lock()
 	s.depositContract = nil

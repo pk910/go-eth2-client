@@ -29,20 +29,20 @@ import (
 
 // ExecutionPayload represents an execution layer payload.
 type ExecutionPayload struct {
-	ParentHash    phase0.Hash32    `ssz-size:"32"`
-	FeeRecipient  ExecutionAddress `ssz-size:"20"`
-	StateRoot     [32]byte         `ssz-size:"32"`
-	ReceiptsRoot  [32]byte         `ssz-size:"32"`
-	LogsBloom     [256]byte        `ssz-size:"256"`
-	PrevRandao    [32]byte         `ssz-size:"32"`
-	BlockNumber   uint64
-	GasLimit      uint64
-	GasUsed       uint64
-	Timestamp     uint64
-	ExtraData     []byte        `dynssz-max:"MAX_EXTRA_DATA_BYTES"                                   ssz-max:"32"`
-	BaseFeePerGas [32]byte      `ssz-size:"32"`
-	BlockHash     phase0.Hash32 `ssz-size:"32"`
-	Transactions  []Transaction `dynssz-max:"MAX_TRANSACTIONS_PER_PAYLOAD,MAX_BYTES_PER_TRANSACTION" ssz-max:"1048576,1073741824"`
+	ParentHash      phase0.Hash32    `ssz-size:"32"`
+	FeeRecipient    ExecutionAddress `ssz-size:"20"`
+	StateRoot       [32]byte         `ssz-size:"32"`
+	ReceiptsRoot    [32]byte         `ssz-size:"32"`
+	LogsBloom       [256]byte        `ssz-size:"256"`
+	PrevRandao      [32]byte         `ssz-size:"32"`
+	BlockNumber     uint64
+	GasLimit        uint64
+	GasUsed         uint64
+	Timestamp       uint64
+	ExtraData       []byte        `dynssz-max:"MAX_EXTRA_DATA_BYTES"                                   ssz-max:"32"`
+	BaseFeePerGasLE [32]byte      `ssz-size:"32"`
+	BlockHash       phase0.Hash32 `ssz-size:"32"`
+	Transactions    []Transaction `dynssz-max:"MAX_TRANSACTIONS_PER_PAYLOAD,MAX_BYTES_PER_TRANSACTION" ssz-max:"1048576,1073741824"`
 }
 
 // executionPayloadJSON is the spec representation of the struct.
@@ -97,7 +97,7 @@ func (e *ExecutionPayload) MarshalJSON() ([]byte, error) {
 	// big-endian for big.Int.
 	var baseFeePerGasBEBytes [32]byte
 	for i := range 32 {
-		baseFeePerGasBEBytes[i] = e.BaseFeePerGas[32-1-i]
+		baseFeePerGasBEBytes[i] = e.BaseFeePerGasLE[32-1-i]
 	}
 
 	baseFeePerGas := new(big.Int).SetBytes(baseFeePerGasBEBytes[:])
@@ -146,7 +146,7 @@ func (e *ExecutionPayload) MarshalYAML() ([]byte, error) {
 	// big-endian for big.Int.
 	var baseFeePerGasBEBytes [32]byte
 	for i := range 32 {
-		baseFeePerGasBEBytes[i] = e.BaseFeePerGas[32-1-i]
+		baseFeePerGasBEBytes[i] = e.BaseFeePerGasLE[32-1-i]
 	}
 
 	baseFeePerGas := new(big.Int).SetBytes(baseFeePerGasBEBytes[:])
@@ -396,7 +396,7 @@ func (e *ExecutionPayload) unpack(data *executionPayloadJSON) error {
 		baseFeePerGasLEBytes[i] = baseFeePerGasBEBytes[baseFeeLen-1-i]
 	}
 
-	copy(e.BaseFeePerGas[:], baseFeePerGasLEBytes[:])
+	copy(e.BaseFeePerGasLE[:], baseFeePerGasLEBytes[:])
 
 	if data.BlockHash == "" {
 		return errors.New("block hash missing")

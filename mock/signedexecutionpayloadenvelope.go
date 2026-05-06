@@ -17,6 +17,8 @@ import (
 	"context"
 
 	"github.com/ethpandaops/go-eth2-client/api"
+	"github.com/ethpandaops/go-eth2-client/spec"
+	"github.com/ethpandaops/go-eth2-client/spec/all"
 	"github.com/ethpandaops/go-eth2-client/spec/bellatrix"
 	"github.com/ethpandaops/go-eth2-client/spec/capella"
 	"github.com/ethpandaops/go-eth2-client/spec/electra"
@@ -27,17 +29,53 @@ import (
 func (s *Service) SignedExecutionPayloadEnvelope(ctx context.Context,
 	opts *api.SignedExecutionPayloadEnvelopeOpts,
 ) (
-	*api.Response[*gloas.SignedExecutionPayloadEnvelope],
+	*api.Response[*spec.VersionedSignedExecutionPayloadEnvelope],
 	error,
 ) {
 	if s.SignedExecutionPayloadEnvelopeFunc != nil {
 		return s.SignedExecutionPayloadEnvelopeFunc(ctx, opts)
 	}
 
-	return &api.Response[*gloas.SignedExecutionPayloadEnvelope]{
-		Data: &gloas.SignedExecutionPayloadEnvelope{
-			Message: &gloas.ExecutionPayloadEnvelope{
-				Payload: &gloas.ExecutionPayload{
+	return &api.Response[*spec.VersionedSignedExecutionPayloadEnvelope]{
+		Data: &spec.VersionedSignedExecutionPayloadEnvelope{
+			Version: spec.DataVersionGloas,
+			Gloas: &gloas.SignedExecutionPayloadEnvelope{
+				Message: &gloas.ExecutionPayloadEnvelope{
+					Payload: &gloas.ExecutionPayload{
+						Transactions: []bellatrix.Transaction{},
+						Withdrawals:  []*capella.Withdrawal{},
+					},
+					ExecutionRequests: &electra.ExecutionRequests{
+						Deposits:       []*electra.DepositRequest{},
+						Withdrawals:    []*electra.WithdrawalRequest{},
+						Consolidations: []*electra.ConsolidationRequest{},
+					},
+				},
+			},
+		},
+		Metadata: make(map[string]any),
+	}, nil
+}
+
+// AgnosticSignedExecutionPayloadEnvelope returns a stub fork-agnostic signed
+// execution payload envelope.
+func (s *Service) AgnosticSignedExecutionPayloadEnvelope(ctx context.Context,
+	opts *api.SignedExecutionPayloadEnvelopeOpts,
+) (
+	*api.Response[*all.SignedExecutionPayloadEnvelope],
+	error,
+) {
+	if s.AgnosticSignedExecutionPayloadEnvelopeFunc != nil {
+		return s.AgnosticSignedExecutionPayloadEnvelopeFunc(ctx, opts)
+	}
+
+	return &api.Response[*all.SignedExecutionPayloadEnvelope]{
+		Data: &all.SignedExecutionPayloadEnvelope{
+			Version: spec.DataVersionGloas,
+			Message: &all.ExecutionPayloadEnvelope{
+				Version: spec.DataVersionGloas,
+				Payload: &all.ExecutionPayload{
+					Version:      spec.DataVersionGloas,
 					Transactions: []bellatrix.Transaction{},
 					Withdrawals:  []*capella.Withdrawal{},
 				},

@@ -41,7 +41,7 @@ type ExecutionPayloadHeader struct {
 	GasUsed          uint64
 	Timestamp        uint64
 	ExtraData        []byte        `ssz-max:"32"`
-	BaseFeePerGas    [32]byte      `ssz-size:"32"`
+	BaseFeePerGasLE  [32]byte      `ssz-size:"32"`
 	BlockHash        phase0.Hash32 `ssz-size:"32"`
 	TransactionsRoot phase0.Root   `ssz-size:"32"`
 	WithdrawalsRoot  phase0.Root   `ssz-size:"32"`
@@ -96,7 +96,7 @@ func (e *ExecutionPayloadHeader) MarshalJSON() ([]byte, error) {
 	// big-endian for big.Int.
 	var baseFeePerGasBEBytes [32]byte
 	for i := range 32 {
-		baseFeePerGasBEBytes[i] = e.BaseFeePerGas[32-1-i]
+		baseFeePerGasBEBytes[i] = e.BaseFeePerGasLE[32-1-i]
 	}
 
 	baseFeePerGas := new(big.Int).SetBytes(baseFeePerGasBEBytes[:])
@@ -141,7 +141,7 @@ func (e *ExecutionPayloadHeader) MarshalYAML() ([]byte, error) {
 	// big-endian for big.Int.
 	var baseFeePerGasBEBytes [32]byte
 	for i := range 32 {
-		baseFeePerGasBEBytes[i] = e.BaseFeePerGas[32-1-i]
+		baseFeePerGasBEBytes[i] = e.BaseFeePerGasLE[32-1-i]
 	}
 
 	baseFeePerGas := new(big.Int).SetBytes(baseFeePerGasBEBytes[:])
@@ -392,7 +392,7 @@ func (e *ExecutionPayloadHeader) unpack(data *executionPayloadHeaderJSON) error 
 		baseFeePerGasLEBytes[i] = baseFeePerGasBEBytes[baseFeeLen-1-i]
 	}
 
-	copy(e.BaseFeePerGas[:], baseFeePerGasLEBytes[:])
+	copy(e.BaseFeePerGasLE[:], baseFeePerGasLEBytes[:])
 
 	if data.BlockHash == "" {
 		return errors.New("block hash missing")

@@ -22,6 +22,7 @@ import (
 	client "github.com/ethpandaops/go-eth2-client"
 	"github.com/ethpandaops/go-eth2-client/api"
 	"github.com/ethpandaops/go-eth2-client/spec"
+	"github.com/ethpandaops/go-eth2-client/spec/all"
 	"github.com/ethpandaops/go-eth2-client/spec/altair"
 	"github.com/ethpandaops/go-eth2-client/spec/bellatrix"
 	"github.com/ethpandaops/go-eth2-client/spec/capella"
@@ -30,16 +31,79 @@ import (
 	"github.com/ethpandaops/go-eth2-client/spec/gloas"
 	"github.com/ethpandaops/go-eth2-client/spec/heze"
 	"github.com/ethpandaops/go-eth2-client/spec/phase0"
-	dynssz "github.com/pk910/dynamic-ssz"
 )
 
-// SignedBeaconBlock fetches a signed beacon block given a block ID.
+// SignedBeaconBlock fetches a signed beacon block given a block ID and decodes
+// it directly into the per-fork view stored on a
+// *spec.VersionedSignedBeaconBlock. No intermediate copy.
 func (s *Service) SignedBeaconBlock(ctx context.Context,
 	opts *api.SignedBeaconBlockOpts,
 ) (
 	*api.Response[*spec.VersionedSignedBeaconBlock],
 	error,
 ) {
+	httpResponse, err := s.fetchSignedBeaconBlock(ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	switch httpResponse.contentType {
+	case ContentTypeSSZ:
+		return s.signedBeaconBlockFromSSZ(ctx, httpResponse)
+	case ContentTypeJSON:
+		return s.signedBeaconBlockFromJSON(httpResponse)
+	default:
+		return nil, fmt.Errorf("unhandled content type %v", httpResponse.contentType)
+	}
+}
+
+// AgnosticSignedBeaconBlock fetches a signed beacon block and decodes it
+// directly into a fork-agnostic *all.SignedBeaconBlock. The Version is set
+// from the consensus version header before unmarshaling so the union type's
+// view-aware codec dispatches into the correct fork's schema. No intermediate
+// copy.
+func (s *Service) AgnosticSignedBeaconBlock(ctx context.Context,
+	opts *api.SignedBeaconBlockOpts,
+) (
+	*api.Response[*all.SignedBeaconBlock],
+	error,
+) {
+	httpResponse, err := s.fetchSignedBeaconBlock(ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	block := &all.SignedBeaconBlock{Version: httpResponse.consensusVersion}
+
+	switch httpResponse.contentType {
+	case ContentTypeSSZ:
+		ds, err := s.dynSSZForRequest(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := block.UnmarshalSSZDyn(ds, httpResponse.body); err != nil {
+			return nil, errors.Join(fmt.Errorf("failed to decode %s signed beacon block", httpResponse.consensusVersion), err)
+		}
+	case ContentTypeJSON:
+		if err := block.UnmarshalJSON(httpResponse.body); err != nil {
+			return nil, errors.Join(fmt.Errorf("failed to decode %s signed beacon block", httpResponse.consensusVersion), err)
+		}
+	default:
+		return nil, fmt.Errorf("unhandled content type %v", httpResponse.contentType)
+	}
+
+	return &api.Response[*all.SignedBeaconBlock]{
+		Data:     block,
+		Metadata: metadataFromHeaders(httpResponse.headers),
+	}, nil
+}
+
+// fetchSignedBeaconBlock performs the GET request shared by SignedBeaconBlock
+// and AgnosticSignedBeaconBlock: validates opts and hits the endpoint.
+func (s *Service) fetchSignedBeaconBlock(ctx context.Context,
+	opts *api.SignedBeaconBlockOpts,
+) (*httpResponse, error) {
 	if err := s.assertIsActive(ctx); err != nil {
 		return nil, err
 	}
@@ -54,27 +118,7 @@ func (s *Service) SignedBeaconBlock(ctx context.Context,
 
 	endpoint := fmt.Sprintf("/eth/v2/beacon/blocks/%s", opts.Block)
 
-	httpResponse, err := s.get(ctx, endpoint, "", &opts.Common, true)
-	if err != nil {
-		return nil, err
-	}
-
-	var response *api.Response[*spec.VersionedSignedBeaconBlock]
-
-	switch httpResponse.contentType {
-	case ContentTypeSSZ:
-		response, err = s.signedBeaconBlockFromSSZ(ctx, httpResponse)
-	case ContentTypeJSON:
-		response, err = s.signedBeaconBlockFromJSON(httpResponse)
-	default:
-		return nil, fmt.Errorf("unhandled content type %v", httpResponse.contentType)
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	return response, nil
+	return s.get(ctx, endpoint, "", &opts.Common, true)
 }
 
 func (s *Service) signedBeaconBlockFromSSZ(ctx context.Context,
@@ -90,119 +134,45 @@ func (s *Service) signedBeaconBlockFromSSZ(ctx context.Context,
 		Metadata: metadataFromHeaders(res.headers),
 	}
 
-	var dynSSZ *dynssz.DynSsz
-
-	if s.customSpecSupport {
-		specs, err := s.Spec(ctx, &api.SpecOpts{})
-		if err != nil {
-			return nil, errors.Join(errors.New("failed to request specs"), err)
-		}
-
-		dynSSZ = dynssz.NewDynSsz(specs.Data)
+	dynSSZ, err := s.dynSSZForRequest(ctx)
+	if err != nil {
+		return nil, err
 	}
-
-	var err error
 
 	switch res.consensusVersion {
 	case spec.DataVersionPhase0:
 		response.Data.Phase0 = &phase0.SignedBeaconBlock{}
-		if s.customSpecSupport {
-			err = dynSSZ.UnmarshalSSZ(response.Data.Phase0, res.body)
-		} else {
-			err = response.Data.Phase0.UnmarshalSSZ(res.body)
-		}
-
-		if err != nil {
-			return nil, errors.Join(errors.New("failed to decode phase0 signed beacon block"), err)
-		}
+		err = dynSSZ.UnmarshalSSZ(response.Data.Phase0, res.body)
 	case spec.DataVersionAltair:
 		response.Data.Altair = &altair.SignedBeaconBlock{}
-		if s.customSpecSupport {
-			err = dynSSZ.UnmarshalSSZ(response.Data.Altair, res.body)
-		} else {
-			err = response.Data.Altair.UnmarshalSSZ(res.body)
-		}
-
-		if err != nil {
-			return nil, errors.Join(errors.New("failed to decode altair signed beacon block"), err)
-		}
+		err = dynSSZ.UnmarshalSSZ(response.Data.Altair, res.body)
 	case spec.DataVersionBellatrix:
 		response.Data.Bellatrix = &bellatrix.SignedBeaconBlock{}
-		if s.customSpecSupport {
-			err = dynSSZ.UnmarshalSSZ(response.Data.Bellatrix, res.body)
-		} else {
-			err = response.Data.Bellatrix.UnmarshalSSZ(res.body)
-		}
-
-		if err != nil {
-			return nil, errors.Join(errors.New("failed to decode bellatrix signed beacon block"), err)
-		}
+		err = dynSSZ.UnmarshalSSZ(response.Data.Bellatrix, res.body)
 	case spec.DataVersionCapella:
 		response.Data.Capella = &capella.SignedBeaconBlock{}
-		if s.customSpecSupport {
-			err = dynSSZ.UnmarshalSSZ(response.Data.Capella, res.body)
-		} else {
-			err = response.Data.Capella.UnmarshalSSZ(res.body)
-		}
-
-		if err != nil {
-			return nil, errors.Join(errors.New("failed to decode capella signed beacon block"), err)
-		}
+		err = dynSSZ.UnmarshalSSZ(response.Data.Capella, res.body)
 	case spec.DataVersionDeneb:
 		response.Data.Deneb = &deneb.SignedBeaconBlock{}
-		if s.customSpecSupport {
-			err = dynSSZ.UnmarshalSSZ(response.Data.Deneb, res.body)
-		} else {
-			err = response.Data.Deneb.UnmarshalSSZ(res.body)
-		}
-
-		if err != nil {
-			return nil, errors.Join(errors.New("failed to decode deneb signed block contents"), err)
-		}
+		err = dynSSZ.UnmarshalSSZ(response.Data.Deneb, res.body)
 	case spec.DataVersionElectra:
 		response.Data.Electra = &electra.SignedBeaconBlock{}
-		if s.customSpecSupport {
-			err = dynSSZ.UnmarshalSSZ(response.Data.Electra, res.body)
-		} else {
-			err = response.Data.Electra.UnmarshalSSZ(res.body)
-		}
-
-		if err != nil {
-			return nil, errors.Join(errors.New("failed to decode electra signed block contents"), err)
-		}
+		err = dynSSZ.UnmarshalSSZ(response.Data.Electra, res.body)
 	case spec.DataVersionFulu:
 		response.Data.Fulu = &electra.SignedBeaconBlock{}
-		if s.customSpecSupport {
-			err = dynSSZ.UnmarshalSSZ(response.Data.Fulu, res.body)
-		} else {
-			err = response.Data.Fulu.UnmarshalSSZ(res.body)
-		}
-
-		if err != nil {
-			return nil, errors.Join(errors.New("failed to decode fulu signed block contents"), err)
-		}
+		err = dynSSZ.UnmarshalSSZ(response.Data.Fulu, res.body)
 	case spec.DataVersionGloas:
 		response.Data.Gloas = &gloas.SignedBeaconBlock{}
-		if s.customSpecSupport {
-			err = dynSSZ.UnmarshalSSZ(response.Data.Gloas, res.body)
-		} else {
-			err = response.Data.Gloas.UnmarshalSSZ(res.body)
-		}
-		if err != nil {
-			return nil, errors.Join(errors.New("failed to decode gloas signed block contents"), err)
-		}
+		err = dynSSZ.UnmarshalSSZ(response.Data.Gloas, res.body)
 	case spec.DataVersionHeze:
 		response.Data.Heze = &heze.SignedBeaconBlock{}
-		if s.customSpecSupport {
-			err = dynSSZ.UnmarshalSSZ(response.Data.Heze, res.body)
-		} else {
-			err = response.Data.Heze.UnmarshalSSZ(res.body)
-		}
-		if err != nil {
-			return nil, errors.Join(errors.New("failed to decode heze signed block contents"), err)
-		}
+		err = dynSSZ.UnmarshalSSZ(response.Data.Heze, res.body)
 	default:
-		return nil, fmt.Errorf("unhandled block version %s", res.consensusVersion)
+		return nil, fmt.Errorf("unhandled signed beacon block version %s", res.consensusVersion)
+	}
+
+	if err != nil {
+		return nil, errors.Join(fmt.Errorf("failed to decode %s signed beacon block", res.consensusVersion), err)
 	}
 
 	return response, nil

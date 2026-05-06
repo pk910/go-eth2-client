@@ -24,6 +24,7 @@ import (
 	client "github.com/ethpandaops/go-eth2-client"
 	"github.com/ethpandaops/go-eth2-client/api"
 	"github.com/ethpandaops/go-eth2-client/spec/phase0"
+	dynssz "github.com/pk910/dynamic-ssz"
 )
 
 // Spec provides the spec information of the chain.
@@ -98,6 +99,15 @@ func (s *Service) Spec(ctx context.Context,
 	}
 
 	s.spec = config
+
+	// Build the dynssz instance once per spec snapshot. It's reused by every
+	// SSZ codec call until clearStaticValues() invalidates the cache, at
+	// which point the next Spec() call rebuilds it.
+	if s.customSpecSupport {
+		s.dynSSZ = dynssz.NewDynSsz(s.spec)
+	} else {
+		s.dynSSZ = dynssz.GetGlobalDynSsz()
+	}
 
 	return &api.Response[map[string]any]{
 		Data:     s.spec,

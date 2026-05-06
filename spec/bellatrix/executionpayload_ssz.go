@@ -58,7 +58,7 @@ func (t *ExecutionPayload) MarshalSSZTo(buf []byte) (dst []byte, err error) {
 	// Offset Field #10 'ExtraData'
 	dst = append(dst, 0, 0, 0, 0)
 	{ // Static Field #11 'BaseFeePerGas'
-		dst = append(dst, t.BaseFeePerGas[:32]...)
+		dst = append(dst, t.BaseFeePerGasLE[:32]...)
 	}
 	{ // Static Field #12 'BlockHash'
 		dst = append(dst, t.BlockHash[:32]...)
@@ -147,7 +147,7 @@ func (t *ExecutionPayload) UnmarshalSSZ(buf []byte) (err error) {
 	}
 	{ // Field #11 'BaseFeePerGas' (static)
 		buf := buf[440:472]
-		copy(t.BaseFeePerGas[:], buf)
+		copy(t.BaseFeePerGasLE[:], buf)
 	}
 	{ // Field #12 'BlockHash' (static)
 		buf := buf[472:504]
@@ -300,8 +300,8 @@ func (t *ExecutionPayload) HashTreeRootWith(hh sszutils.HashWalker) error {
 		hh.AppendBytes32(t.ExtraData[:])
 		hh.MerkleizeWithMixin(idx, vlen, sszutils.CalculateLimit(32, vlen, 1))
 	}
-	{ // Field #11 'BaseFeePerGas'
-		hh.PutBytes(t.BaseFeePerGas[:32])
+	{ // Field #11 'BaseFeePerGasLE'
+		hh.PutBytes(t.BaseFeePerGasLE[:32])
 	}
 	{ // Field #12 'BlockHash'
 		hh.PutBytes(t.BlockHash[:32])

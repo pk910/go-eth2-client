@@ -24,6 +24,7 @@ import (
 	"github.com/ethpandaops/go-eth2-client/api"
 	apiv1 "github.com/ethpandaops/go-eth2-client/api/v1"
 	"github.com/ethpandaops/go-eth2-client/spec"
+	"github.com/ethpandaops/go-eth2-client/spec/all"
 	"github.com/ethpandaops/go-eth2-client/spec/altair"
 	"github.com/ethpandaops/go-eth2-client/spec/deneb"
 	"github.com/ethpandaops/go-eth2-client/spec/electra"
@@ -549,6 +550,25 @@ func (s *Erroring) BeaconState(ctx context.Context,
 	return next.BeaconState(ctx, opts)
 }
 
+// AgnosticBeaconState fetches a fork-agnostic beacon state.
+func (s *Erroring) AgnosticBeaconState(ctx context.Context,
+	opts *api.BeaconStateOpts,
+) (
+	*api.Response[*all.BeaconState],
+	error,
+) {
+	if err := s.maybeError(ctx); err != nil {
+		return nil, err
+	}
+
+	next, isNext := s.next.(consensusclient.BeaconStateProvider)
+	if !isNext {
+		return nil, fmt.Errorf("%s@%s does not support this call", s.next.Name(), s.next.Address())
+	}
+
+	return next.AgnosticBeaconState(ctx, opts)
+}
+
 // Events feeds requested events with the given topics to the supplied handler.
 func (s *Erroring) Events(ctx context.Context, opts *api.EventsOpts) error {
 	if err := s.maybeError(ctx); err != nil {
@@ -924,6 +944,25 @@ func (s *Erroring) SignedBeaconBlock(ctx context.Context,
 	}
 
 	return next.SignedBeaconBlock(ctx, opts)
+}
+
+// AgnosticSignedBeaconBlock fetches a fork-agnostic signed beacon block.
+func (s *Erroring) AgnosticSignedBeaconBlock(ctx context.Context,
+	opts *api.SignedBeaconBlockOpts,
+) (
+	*api.Response[*all.SignedBeaconBlock],
+	error,
+) {
+	if err := s.maybeError(ctx); err != nil {
+		return nil, err
+	}
+
+	next, isNext := s.next.(consensusclient.SignedBeaconBlockProvider)
+	if !isNext {
+		return nil, fmt.Errorf("%s@%s does not support this call", s.next.Name(), s.next.Address())
+	}
+
+	return next.AgnosticSignedBeaconBlock(ctx, opts)
 }
 
 // Blobs fetches the blobs given a block ID.

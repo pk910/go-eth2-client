@@ -1,0 +1,133 @@
+package: .
+
+types:
+  - name: BeaconState
+    output: beaconstate_ssz.go
+    view-only: true
+    views:
+      - ../phase0.BeaconState
+      - ../altair.BeaconState
+      - ../bellatrix.BeaconState
+      - ../capella.BeaconState
+      - ../deneb.BeaconState
+      - ../electra.BeaconState
+      - ../fulu.BeaconState
+      - ../gloas.BeaconState
+      - ../heze.BeaconState
+
+  - name: BeaconBlockBody
+    output: beaconblockbody_ssz.go
+    view-only: true
+    views:
+      - ../phase0.BeaconBlockBody
+      - ../altair.BeaconBlockBody
+      - ../bellatrix.BeaconBlockBody
+      - ../capella.BeaconBlockBody
+      - ../deneb.BeaconBlockBody
+      - ../electra.BeaconBlockBody
+      - ../gloas.BeaconBlockBody
+      - ../heze.BeaconBlockBody
+
+  - name: BeaconBlock
+    output: beaconblock_ssz.go
+    view-only: true
+    views:
+      - ../phase0.BeaconBlock
+      - ../altair.BeaconBlock
+      - ../bellatrix.BeaconBlock
+      - ../capella.BeaconBlock
+      - ../deneb.BeaconBlock
+      - ../electra.BeaconBlock
+      - ../gloas.BeaconBlock
+      - ../heze.BeaconBlock
+
+  - name: SignedBeaconBlock
+    output: signedbeaconblock_ssz.go
+    view-only: true
+    views:
+      - ../phase0.SignedBeaconBlock
+      - ../altair.SignedBeaconBlock
+      - ../bellatrix.SignedBeaconBlock
+      - ../capella.SignedBeaconBlock
+      - ../deneb.SignedBeaconBlock
+      - ../electra.SignedBeaconBlock
+      - ../gloas.SignedBeaconBlock
+      - ../heze.SignedBeaconBlock
+
+  - name: ExecutionPayload
+    output: executionpayload_ssz.go
+    view-only: true
+    views:
+      - ../bellatrix.ExecutionPayload
+      - ../capella.ExecutionPayload
+      - ../deneb.ExecutionPayload
+      - ../gloas.ExecutionPayload
+
+  - name: ExecutionPayloadHeader
+    output: executionpayloadheader_ssz.go
+    view-only: true
+    views:
+      - ../bellatrix.ExecutionPayloadHeader
+      - ../capella.ExecutionPayloadHeader
+      - ../deneb.ExecutionPayloadHeader
+
+  - name: Attestation
+    output: attestation_ssz.go
+    view-only: true
+    views:
+      - ../phase0.Attestation
+      - ../electra.Attestation
+
+  - name: AttesterSlashing
+    output: attesterslashing_ssz.go
+    view-only: true
+    views:
+      - ../phase0.AttesterSlashing
+      - ../electra.AttesterSlashing
+
+  - name: IndexedAttestation
+    output: indexedattestation_ssz.go
+    view-only: true
+    views:
+      - ../phase0.IndexedAttestation
+      - ../electra.IndexedAttestation
+
+  - name: AggregateAndProof
+    output: aggregateandproof_ssz.go
+    view-only: true
+    views:
+      - ../phase0.AggregateAndProof
+      - ../electra.AggregateAndProof
+
+  - name: SignedAggregateAndProof
+    output: signedaggregateandproof_ssz.go
+    view-only: true
+    views:
+      - ../phase0.SignedAggregateAndProof
+      - ../electra.SignedAggregateAndProof
+
+  - name: ExecutionPayloadBid
+    output: executionpayloadbid_ssz.go
+    view-only: true
+    views:
+      - ../gloas.ExecutionPayloadBid
+      - ../heze.ExecutionPayloadBid
+
+  - name: SignedExecutionPayloadBid
+    output: signedexecutionpayloadbid_ssz.go
+    view-only: true
+    views:
+      - ../gloas.SignedExecutionPayloadBid
+      - ../heze.SignedExecutionPayloadBid
+
+  - name: ExecutionPayloadEnvelope
+    output: executionpayloadenvelope_ssz.go
+    view-only: true
+    views:
+      - ../gloas.ExecutionPayloadEnvelope
+
+  - name: SignedExecutionPayloadEnvelope
+    output: signedexecutionpayloadenvelope_ssz.go
+    view-only: true
+    views:
+      - ../gloas.SignedExecutionPayloadEnvelope

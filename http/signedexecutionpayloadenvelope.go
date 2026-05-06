@@ -14,7 +14,6 @@
 package http
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -22,104 +21,126 @@ import (
 	client "github.com/ethpandaops/go-eth2-client"
 	"github.com/ethpandaops/go-eth2-client/api"
 	"github.com/ethpandaops/go-eth2-client/spec"
+	"github.com/ethpandaops/go-eth2-client/spec/all"
 	"github.com/ethpandaops/go-eth2-client/spec/gloas"
-	dynssz "github.com/pk910/dynamic-ssz"
 )
 
-// SignedExecutionPayloadEnvelope fetches a signed execution payload envelope given a block ID.
+// SignedExecutionPayloadEnvelope fetches a signed execution payload envelope
+// given a block ID and decodes it directly into the per-fork view stored on a
+// *spec.VersionedSignedExecutionPayloadEnvelope. No intermediate copy.
 func (s *Service) SignedExecutionPayloadEnvelope(ctx context.Context,
 	opts *api.SignedExecutionPayloadEnvelopeOpts,
 ) (
-	*api.Response[*gloas.SignedExecutionPayloadEnvelope],
+	*api.Response[*spec.VersionedSignedExecutionPayloadEnvelope],
 	error,
 ) {
+	httpResponse, err := s.fetchSignedExecutionPayloadEnvelope(ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	// All current envelope-bearing forks (Gloas, Heze) reuse the gloas
+	// schema, so the wire bytes always parse into *gloas.SignedExecutionPayloadEnvelope.
+	envelope := &gloas.SignedExecutionPayloadEnvelope{}
+
+	switch httpResponse.contentType {
+	case ContentTypeSSZ:
+		ds, err := s.dynSSZForRequest(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := ds.UnmarshalSSZ(envelope, httpResponse.body); err != nil {
+			return nil, errors.Join(fmt.Errorf("failed to decode %s signed execution payload envelope", httpResponse.consensusVersion), err)
+		}
+	case ContentTypeJSON:
+		if err := envelope.UnmarshalJSON(httpResponse.body); err != nil {
+			return nil, errors.Join(fmt.Errorf("failed to decode %s signed execution payload envelope", httpResponse.consensusVersion), err)
+		}
+	default:
+		return nil, fmt.Errorf("unhandled content type %v", httpResponse.contentType)
+	}
+
+	return &api.Response[*spec.VersionedSignedExecutionPayloadEnvelope]{
+		Data: &spec.VersionedSignedExecutionPayloadEnvelope{
+			Version: httpResponse.consensusVersion,
+			Gloas:   envelope,
+		},
+		Metadata: metadataFromHeaders(httpResponse.headers),
+	}, nil
+}
+
+// AgnosticSignedExecutionPayloadEnvelope fetches a signed execution payload
+// envelope and decodes it directly into a fork-agnostic
+// *all.SignedExecutionPayloadEnvelope. The Version is set from the consensus
+// version header before unmarshaling so the union type's view-aware codec
+// dispatches into the correct fork's schema. No intermediate copy.
+func (s *Service) AgnosticSignedExecutionPayloadEnvelope(ctx context.Context,
+	opts *api.SignedExecutionPayloadEnvelopeOpts,
+) (
+	*api.Response[*all.SignedExecutionPayloadEnvelope],
+	error,
+) {
+	httpResponse, err := s.fetchSignedExecutionPayloadEnvelope(ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	envelope := &all.SignedExecutionPayloadEnvelope{Version: httpResponse.consensusVersion}
+
+	switch httpResponse.contentType {
+	case ContentTypeSSZ:
+		ds, err := s.dynSSZForRequest(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := envelope.UnmarshalSSZDyn(ds, httpResponse.body); err != nil {
+			return nil, errors.Join(fmt.Errorf("failed to decode %s signed execution payload envelope", httpResponse.consensusVersion), err)
+		}
+	case ContentTypeJSON:
+		if err := envelope.UnmarshalJSON(httpResponse.body); err != nil {
+			return nil, errors.Join(fmt.Errorf("failed to decode %s signed execution payload envelope", httpResponse.consensusVersion), err)
+		}
+	default:
+		return nil, fmt.Errorf("unhandled content type %v", httpResponse.contentType)
+	}
+
+	return &api.Response[*all.SignedExecutionPayloadEnvelope]{
+		Data:     envelope,
+		Metadata: metadataFromHeaders(httpResponse.headers),
+	}, nil
+}
+
+// fetchSignedExecutionPayloadEnvelope performs the GET request shared by both
+// SignedExecutionPayloadEnvelope and AgnosticSignedExecutionPayloadEnvelope:
+// validates opts, hits the endpoint, and rejects responses for forks where
+// the envelope doesn't apply.
+func (s *Service) fetchSignedExecutionPayloadEnvelope(ctx context.Context,
+	opts *api.SignedExecutionPayloadEnvelopeOpts,
+) (*httpResponse, error) {
 	if err := s.assertIsActive(ctx); err != nil {
 		return nil, err
 	}
+
 	if opts == nil {
 		return nil, client.ErrNoOptions
 	}
+
 	if opts.Block == "" {
 		return nil, errors.Join(errors.New("no block specified"), client.ErrInvalidOptions)
 	}
 
 	endpoint := fmt.Sprintf("/eth/v1/beacon/execution_payload_envelope/%s", opts.Block)
+
 	httpResponse, err := s.get(ctx, endpoint, "", &opts.Common, true)
 	if err != nil {
 		return nil, err
 	}
 
-	var response *api.Response[*gloas.SignedExecutionPayloadEnvelope]
-	switch httpResponse.contentType {
-	case ContentTypeSSZ:
-		response, err = s.signedExecutionPayloadEnvelopeFromSSZ(ctx, httpResponse)
-	case ContentTypeJSON:
-		response, err = s.signedExecutionPayloadEnvelopeFromJSON(httpResponse)
-	default:
-		return nil, fmt.Errorf("unhandled content type %v", httpResponse.contentType)
-	}
-	if err != nil {
-		return nil, err
+	if httpResponse.consensusVersion != spec.DataVersionGloas && httpResponse.consensusVersion != spec.DataVersionHeze {
+		return nil, fmt.Errorf("execution payload envelope not available for block version %s", httpResponse.consensusVersion)
 	}
 
-	return response, nil
-}
-
-func (s *Service) signedExecutionPayloadEnvelopeFromSSZ(ctx context.Context,
-	res *httpResponse,
-) (
-	*api.Response[*gloas.SignedExecutionPayloadEnvelope],
-	error,
-) {
-	response := &api.Response[*gloas.SignedExecutionPayloadEnvelope]{
-		Metadata: metadataFromHeaders(res.headers),
-	}
-
-	var dynSSZ *dynssz.DynSsz
-	if s.customSpecSupport {
-		specs, err := s.Spec(ctx, &api.SpecOpts{})
-		if err != nil {
-			return nil, errors.Join(errors.New("failed to request specs"), err)
-		}
-
-		dynSSZ = dynssz.NewDynSsz(specs.Data)
-	}
-
-	if res.consensusVersion != spec.DataVersionGloas && res.consensusVersion != spec.DataVersionHeze {
-		return nil, fmt.Errorf("execution payload envelope not available for block version %s", res.consensusVersion)
-	}
-
-	var err error
-	response.Data = &gloas.SignedExecutionPayloadEnvelope{}
-	if s.customSpecSupport {
-		err = dynSSZ.UnmarshalSSZ(response.Data, res.body)
-	} else {
-		err = response.Data.UnmarshalSSZ(res.body)
-	}
-	if err != nil {
-		return nil, errors.Join(errors.New("failed to decode gloas signed execution payload envelope contents"), err)
-	}
-
-	return response, nil
-}
-
-func (*Service) signedExecutionPayloadEnvelopeFromJSON(res *httpResponse) (
-	*api.Response[*gloas.SignedExecutionPayloadEnvelope],
-	error,
-) {
-	response := &api.Response[*gloas.SignedExecutionPayloadEnvelope]{}
-
-	if res.consensusVersion != spec.DataVersionGloas && res.consensusVersion != spec.DataVersionHeze {
-		return nil, fmt.Errorf("execution payload envelope not available for block version %s", res.consensusVersion)
-	}
-
-	var err error
-	response.Data, response.Metadata, err = decodeJSONResponse(bytes.NewReader(res.body),
-		&gloas.SignedExecutionPayloadEnvelope{},
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return response, nil
+	return httpResponse, nil
 }
