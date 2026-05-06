@@ -133,110 +133,41 @@ func (a *AttesterSlashing) populateVersion(v version.DataVersion) {
 }
 
 // ToView returns a fresh fork-specific AttesterSlashing populated with a's
-// fields, recursing into the inner indexed attestations via their ToView.
+// fields, recursing into the inner indexed attestations via copyByName.
 func (a *AttesterSlashing) ToView() (any, error) {
-	var att1, att2 any
-
-	var err error
-
-	if a.Attestation1 != nil {
-		att1, err = a.Attestation1.ToView()
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	if a.Attestation2 != nil {
-		att2, err = a.Attestation2.ToView()
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	switch a.Version {
-	case version.DataVersionPhase0,
-		version.DataVersionAltair,
-		version.DataVersionBellatrix,
-		version.DataVersionCapella,
-		version.DataVersionDeneb:
-		pa1, err := assertView[*phase0.IndexedAttestation](att1, "AttesterSlashing.Attestation1")
-		if err != nil {
-			return nil, err
-		}
-
-		pa2, err := assertView[*phase0.IndexedAttestation](att2, "AttesterSlashing.Attestation2")
-		if err != nil {
-			return nil, err
-		}
-
-		return &phase0.AttesterSlashing{Attestation1: pa1, Attestation2: pa2}, nil
-	case version.DataVersionElectra,
-		version.DataVersionFulu,
-		version.DataVersionGloas,
-		version.DataVersionHeze:
-		ea1, err := assertView[*electra.IndexedAttestation](att1, "AttesterSlashing.Attestation1")
-		if err != nil {
-			return nil, err
-		}
-
-		ea2, err := assertView[*electra.IndexedAttestation](att2, "AttesterSlashing.Attestation2")
-		if err != nil {
-			return nil, err
-		}
-
-		return &electra.AttesterSlashing{Attestation1: ea1, Attestation2: ea2}, nil
-	default:
-		return nil, fmt.Errorf("AttesterSlashing: unsupported version %d", a.Version)
-	}
+	return toViewByCopy(a)
 }
 
-// FromView populates a from a fork-specific AttesterSlashing, recursing into
-// the inner indexed attestations via their FromView.
+// FromView populates a from a fork-specific AttesterSlashing.
 func (a *AttesterSlashing) FromView(view any) error {
-	switch v := view.(type) {
-	case *phase0.AttesterSlashing:
-		if a.Version == version.DataVersionUnknown {
-			a.Version = version.DataVersionPhase0
-		}
-
-		return a.fromIndexedAttestations(v.Attestation1, v.Attestation2)
-	case *electra.AttesterSlashing:
-		if a.Version == version.DataVersionUnknown {
-			a.Version = version.DataVersionElectra
-		}
-
-		return a.fromIndexedAttestations(v.Attestation1, v.Attestation2)
-	default:
-		return fmt.Errorf("AttesterSlashing: unsupported view type %T", view)
-	}
-}
-
-func (a *AttesterSlashing) fromIndexedAttestations(att1, att2 any) error {
-	if att1 != nil {
-		if a.Attestation1 == nil {
-			a.Attestation1 = &IndexedAttestation{Version: a.Version}
-		}
-
-		if err := a.Attestation1.FromView(att1); err != nil {
-			return err
-		}
-	} else {
-		a.Attestation1 = nil
+	v, err := attesterSlashingVersion(view)
+	if err != nil {
+		return err
 	}
 
-	if att2 != nil {
-		if a.Attestation2 == nil {
-			a.Attestation2 = &IndexedAttestation{Version: a.Version}
-		}
-
-		if err := a.Attestation2.FromView(att2); err != nil {
-			return err
-		}
-	} else {
-		a.Attestation2 = nil
+	if a.Version == version.DataVersionUnknown {
+		a.Version = v
 	}
+
+	if err := copyByName(view, a); err != nil {
+		return err
+	}
+
+	a.populateVersion(a.Version)
 
 	return nil
+}
+
+// attesterSlashingVersion maps an AttesterSlashing view type to its DataVersion.
+func attesterSlashingVersion(view any) (version.DataVersion, error) {
+	switch view.(type) {
+	case *phase0.AttesterSlashing:
+		return version.DataVersionPhase0, nil
+	case *electra.AttesterSlashing:
+		return version.DataVersionElectra, nil
+	default:
+		return version.DataVersionUnknown, fmt.Errorf("AttesterSlashing: unsupported view type %T", view)
+	}
 }
 
 // HashTreeRootWithDyn computes the SSZ hash tree root using the active Version's view.

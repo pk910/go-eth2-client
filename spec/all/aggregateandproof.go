@@ -129,93 +129,41 @@ func (a *AggregateAndProof) populateVersion(v version.DataVersion) {
 }
 
 // ToView returns a fresh fork-specific AggregateAndProof populated with a's
-// fields, recursing into Aggregate via its ToView.
+// fields, recursing into Aggregate via copyByName.
 func (a *AggregateAndProof) ToView() (any, error) {
-	var agg any
-
-	var err error
-
-	if a.Aggregate != nil {
-		agg, err = a.Aggregate.ToView()
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	switch a.Version {
-	case version.DataVersionPhase0,
-		version.DataVersionAltair,
-		version.DataVersionBellatrix,
-		version.DataVersionCapella,
-		version.DataVersionDeneb:
-		pa, err := assertView[*phase0.Attestation](agg, "AggregateAndProof.Aggregate")
-		if err != nil {
-			return nil, err
-		}
-
-		return &phase0.AggregateAndProof{
-			AggregatorIndex: a.AggregatorIndex,
-			Aggregate:       pa,
-			SelectionProof:  a.SelectionProof,
-		}, nil
-	case version.DataVersionElectra,
-		version.DataVersionFulu,
-		version.DataVersionGloas,
-		version.DataVersionHeze:
-		ea, err := assertView[*electra.Attestation](agg, "AggregateAndProof.Aggregate")
-		if err != nil {
-			return nil, err
-		}
-
-		return &electra.AggregateAndProof{
-			AggregatorIndex: a.AggregatorIndex,
-			Aggregate:       ea,
-			SelectionProof:  a.SelectionProof,
-		}, nil
-	default:
-		return nil, fmt.Errorf("AggregateAndProof: unsupported version %d", a.Version)
-	}
+	return toViewByCopy(a)
 }
 
 // FromView populates a from a fork-specific AggregateAndProof.
 func (a *AggregateAndProof) FromView(view any) error {
-	var aggView any
+	v, err := aggregateAndProofVersion(view)
+	if err != nil {
+		return err
+	}
 
-	switch v := view.(type) {
+	if a.Version == version.DataVersionUnknown {
+		a.Version = v
+	}
+
+	if err := copyByName(view, a); err != nil {
+		return err
+	}
+
+	a.populateVersion(a.Version)
+
+	return nil
+}
+
+// aggregateAndProofVersion maps an AggregateAndProof view type to its DataVersion.
+func aggregateAndProofVersion(view any) (version.DataVersion, error) {
+	switch view.(type) {
 	case *phase0.AggregateAndProof:
-		if a.Version == version.DataVersionUnknown {
-			a.Version = version.DataVersionPhase0
-		}
-
-		a.AggregatorIndex = v.AggregatorIndex
-		a.SelectionProof = v.SelectionProof
-		aggView = v.Aggregate
+		return version.DataVersionPhase0, nil
 	case *electra.AggregateAndProof:
-		if a.Version == version.DataVersionUnknown {
-			a.Version = version.DataVersionElectra
-		}
-
-		a.AggregatorIndex = v.AggregatorIndex
-		a.SelectionProof = v.SelectionProof
-
-		if v.Aggregate != nil {
-			aggView = v.Aggregate
-		}
+		return version.DataVersionElectra, nil
 	default:
-		return fmt.Errorf("AggregateAndProof: unsupported view type %T", view)
+		return version.DataVersionUnknown, fmt.Errorf("AggregateAndProof: unsupported view type %T", view)
 	}
-
-	if aggView == nil {
-		a.Aggregate = nil
-
-		return nil
-	}
-
-	if a.Aggregate == nil {
-		a.Aggregate = &Attestation{Version: a.Version}
-	}
-
-	return a.Aggregate.FromView(aggView)
 }
 
 // HashTreeRootWithDyn computes the SSZ hash tree root using the active Version's view.

@@ -16,7 +16,6 @@ package all
 import (
 	"errors"
 	"fmt"
-	"reflect"
 
 	"github.com/ethpandaops/go-eth2-client/spec/altair"
 	"github.com/ethpandaops/go-eth2-client/spec/bellatrix"
@@ -175,486 +174,56 @@ func (b *BeaconBlockBody) populateVersion(v version.DataVersion) {
 
 // ToView returns a fresh fork-specific BeaconBlockBody populated with b's
 // fields, recursing into nested versionable children via their ToView.
+// ToView returns a fresh fork-specific BeaconBlockBody populated with b's
+// fields. All field copies — including nested versionable children — go
+// through copyByName, which walks dst fields by name and recurses into
+// nested pointers/slices.
 func (b *BeaconBlockBody) ToView() (any, error) {
-	switch b.Version {
-	case version.DataVersionPhase0:
-		as, err := toViewSlice[*phase0.AttesterSlashing](b.AttesterSlashings, "BeaconBlockBody.AttesterSlashings")
-		if err != nil {
-			return nil, err
-		}
-
-		at, err := toViewSlice[*phase0.Attestation](b.Attestations, "BeaconBlockBody.Attestations")
-		if err != nil {
-			return nil, err
-		}
-
-		return &phase0.BeaconBlockBody{
-			RANDAOReveal:      b.RANDAOReveal,
-			ETH1Data:          b.ETH1Data,
-			Graffiti:          b.Graffiti,
-			ProposerSlashings: b.ProposerSlashings,
-			AttesterSlashings: as,
-			Attestations:      at,
-			Deposits:          b.Deposits,
-			VoluntaryExits:    b.VoluntaryExits,
-		}, nil
-	case version.DataVersionAltair:
-		as, err := toViewSlice[*phase0.AttesterSlashing](b.AttesterSlashings, "BeaconBlockBody.AttesterSlashings")
-		if err != nil {
-			return nil, err
-		}
-
-		at, err := toViewSlice[*phase0.Attestation](b.Attestations, "BeaconBlockBody.Attestations")
-		if err != nil {
-			return nil, err
-		}
-
-		return &altair.BeaconBlockBody{
-			RANDAOReveal:      b.RANDAOReveal,
-			ETH1Data:          b.ETH1Data,
-			Graffiti:          b.Graffiti,
-			ProposerSlashings: b.ProposerSlashings,
-			AttesterSlashings: as,
-			Attestations:      at,
-			Deposits:          b.Deposits,
-			VoluntaryExits:    b.VoluntaryExits,
-			SyncAggregate:     b.SyncAggregate,
-		}, nil
-	case version.DataVersionBellatrix:
-		as, err := toViewSlice[*phase0.AttesterSlashing](b.AttesterSlashings, "BeaconBlockBody.AttesterSlashings")
-		if err != nil {
-			return nil, err
-		}
-
-		at, err := toViewSlice[*phase0.Attestation](b.Attestations, "BeaconBlockBody.Attestations")
-		if err != nil {
-			return nil, err
-		}
-
-		ep, err := toViewPtr[*bellatrix.ExecutionPayload](b.ExecutionPayload, "BeaconBlockBody.ExecutionPayload")
-		if err != nil {
-			return nil, err
-		}
-
-		return &bellatrix.BeaconBlockBody{
-			RANDAOReveal:      b.RANDAOReveal,
-			ETH1Data:          b.ETH1Data,
-			Graffiti:          b.Graffiti,
-			ProposerSlashings: b.ProposerSlashings,
-			AttesterSlashings: as,
-			Attestations:      at,
-			Deposits:          b.Deposits,
-			VoluntaryExits:    b.VoluntaryExits,
-			SyncAggregate:     b.SyncAggregate,
-			ExecutionPayload:  ep,
-		}, nil
-	case version.DataVersionCapella:
-		as, err := toViewSlice[*phase0.AttesterSlashing](b.AttesterSlashings, "BeaconBlockBody.AttesterSlashings")
-		if err != nil {
-			return nil, err
-		}
-
-		at, err := toViewSlice[*phase0.Attestation](b.Attestations, "BeaconBlockBody.Attestations")
-		if err != nil {
-			return nil, err
-		}
-
-		ep, err := toViewPtr[*capella.ExecutionPayload](b.ExecutionPayload, "BeaconBlockBody.ExecutionPayload")
-		if err != nil {
-			return nil, err
-		}
-
-		return &capella.BeaconBlockBody{
-			RANDAOReveal:          b.RANDAOReveal,
-			ETH1Data:              b.ETH1Data,
-			Graffiti:              b.Graffiti,
-			ProposerSlashings:     b.ProposerSlashings,
-			AttesterSlashings:     as,
-			Attestations:          at,
-			Deposits:              b.Deposits,
-			VoluntaryExits:        b.VoluntaryExits,
-			SyncAggregate:         b.SyncAggregate,
-			ExecutionPayload:      ep,
-			BLSToExecutionChanges: b.BLSToExecutionChanges,
-		}, nil
-	case version.DataVersionDeneb:
-		as, err := toViewSlice[*phase0.AttesterSlashing](b.AttesterSlashings, "BeaconBlockBody.AttesterSlashings")
-		if err != nil {
-			return nil, err
-		}
-
-		at, err := toViewSlice[*phase0.Attestation](b.Attestations, "BeaconBlockBody.Attestations")
-		if err != nil {
-			return nil, err
-		}
-
-		ep, err := toViewPtr[*deneb.ExecutionPayload](b.ExecutionPayload, "BeaconBlockBody.ExecutionPayload")
-		if err != nil {
-			return nil, err
-		}
-
-		return &deneb.BeaconBlockBody{
-			RANDAOReveal:          b.RANDAOReveal,
-			ETH1Data:              b.ETH1Data,
-			Graffiti:              b.Graffiti,
-			ProposerSlashings:     b.ProposerSlashings,
-			AttesterSlashings:     as,
-			Attestations:          at,
-			Deposits:              b.Deposits,
-			VoluntaryExits:        b.VoluntaryExits,
-			SyncAggregate:         b.SyncAggregate,
-			ExecutionPayload:      ep,
-			BLSToExecutionChanges: b.BLSToExecutionChanges,
-			BlobKZGCommitments:    b.BlobKZGCommitments,
-		}, nil
-	case version.DataVersionElectra,
-		version.DataVersionFulu:
-		// Fulu reuses the Electra block-body schema unchanged.
-		as, err := toViewSlice[*electra.AttesterSlashing](b.AttesterSlashings, "BeaconBlockBody.AttesterSlashings")
-		if err != nil {
-			return nil, err
-		}
-
-		at, err := toViewSlice[*electra.Attestation](b.Attestations, "BeaconBlockBody.Attestations")
-		if err != nil {
-			return nil, err
-		}
-
-		ep, err := toViewPtr[*deneb.ExecutionPayload](b.ExecutionPayload, "BeaconBlockBody.ExecutionPayload")
-		if err != nil {
-			return nil, err
-		}
-
-		return &electra.BeaconBlockBody{
-			RANDAOReveal:          b.RANDAOReveal,
-			ETH1Data:              b.ETH1Data,
-			Graffiti:              b.Graffiti,
-			ProposerSlashings:     b.ProposerSlashings,
-			AttesterSlashings:     as,
-			Attestations:          at,
-			Deposits:              b.Deposits,
-			VoluntaryExits:        b.VoluntaryExits,
-			SyncAggregate:         b.SyncAggregate,
-			ExecutionPayload:      ep,
-			BLSToExecutionChanges: b.BLSToExecutionChanges,
-			BlobKZGCommitments:    b.BlobKZGCommitments,
-			ExecutionRequests:     b.ExecutionRequests,
-		}, nil
-	case version.DataVersionGloas:
-		as, err := toViewSlice[*electra.AttesterSlashing](b.AttesterSlashings, "BeaconBlockBody.AttesterSlashings")
-		if err != nil {
-			return nil, err
-		}
-
-		at, err := toViewSlice[*electra.Attestation](b.Attestations, "BeaconBlockBody.Attestations")
-		if err != nil {
-			return nil, err
-		}
-
-		bid, err := toViewPtr[*gloas.SignedExecutionPayloadBid](b.SignedExecutionPayloadBid, "BeaconBlockBody.SignedExecutionPayloadBid")
-		if err != nil {
-			return nil, err
-		}
-
-		return &gloas.BeaconBlockBody{
-			RANDAOReveal:              b.RANDAOReveal,
-			ETH1Data:                  b.ETH1Data,
-			Graffiti:                  b.Graffiti,
-			ProposerSlashings:         b.ProposerSlashings,
-			AttesterSlashings:         as,
-			Attestations:              at,
-			Deposits:                  b.Deposits,
-			VoluntaryExits:            b.VoluntaryExits,
-			SyncAggregate:             b.SyncAggregate,
-			BLSToExecutionChanges:     b.BLSToExecutionChanges,
-			SignedExecutionPayloadBid: bid,
-			PayloadAttestations:       b.PayloadAttestations,
-			ParentExecutionRequests:   b.ParentExecutionRequests,
-		}, nil
-	case version.DataVersionHeze:
-		as, err := toViewSlice[*electra.AttesterSlashing](b.AttesterSlashings, "BeaconBlockBody.AttesterSlashings")
-		if err != nil {
-			return nil, err
-		}
-
-		at, err := toViewSlice[*electra.Attestation](b.Attestations, "BeaconBlockBody.Attestations")
-		if err != nil {
-			return nil, err
-		}
-
-		bid, err := toViewPtr[*heze.SignedExecutionPayloadBid](b.SignedExecutionPayloadBid, "BeaconBlockBody.SignedExecutionPayloadBid")
-		if err != nil {
-			return nil, err
-		}
-
-		return &heze.BeaconBlockBody{
-			RANDAOReveal:              b.RANDAOReveal,
-			ETH1Data:                  b.ETH1Data,
-			Graffiti:                  b.Graffiti,
-			ProposerSlashings:         b.ProposerSlashings,
-			AttesterSlashings:         as,
-			Attestations:              at,
-			Deposits:                  b.Deposits,
-			VoluntaryExits:            b.VoluntaryExits,
-			SyncAggregate:             b.SyncAggregate,
-			BLSToExecutionChanges:     b.BLSToExecutionChanges,
-			SignedExecutionPayloadBid: bid,
-			PayloadAttestations:       b.PayloadAttestations,
-			ParentExecutionRequests:   b.ParentExecutionRequests,
-		}, nil
-	default:
-		return nil, fmt.Errorf("BeaconBlockBody: unsupported version %d", b.Version)
-	}
+	return toViewByCopy(b)
 }
 
 // FromView populates b from a fork-specific BeaconBlockBody.
 func (b *BeaconBlockBody) FromView(view any) error {
-	switch v := view.(type) {
+	v, err := beaconBlockBodyVersion(view)
+	if err != nil {
+		return err
+	}
+
+	if b.Version == version.DataVersionUnknown {
+		b.Version = v
+	}
+
+	if err := copyByName(view, b); err != nil {
+		return err
+	}
+
+	b.populateVersion(b.Version)
+
+	return nil
+}
+
+// beaconBlockBodyVersion maps a BeaconBlockBody view type to its DataVersion.
+func beaconBlockBodyVersion(view any) (version.DataVersion, error) {
+	switch view.(type) {
 	case *phase0.BeaconBlockBody:
-		if b.Version == version.DataVersionUnknown {
-			b.Version = version.DataVersionPhase0
-		}
-
-		b.RANDAOReveal = v.RANDAOReveal
-		b.ETH1Data = v.ETH1Data
-		b.Graffiti = v.Graffiti
-		b.ProposerSlashings = v.ProposerSlashings
-		b.Deposits = v.Deposits
-		b.VoluntaryExits = v.VoluntaryExits
-
-		return b.fromPhase0Attestations(v.AttesterSlashings, v.Attestations)
+		return version.DataVersionPhase0, nil
 	case *altair.BeaconBlockBody:
-		if b.Version == version.DataVersionUnknown {
-			b.Version = version.DataVersionAltair
-		}
-
-		b.RANDAOReveal = v.RANDAOReveal
-		b.ETH1Data = v.ETH1Data
-		b.Graffiti = v.Graffiti
-		b.ProposerSlashings = v.ProposerSlashings
-		b.Deposits = v.Deposits
-		b.VoluntaryExits = v.VoluntaryExits
-		b.SyncAggregate = v.SyncAggregate
-
-		return b.fromPhase0Attestations(v.AttesterSlashings, v.Attestations)
+		return version.DataVersionAltair, nil
 	case *bellatrix.BeaconBlockBody:
-		if b.Version == version.DataVersionUnknown {
-			b.Version = version.DataVersionBellatrix
-		}
-
-		b.RANDAOReveal = v.RANDAOReveal
-		b.ETH1Data = v.ETH1Data
-		b.Graffiti = v.Graffiti
-		b.ProposerSlashings = v.ProposerSlashings
-		b.Deposits = v.Deposits
-		b.VoluntaryExits = v.VoluntaryExits
-		b.SyncAggregate = v.SyncAggregate
-
-		if err := b.fromPhase0Attestations(v.AttesterSlashings, v.Attestations); err != nil {
-			return err
-		}
-
-		return b.fromExecutionPayload(v.ExecutionPayload)
+		return version.DataVersionBellatrix, nil
 	case *capella.BeaconBlockBody:
-		if b.Version == version.DataVersionUnknown {
-			b.Version = version.DataVersionCapella
-		}
-
-		b.RANDAOReveal = v.RANDAOReveal
-		b.ETH1Data = v.ETH1Data
-		b.Graffiti = v.Graffiti
-		b.ProposerSlashings = v.ProposerSlashings
-		b.Deposits = v.Deposits
-		b.VoluntaryExits = v.VoluntaryExits
-		b.SyncAggregate = v.SyncAggregate
-		b.BLSToExecutionChanges = v.BLSToExecutionChanges
-
-		if err := b.fromPhase0Attestations(v.AttesterSlashings, v.Attestations); err != nil {
-			return err
-		}
-
-		return b.fromExecutionPayload(v.ExecutionPayload)
+		return version.DataVersionCapella, nil
 	case *deneb.BeaconBlockBody:
-		if b.Version == version.DataVersionUnknown {
-			b.Version = version.DataVersionDeneb
-		}
-
-		b.RANDAOReveal = v.RANDAOReveal
-		b.ETH1Data = v.ETH1Data
-		b.Graffiti = v.Graffiti
-		b.ProposerSlashings = v.ProposerSlashings
-		b.Deposits = v.Deposits
-		b.VoluntaryExits = v.VoluntaryExits
-		b.SyncAggregate = v.SyncAggregate
-		b.BLSToExecutionChanges = v.BLSToExecutionChanges
-		b.BlobKZGCommitments = v.BlobKZGCommitments
-
-		if err := b.fromPhase0Attestations(v.AttesterSlashings, v.Attestations); err != nil {
-			return err
-		}
-
-		return b.fromExecutionPayload(v.ExecutionPayload)
+		return version.DataVersionDeneb, nil
 	case *electra.BeaconBlockBody:
-		if b.Version == version.DataVersionUnknown {
-			b.Version = version.DataVersionElectra
-		}
-
-		b.RANDAOReveal = v.RANDAOReveal
-		b.ETH1Data = v.ETH1Data
-		b.Graffiti = v.Graffiti
-		b.ProposerSlashings = v.ProposerSlashings
-		b.Deposits = v.Deposits
-		b.VoluntaryExits = v.VoluntaryExits
-		b.SyncAggregate = v.SyncAggregate
-		b.BLSToExecutionChanges = v.BLSToExecutionChanges
-		b.BlobKZGCommitments = v.BlobKZGCommitments
-		b.ExecutionRequests = v.ExecutionRequests
-
-		if err := b.fromElectraAttestations(v.AttesterSlashings, v.Attestations); err != nil {
-			return err
-		}
-
-		return b.fromExecutionPayload(v.ExecutionPayload)
+		return version.DataVersionElectra, nil
 	case *gloas.BeaconBlockBody:
-		if b.Version == version.DataVersionUnknown {
-			b.Version = version.DataVersionGloas
-		}
-
-		b.RANDAOReveal = v.RANDAOReveal
-		b.ETH1Data = v.ETH1Data
-		b.Graffiti = v.Graffiti
-		b.ProposerSlashings = v.ProposerSlashings
-		b.Deposits = v.Deposits
-		b.VoluntaryExits = v.VoluntaryExits
-		b.SyncAggregate = v.SyncAggregate
-		b.BLSToExecutionChanges = v.BLSToExecutionChanges
-		b.PayloadAttestations = v.PayloadAttestations
-		b.ParentExecutionRequests = v.ParentExecutionRequests
-		b.ExecutionPayload = nil
-
-		if err := b.fromElectraAttestations(v.AttesterSlashings, v.Attestations); err != nil {
-			return err
-		}
-
-		return b.fromSignedBid(v.SignedExecutionPayloadBid)
+		return version.DataVersionGloas, nil
 	case *heze.BeaconBlockBody:
-		if b.Version == version.DataVersionUnknown {
-			b.Version = version.DataVersionHeze
-		}
-
-		b.RANDAOReveal = v.RANDAOReveal
-		b.ETH1Data = v.ETH1Data
-		b.Graffiti = v.Graffiti
-		b.ProposerSlashings = v.ProposerSlashings
-		b.Deposits = v.Deposits
-		b.VoluntaryExits = v.VoluntaryExits
-		b.SyncAggregate = v.SyncAggregate
-		b.BLSToExecutionChanges = v.BLSToExecutionChanges
-		b.PayloadAttestations = v.PayloadAttestations
-		b.ParentExecutionRequests = v.ParentExecutionRequests
-		b.ExecutionPayload = nil
-
-		if err := b.fromElectraAttestations(v.AttesterSlashings, v.Attestations); err != nil {
-			return err
-		}
-
-		return b.fromSignedBid(v.SignedExecutionPayloadBid)
+		return version.DataVersionHeze, nil
 	default:
-		return fmt.Errorf("BeaconBlockBody: unsupported view type %T", view)
+		return version.DataVersionUnknown, fmt.Errorf("BeaconBlockBody: unsupported view type %T", view)
 	}
-}
-
-func (b *BeaconBlockBody) fromPhase0Attestations(slashings []*phase0.AttesterSlashing, attestations []*phase0.Attestation) error {
-	asOut := make([]*AttesterSlashing, len(slashings))
-	for i, s := range slashings {
-		if s == nil {
-			continue
-		}
-
-		asOut[i] = &AttesterSlashing{Version: b.Version}
-		if err := asOut[i].FromView(s); err != nil {
-			return fmt.Errorf("attesterSlashings[%d]: %w", i, err)
-		}
-	}
-
-	b.AttesterSlashings = asOut
-
-	atOut := make([]*Attestation, len(attestations))
-	for i, a := range attestations {
-		if a == nil {
-			continue
-		}
-
-		atOut[i] = &Attestation{Version: b.Version}
-		if err := atOut[i].FromView(a); err != nil {
-			return fmt.Errorf("attestations[%d]: %w", i, err)
-		}
-	}
-
-	b.Attestations = atOut
-
-	return nil
-}
-
-func (b *BeaconBlockBody) fromElectraAttestations(slashings []*electra.AttesterSlashing, attestations []*electra.Attestation) error {
-	asOut := make([]*AttesterSlashing, len(slashings))
-	for i, s := range slashings {
-		if s == nil {
-			continue
-		}
-
-		asOut[i] = &AttesterSlashing{Version: b.Version}
-		if err := asOut[i].FromView(s); err != nil {
-			return fmt.Errorf("attesterSlashings[%d]: %w", i, err)
-		}
-	}
-
-	b.AttesterSlashings = asOut
-
-	atOut := make([]*Attestation, len(attestations))
-	for i, a := range attestations {
-		if a == nil {
-			continue
-		}
-
-		atOut[i] = &Attestation{Version: b.Version}
-		if err := atOut[i].FromView(a); err != nil {
-			return fmt.Errorf("attestations[%d]: %w", i, err)
-		}
-	}
-
-	b.Attestations = atOut
-
-	return nil
-}
-
-func (b *BeaconBlockBody) fromExecutionPayload(view any) error {
-	if view == nil {
-		b.ExecutionPayload = nil
-
-		return nil
-	}
-
-	if b.ExecutionPayload == nil {
-		b.ExecutionPayload = &ExecutionPayload{Version: b.Version}
-	}
-
-	return b.ExecutionPayload.FromView(view)
-}
-
-func (b *BeaconBlockBody) fromSignedBid(view any) error {
-	rv := reflect.ValueOf(view)
-	if !rv.IsValid() || (rv.Kind() == reflect.Ptr && rv.IsNil()) {
-		b.SignedExecutionPayloadBid = nil
-
-		return nil
-	}
-
-	if b.SignedExecutionPayloadBid == nil {
-		b.SignedExecutionPayloadBid = &SignedExecutionPayloadBid{Version: b.Version}
-	}
-
-	return b.SignedExecutionPayloadBid.FromView(view)
 }
 
 // HashTreeRootWithDyn computes the SSZ hash tree root using the active Version's view.

@@ -121,79 +121,42 @@ func (s *SignedExecutionPayloadBid) populateVersion(v version.DataVersion) {
 }
 
 // ToView returns a fresh fork-specific SignedExecutionPayloadBid populated
-// with s's fields, recursing into Message via its ToView.
+// with s's fields, recursing into Message via copyByName.
 func (s *SignedExecutionPayloadBid) ToView() (any, error) {
-	var msg any
-
-	var err error
-
-	if s.Message != nil {
-		msg, err = s.Message.ToView()
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	switch s.Version {
-	case version.DataVersionGloas:
-		gm, err := assertView[*gloas.ExecutionPayloadBid](msg, "SignedExecutionPayloadBid.Message")
-		if err != nil {
-			return nil, err
-		}
-
-		return &gloas.SignedExecutionPayloadBid{Message: gm, Signature: s.Signature}, nil
-	case version.DataVersionHeze:
-		hm, err := assertView[*heze.ExecutionPayloadBid](msg, "SignedExecutionPayloadBid.Message")
-		if err != nil {
-			return nil, err
-		}
-
-		return &heze.SignedExecutionPayloadBid{Message: hm, Signature: s.Signature}, nil
-	default:
-		return nil, fmt.Errorf("SignedExecutionPayloadBid: unsupported version %d", s.Version)
-	}
+	return toViewByCopy(s)
 }
 
 // FromView populates s from a fork-specific SignedExecutionPayloadBid.
 func (s *SignedExecutionPayloadBid) FromView(view any) error {
-	var msgView any
+	v, err := signedExecutionPayloadBidVersion(view)
+	if err != nil {
+		return err
+	}
 
-	switch v := view.(type) {
+	if s.Version == version.DataVersionUnknown {
+		s.Version = v
+	}
+
+	if err := copyByName(view, s); err != nil {
+		return err
+	}
+
+	s.populateVersion(s.Version)
+
+	return nil
+}
+
+// signedExecutionPayloadBidVersion maps a SignedExecutionPayloadBid view type
+// to its DataVersion.
+func signedExecutionPayloadBidVersion(view any) (version.DataVersion, error) {
+	switch view.(type) {
 	case *gloas.SignedExecutionPayloadBid:
-		if s.Version == version.DataVersionUnknown {
-			s.Version = version.DataVersionGloas
-		}
-
-		s.Signature = v.Signature
-
-		if v.Message != nil {
-			msgView = v.Message
-		}
+		return version.DataVersionGloas, nil
 	case *heze.SignedExecutionPayloadBid:
-		if s.Version == version.DataVersionUnknown {
-			s.Version = version.DataVersionHeze
-		}
-
-		s.Signature = v.Signature
-
-		if v.Message != nil {
-			msgView = v.Message
-		}
+		return version.DataVersionHeze, nil
 	default:
-		return fmt.Errorf("SignedExecutionPayloadBid: unsupported view type %T", view)
+		return version.DataVersionUnknown, fmt.Errorf("SignedExecutionPayloadBid: unsupported view type %T", view)
 	}
-
-	if msgView == nil {
-		s.Message = nil
-
-		return nil
-	}
-
-	if s.Message == nil {
-		s.Message = &ExecutionPayloadBid{Version: s.Version}
-	}
-
-	return s.Message.FromView(msgView)
 }
 
 // HashTreeRootWithDyn computes the SSZ hash tree root using the active Version's view.

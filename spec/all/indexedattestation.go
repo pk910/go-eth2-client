@@ -128,57 +128,39 @@ func (i *IndexedAttestation) populateVersion(v version.DataVersion) {
 // ToView returns a fresh fork-specific IndexedAttestation populated with i's
 // fields. The concrete return type matches viewType().
 func (i *IndexedAttestation) ToView() (any, error) {
-	switch i.Version {
-	case version.DataVersionPhase0,
-		version.DataVersionAltair,
-		version.DataVersionBellatrix,
-		version.DataVersionCapella,
-		version.DataVersionDeneb:
-		return &phase0.IndexedAttestation{
-			AttestingIndices: i.AttestingIndices,
-			Data:             i.Data,
-			Signature:        i.Signature,
-		}, nil
-	case version.DataVersionElectra,
-		version.DataVersionFulu,
-		version.DataVersionGloas,
-		version.DataVersionHeze:
-		return &electra.IndexedAttestation{
-			AttestingIndices: i.AttestingIndices,
-			Data:             i.Data,
-			Signature:        i.Signature,
-		}, nil
-	default:
-		return nil, fmt.Errorf("IndexedAttestation: unsupported version %d", i.Version)
-	}
+	return toViewByCopy(i)
 }
 
-// FromView populates i from a fork-specific IndexedAttestation. Version is
-// inferred from view's concrete type if i.Version is unset.
+// FromView populates i from a fork-specific IndexedAttestation.
 func (i *IndexedAttestation) FromView(view any) error {
-	switch v := view.(type) {
+	v, err := indexedAttestationVersion(view)
+	if err != nil {
+		return err
+	}
+
+	if i.Version == version.DataVersionUnknown {
+		i.Version = v
+	}
+
+	if err := copyByName(view, i); err != nil {
+		return err
+	}
+
+	i.populateVersion(i.Version)
+
+	return nil
+}
+
+// indexedAttestationVersion maps an IndexedAttestation view type to its
+// DataVersion. Schema only changes once (phase0 → electra).
+func indexedAttestationVersion(view any) (version.DataVersion, error) {
+	switch view.(type) {
 	case *phase0.IndexedAttestation:
-		if i.Version == version.DataVersionUnknown {
-			i.Version = version.DataVersionPhase0
-		}
-
-		i.AttestingIndices = v.AttestingIndices
-		i.Data = v.Data
-		i.Signature = v.Signature
-
-		return nil
+		return version.DataVersionPhase0, nil
 	case *electra.IndexedAttestation:
-		if i.Version == version.DataVersionUnknown {
-			i.Version = version.DataVersionElectra
-		}
-
-		i.AttestingIndices = v.AttestingIndices
-		i.Data = v.Data
-		i.Signature = v.Signature
-
-		return nil
+		return version.DataVersionElectra, nil
 	default:
-		return fmt.Errorf("IndexedAttestation: unsupported view type %T", view)
+		return version.DataVersionUnknown, fmt.Errorf("IndexedAttestation: unsupported view type %T", view)
 	}
 }
 

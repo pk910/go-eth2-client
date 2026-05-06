@@ -140,143 +140,44 @@ func (e *ExecutionPayloadHeader) populateVersion(v version.DataVersion) {
 }
 
 // ToView returns a fresh fork-specific ExecutionPayloadHeader populated with
+// ToView returns a fresh fork-specific ExecutionPayloadHeader populated with
 // e's fields.
 func (e *ExecutionPayloadHeader) ToView() (any, error) {
-	switch e.Version {
-	case version.DataVersionBellatrix:
-		return &bellatrix.ExecutionPayloadHeader{
-			ParentHash:       e.ParentHash,
-			FeeRecipient:     e.FeeRecipient,
-			StateRoot:        [32]byte(e.StateRoot),
-			ReceiptsRoot:     [32]byte(e.ReceiptsRoot),
-			LogsBloom:        e.LogsBloom,
-			PrevRandao:       e.PrevRandao,
-			BlockNumber:      e.BlockNumber,
-			GasLimit:         e.GasLimit,
-			GasUsed:          e.GasUsed,
-			Timestamp:        e.Timestamp,
-			ExtraData:        e.ExtraData,
-			BaseFeePerGasLE:  e.BaseFeePerGasLE,
-			BlockHash:        e.BlockHash,
-			TransactionsRoot: e.TransactionsRoot,
-		}, nil
-	case version.DataVersionCapella:
-		return &capella.ExecutionPayloadHeader{
-			ParentHash:       e.ParentHash,
-			FeeRecipient:     e.FeeRecipient,
-			StateRoot:        [32]byte(e.StateRoot),
-			ReceiptsRoot:     [32]byte(e.ReceiptsRoot),
-			LogsBloom:        e.LogsBloom,
-			PrevRandao:       e.PrevRandao,
-			BlockNumber:      e.BlockNumber,
-			GasLimit:         e.GasLimit,
-			GasUsed:          e.GasUsed,
-			Timestamp:        e.Timestamp,
-			ExtraData:        e.ExtraData,
-			BaseFeePerGasLE:  e.BaseFeePerGasLE,
-			BlockHash:        e.BlockHash,
-			TransactionsRoot: e.TransactionsRoot,
-			WithdrawalsRoot:  e.WithdrawalsRoot,
-		}, nil
-	case version.DataVersionDeneb:
-		return &deneb.ExecutionPayloadHeader{
-			ParentHash:       e.ParentHash,
-			FeeRecipient:     e.FeeRecipient,
-			StateRoot:        e.StateRoot,
-			ReceiptsRoot:     e.ReceiptsRoot,
-			LogsBloom:        e.LogsBloom,
-			PrevRandao:       e.PrevRandao,
-			BlockNumber:      e.BlockNumber,
-			GasLimit:         e.GasLimit,
-			GasUsed:          e.GasUsed,
-			Timestamp:        e.Timestamp,
-			ExtraData:        e.ExtraData,
-			BaseFeePerGas:    e.BaseFeePerGas,
-			BlockHash:        e.BlockHash,
-			TransactionsRoot: e.TransactionsRoot,
-			WithdrawalsRoot:  e.WithdrawalsRoot,
-			BlobGasUsed:      e.BlobGasUsed,
-			ExcessBlobGas:    e.ExcessBlobGas,
-		}, nil
-	default:
-		return nil, fmt.Errorf("ExecutionPayloadHeader: unsupported version %d", e.Version)
-	}
+	return toViewByCopy(e)
 }
 
 // FromView populates e from a fork-specific ExecutionPayloadHeader.
-//
-//nolint:dupl // explicit per-fork copies are intentional
 func (e *ExecutionPayloadHeader) FromView(view any) error {
-	switch v := view.(type) {
+	v, err := executionPayloadHeaderVersion(view)
+	if err != nil {
+		return err
+	}
+
+	if e.Version == version.DataVersionUnknown {
+		e.Version = v
+	}
+
+	if err := copyByName(view, e); err != nil {
+		return err
+	}
+
+	e.populateVersion(e.Version)
+
+	return nil
+}
+
+// executionPayloadHeaderVersion maps an ExecutionPayloadHeader view type to
+// its DataVersion.
+func executionPayloadHeaderVersion(view any) (version.DataVersion, error) {
+	switch view.(type) {
 	case *bellatrix.ExecutionPayloadHeader:
-		if e.Version == version.DataVersionUnknown {
-			e.Version = version.DataVersionBellatrix
-		}
-
-		e.ParentHash = v.ParentHash
-		e.FeeRecipient = v.FeeRecipient
-		e.StateRoot = phase0.Root(v.StateRoot)
-		e.ReceiptsRoot = phase0.Root(v.ReceiptsRoot)
-		e.LogsBloom = v.LogsBloom
-		e.PrevRandao = v.PrevRandao
-		e.BlockNumber = v.BlockNumber
-		e.GasLimit = v.GasLimit
-		e.GasUsed = v.GasUsed
-		e.Timestamp = v.Timestamp
-		e.ExtraData = v.ExtraData
-		e.BaseFeePerGasLE = v.BaseFeePerGasLE
-		e.BlockHash = v.BlockHash
-		e.TransactionsRoot = v.TransactionsRoot
-
-		return nil
+		return version.DataVersionBellatrix, nil
 	case *capella.ExecutionPayloadHeader:
-		if e.Version == version.DataVersionUnknown {
-			e.Version = version.DataVersionCapella
-		}
-
-		e.ParentHash = v.ParentHash
-		e.FeeRecipient = v.FeeRecipient
-		e.StateRoot = phase0.Root(v.StateRoot)
-		e.ReceiptsRoot = phase0.Root(v.ReceiptsRoot)
-		e.LogsBloom = v.LogsBloom
-		e.PrevRandao = v.PrevRandao
-		e.BlockNumber = v.BlockNumber
-		e.GasLimit = v.GasLimit
-		e.GasUsed = v.GasUsed
-		e.Timestamp = v.Timestamp
-		e.ExtraData = v.ExtraData
-		e.BaseFeePerGasLE = v.BaseFeePerGasLE
-		e.BlockHash = v.BlockHash
-		e.TransactionsRoot = v.TransactionsRoot
-		e.WithdrawalsRoot = v.WithdrawalsRoot
-
-		return nil
+		return version.DataVersionCapella, nil
 	case *deneb.ExecutionPayloadHeader:
-		if e.Version == version.DataVersionUnknown {
-			e.Version = version.DataVersionDeneb
-		}
-
-		e.ParentHash = v.ParentHash
-		e.FeeRecipient = v.FeeRecipient
-		e.StateRoot = v.StateRoot
-		e.ReceiptsRoot = v.ReceiptsRoot
-		e.LogsBloom = v.LogsBloom
-		e.PrevRandao = v.PrevRandao
-		e.BlockNumber = v.BlockNumber
-		e.GasLimit = v.GasLimit
-		e.GasUsed = v.GasUsed
-		e.Timestamp = v.Timestamp
-		e.ExtraData = v.ExtraData
-		e.BaseFeePerGas = v.BaseFeePerGas
-		e.BlockHash = v.BlockHash
-		e.TransactionsRoot = v.TransactionsRoot
-		e.WithdrawalsRoot = v.WithdrawalsRoot
-		e.BlobGasUsed = v.BlobGasUsed
-		e.ExcessBlobGas = v.ExcessBlobGas
-
-		return nil
+		return version.DataVersionDeneb, nil
 	default:
-		return fmt.Errorf("ExecutionPayloadHeader: unsupported view type %T", view)
+		return version.DataVersionUnknown, fmt.Errorf("ExecutionPayloadHeader: unsupported view type %T", view)
 	}
 }
 

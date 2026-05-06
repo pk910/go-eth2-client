@@ -128,58 +128,40 @@ func (a *Attestation) populateVersion(v version.DataVersion) {
 
 // ToView returns a fresh fork-specific Attestation populated with a's fields.
 func (a *Attestation) ToView() (any, error) {
-	switch a.Version {
-	case version.DataVersionPhase0,
-		version.DataVersionAltair,
-		version.DataVersionBellatrix,
-		version.DataVersionCapella,
-		version.DataVersionDeneb:
-		return &phase0.Attestation{
-			AggregationBits: a.AggregationBits,
-			Data:            a.Data,
-			Signature:       a.Signature,
-		}, nil
-	case version.DataVersionElectra,
-		version.DataVersionFulu,
-		version.DataVersionGloas,
-		version.DataVersionHeze:
-		return &electra.Attestation{
-			AggregationBits: a.AggregationBits,
-			Data:            a.Data,
-			Signature:       a.Signature,
-			CommitteeBits:   a.CommitteeBits,
-		}, nil
-	default:
-		return nil, fmt.Errorf("Attestation: unsupported version %d", a.Version)
-	}
+	return toViewByCopy(a)
 }
 
 // FromView populates a from a fork-specific Attestation.
 func (a *Attestation) FromView(view any) error {
-	switch v := view.(type) {
+	v, err := attestationVersion(view)
+	if err != nil {
+		return err
+	}
+
+	if a.Version == version.DataVersionUnknown {
+		a.Version = v
+	}
+
+	if err := copyByName(view, a); err != nil {
+		return err
+	}
+
+	a.populateVersion(a.Version)
+
+	return nil
+}
+
+// attestationVersion maps an Attestation view type to its DataVersion. Since
+// the Attestation schema only changes once (phase0 → electra), we only need
+// the first version of each schema range.
+func attestationVersion(view any) (version.DataVersion, error) {
+	switch view.(type) {
 	case *phase0.Attestation:
-		if a.Version == version.DataVersionUnknown {
-			a.Version = version.DataVersionPhase0
-		}
-
-		a.AggregationBits = v.AggregationBits
-		a.Data = v.Data
-		a.Signature = v.Signature
-
-		return nil
+		return version.DataVersionPhase0, nil
 	case *electra.Attestation:
-		if a.Version == version.DataVersionUnknown {
-			a.Version = version.DataVersionElectra
-		}
-
-		a.AggregationBits = v.AggregationBits
-		a.Data = v.Data
-		a.Signature = v.Signature
-		a.CommitteeBits = v.CommitteeBits
-
-		return nil
+		return version.DataVersionElectra, nil
 	default:
-		return fmt.Errorf("Attestation: unsupported view type %T", view)
+		return version.DataVersionUnknown, fmt.Errorf("Attestation: unsupported view type %T", view)
 	}
 }
 

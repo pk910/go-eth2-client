@@ -133,89 +133,42 @@ func (e *ExecutionPayloadBid) populateVersion(v version.DataVersion) {
 }
 
 // ToView returns a fresh fork-specific ExecutionPayloadBid populated with e's
+// ToView returns a fresh fork-specific ExecutionPayloadBid populated with e's
 // fields.
 func (e *ExecutionPayloadBid) ToView() (any, error) {
-	switch e.Version {
-	case version.DataVersionGloas:
-		return &gloas.ExecutionPayloadBid{
-			ParentBlockHash:       e.ParentBlockHash,
-			ParentBlockRoot:       e.ParentBlockRoot,
-			BlockHash:             e.BlockHash,
-			PrevRandao:            e.PrevRandao,
-			FeeRecipient:          e.FeeRecipient,
-			GasLimit:              e.GasLimit,
-			BuilderIndex:          e.BuilderIndex,
-			Slot:                  e.Slot,
-			Value:                 e.Value,
-			ExecutionPayment:      e.ExecutionPayment,
-			BlobKZGCommitments:    e.BlobKZGCommitments,
-			ExecutionRequestsRoot: e.ExecutionRequestsRoot,
-		}, nil
-	case version.DataVersionHeze:
-		return &heze.ExecutionPayloadBid{
-			ParentBlockHash:       e.ParentBlockHash,
-			ParentBlockRoot:       e.ParentBlockRoot,
-			BlockHash:             e.BlockHash,
-			PrevRandao:            e.PrevRandao,
-			FeeRecipient:          e.FeeRecipient,
-			GasLimit:              e.GasLimit,
-			BuilderIndex:          e.BuilderIndex,
-			Slot:                  e.Slot,
-			Value:                 e.Value,
-			ExecutionPayment:      e.ExecutionPayment,
-			BlobKZGCommitments:    e.BlobKZGCommitments,
-			ExecutionRequestsRoot: e.ExecutionRequestsRoot,
-			InclusionListBits:     e.InclusionListBits,
-		}, nil
-	default:
-		return nil, fmt.Errorf("ExecutionPayloadBid: unsupported version %d", e.Version)
-	}
+	return toViewByCopy(e)
 }
 
 // FromView populates e from a fork-specific ExecutionPayloadBid.
 func (e *ExecutionPayloadBid) FromView(view any) error {
-	switch v := view.(type) {
+	v, err := executionPayloadBidVersion(view)
+	if err != nil {
+		return err
+	}
+
+	if e.Version == version.DataVersionUnknown {
+		e.Version = v
+	}
+
+	if err := copyByName(view, e); err != nil {
+		return err
+	}
+
+	e.populateVersion(e.Version)
+
+	return nil
+}
+
+// executionPayloadBidVersion maps an ExecutionPayloadBid view type to its
+// DataVersion.
+func executionPayloadBidVersion(view any) (version.DataVersion, error) {
+	switch view.(type) {
 	case *gloas.ExecutionPayloadBid:
-		if e.Version == version.DataVersionUnknown {
-			e.Version = version.DataVersionGloas
-		}
-
-		e.ParentBlockHash = v.ParentBlockHash
-		e.ParentBlockRoot = v.ParentBlockRoot
-		e.BlockHash = v.BlockHash
-		e.PrevRandao = v.PrevRandao
-		e.FeeRecipient = v.FeeRecipient
-		e.GasLimit = v.GasLimit
-		e.BuilderIndex = v.BuilderIndex
-		e.Slot = v.Slot
-		e.Value = v.Value
-		e.ExecutionPayment = v.ExecutionPayment
-		e.BlobKZGCommitments = v.BlobKZGCommitments
-		e.ExecutionRequestsRoot = v.ExecutionRequestsRoot
-
-		return nil
+		return version.DataVersionGloas, nil
 	case *heze.ExecutionPayloadBid:
-		if e.Version == version.DataVersionUnknown {
-			e.Version = version.DataVersionHeze
-		}
-
-		e.ParentBlockHash = v.ParentBlockHash
-		e.ParentBlockRoot = v.ParentBlockRoot
-		e.BlockHash = v.BlockHash
-		e.PrevRandao = v.PrevRandao
-		e.FeeRecipient = v.FeeRecipient
-		e.GasLimit = v.GasLimit
-		e.BuilderIndex = v.BuilderIndex
-		e.Slot = v.Slot
-		e.Value = v.Value
-		e.ExecutionPayment = v.ExecutionPayment
-		e.BlobKZGCommitments = v.BlobKZGCommitments
-		e.ExecutionRequestsRoot = v.ExecutionRequestsRoot
-		e.InclusionListBits = v.InclusionListBits
-
-		return nil
+		return version.DataVersionHeze, nil
 	default:
-		return fmt.Errorf("ExecutionPayloadBid: unsupported view type %T", view)
+		return version.DataVersionUnknown, fmt.Errorf("ExecutionPayloadBid: unsupported view type %T", view)
 	}
 }
 

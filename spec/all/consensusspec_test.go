@@ -165,6 +165,13 @@ func runForkTypeCases(
 	}))
 }
 
+// viewConvertible is the agnostic-type interface tested in the ToView/FromView
+// round-trip below.
+type viewConvertible interface {
+	ToView() (any, error)
+	FromView(view any) error
+}
+
 func runConsensusCase(
 	t *testing.T,
 	path string,
@@ -207,6 +214,36 @@ func runConsensusCase(
 
 	generatedRoot := fmt.Sprintf("{root: '%#x'}\n", string(generatedRootBytes[:]))
 	require.YAMLEq(t, string(specYAMLRoot), generatedRoot)
+
+	// ToView/FromView round-trip exercised via the SSZ-loaded instance:
+	//   1. ToView produces a fresh fork-specific *fork.X.
+	//   2. The view marshals back to the same SSZ bytes (proves ToView copies
+	//      every field, including nested children, via copyByName).
+	//   3. A fresh agnostic instance fed the same view through FromView
+	//      reproduces the SSZ bytes and the hash tree root.
+	conv, ok := s2.(viewConvertible)
+	require.Truef(t, ok, "agnostic type %T does not implement viewConvertible", s2)
+
+	view, err := conv.ToView()
+	require.NoError(t, err)
+	require.NotNil(t, view)
+
+	viewSSZ, err := view.(sszutils.FastsszMarshaler).MarshalSSZ()
+	require.NoError(t, err, "ToView output failed to marshal SSZ")
+	require.Equal(t, specSSZ, viewSSZ, "ToView output SSZ differs from spec bytes")
+
+	// Build a fresh agnostic instance with no Version pinned so FromView
+	// must infer it from the view's concrete type.
+	s3 := factory(version.DataVersionUnknown).(viewConvertible)
+	require.NoError(t, s3.FromView(view), "FromView failed")
+
+	roundTrippedSSZ, err := s3.(sszutils.FastsszMarshaler).MarshalSSZ()
+	require.NoError(t, err, "FromView output failed to marshal SSZ")
+	require.Equal(t, specSSZ, roundTrippedSSZ, "ToView→FromView round-trip lost data")
+
+	roundTrippedRoot, err := s3.(sszutils.FastsszHashRoot).HashTreeRoot()
+	require.NoError(t, err)
+	require.Equal(t, generatedRootBytes, roundTrippedRoot, "ToView→FromView round-trip altered hash tree root")
 }
 
 // testYAMLFormat normalises a YAML document so two semantically equal but
