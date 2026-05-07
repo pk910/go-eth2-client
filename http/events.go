@@ -32,6 +32,7 @@ import (
 	"github.com/ethpandaops/go-eth2-client/spec/altair"
 	"github.com/ethpandaops/go-eth2-client/spec/capella"
 	"github.com/ethpandaops/go-eth2-client/spec/electra"
+	"github.com/ethpandaops/go-eth2-client/spec/gloas"
 	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 	"github.com/r3labs/sse/v2"
 	"github.com/rs/zerolog"
@@ -145,12 +146,24 @@ func (*Service) checkEventSpecificHandler(opts *api.EventsOpts, topic string) er
 		hasHandler = opts.ContributionAndProofHandler != nil
 	case "data_column_sidecar":
 		hasHandler = opts.DataColumnSidecarHandler != nil
+	case "execution_payload":
+		hasHandler = opts.ExecutionPayloadHandler != nil
+	case "execution_payload_available":
+		hasHandler = opts.ExecutionPayloadAvailableHandler != nil
+	case "execution_payload_bid":
+		hasHandler = opts.ExecutionPayloadBidHandler != nil
+	case "execution_payload_gossip":
+		hasHandler = opts.ExecutionPayloadGossipHandler != nil
 	case "finalized_checkpoint":
 		hasHandler = opts.FinalizedCheckpointHandler != nil
 	case "head":
 		hasHandler = opts.HeadHandler != nil
+	case "payload_attestation_message":
+		hasHandler = opts.PayloadAttestationMessageHandler != nil
 	case "payload_attributes":
 		hasHandler = opts.PayloadAttributesHandler != nil
+	case "proposer_preferences":
+		hasHandler = opts.ProposerPreferencesHandler != nil
 	case "proposer_slashing":
 		hasHandler = opts.ProposerSlashingHandler != nil
 	case "single_attestation":
@@ -200,12 +213,24 @@ func (s *Service) handleEvent(ctx context.Context,
 		s.handleContributionAndProofEvent(ctx, msg, opts)
 	case "data_column_sidecar":
 		s.handleDataColumnSidecarEvent(ctx, msg, opts)
+	case "execution_payload":
+		s.handleExecutionPayloadEvent(ctx, msg, opts)
+	case "execution_payload_available":
+		s.handleExecutionPayloadAvailableEvent(ctx, msg, opts)
+	case "execution_payload_bid":
+		s.handleExecutionPayloadBidEvent(ctx, msg, opts)
+	case "execution_payload_gossip":
+		s.handleExecutionPayloadGossipEvent(ctx, msg, opts)
 	case "finalized_checkpoint":
 		s.handleFinalizedCheckpointEvent(ctx, msg, opts)
 	case "head":
 		s.handleHeadEvent(ctx, msg, opts)
+	case "payload_attestation_message":
+		s.handlePayloadAttestationMessageEvent(ctx, msg, opts)
 	case "payload_attributes":
 		s.handlePayloadAttributesEvent(ctx, msg, opts)
+	case "proposer_preferences":
+		s.handleProposerPreferencesEvent(ctx, msg, opts)
 	case "proposer_slashing":
 		s.handleProposerSlashingEvent(ctx, msg, opts)
 	case "single_attestation":
@@ -614,6 +639,168 @@ func (*Service) handleDataColumnSidecarEvent(ctx context.Context,
 	switch {
 	case opts.DataColumnSidecarHandler != nil:
 		opts.DataColumnSidecarHandler(ctx, data)
+	case opts.Handler != nil:
+		opts.Handler(&apiv1.Event{
+			Topic: string(msg.Event),
+			Data:  data,
+		})
+	default:
+		log.Debug().Msg("No specific or generic handler supplied; ignoring")
+	}
+}
+
+func (*Service) handleExecutionPayloadEvent(ctx context.Context,
+	msg *sse.Event,
+	opts *api.EventsOpts,
+) {
+	log := zerolog.Ctx(ctx)
+	data := &gloas.SignedExecutionPayloadEnvelope{}
+
+	err := json.Unmarshal(msg.Data, data)
+	if err != nil {
+		log.Error().Err(err).RawJSON("data", msg.Data).Msg("Failed to parse execution payload event")
+
+		return
+	}
+
+	switch {
+	case opts.ExecutionPayloadHandler != nil:
+		opts.ExecutionPayloadHandler(ctx, data)
+	case opts.Handler != nil:
+		opts.Handler(&apiv1.Event{
+			Topic: string(msg.Event),
+			Data:  data,
+		})
+	default:
+		log.Debug().Msg("No specific or generic handler supplied; ignoring")
+	}
+}
+
+func (*Service) handleExecutionPayloadAvailableEvent(ctx context.Context,
+	msg *sse.Event,
+	opts *api.EventsOpts,
+) {
+	log := zerolog.Ctx(ctx)
+	data := &apiv1.ExecutionPayloadAvailableEvent{}
+
+	err := json.Unmarshal(msg.Data, data)
+	if err != nil {
+		log.Error().Err(err).RawJSON("data", msg.Data).Msg("Failed to parse execution payload available event")
+
+		return
+	}
+
+	switch {
+	case opts.ExecutionPayloadAvailableHandler != nil:
+		opts.ExecutionPayloadAvailableHandler(ctx, data)
+	case opts.Handler != nil:
+		opts.Handler(&apiv1.Event{
+			Topic: string(msg.Event),
+			Data:  data,
+		})
+	default:
+		log.Debug().Msg("No specific or generic handler supplied; ignoring")
+	}
+}
+
+func (*Service) handleExecutionPayloadBidEvent(ctx context.Context,
+	msg *sse.Event,
+	opts *api.EventsOpts,
+) {
+	log := zerolog.Ctx(ctx)
+	data := &gloas.SignedExecutionPayloadBid{}
+
+	err := json.Unmarshal(msg.Data, data)
+	if err != nil {
+		log.Error().Err(err).RawJSON("data", msg.Data).Msg("Failed to parse execution payload bid event")
+
+		return
+	}
+
+	switch {
+	case opts.ExecutionPayloadBidHandler != nil:
+		opts.ExecutionPayloadBidHandler(ctx, data)
+	case opts.Handler != nil:
+		opts.Handler(&apiv1.Event{
+			Topic: string(msg.Event),
+			Data:  data,
+		})
+	default:
+		log.Debug().Msg("No specific or generic handler supplied; ignoring")
+	}
+}
+
+func (*Service) handleExecutionPayloadGossipEvent(ctx context.Context,
+	msg *sse.Event,
+	opts *api.EventsOpts,
+) {
+	log := zerolog.Ctx(ctx)
+	data := &gloas.SignedExecutionPayloadEnvelope{}
+
+	err := json.Unmarshal(msg.Data, data)
+	if err != nil {
+		log.Error().Err(err).RawJSON("data", msg.Data).Msg("Failed to parse execution payload gossip event")
+
+		return
+	}
+
+	switch {
+	case opts.ExecutionPayloadGossipHandler != nil:
+		opts.ExecutionPayloadGossipHandler(ctx, data)
+	case opts.Handler != nil:
+		opts.Handler(&apiv1.Event{
+			Topic: string(msg.Event),
+			Data:  data,
+		})
+	default:
+		log.Debug().Msg("No specific or generic handler supplied; ignoring")
+	}
+}
+
+func (*Service) handlePayloadAttestationMessageEvent(ctx context.Context,
+	msg *sse.Event,
+	opts *api.EventsOpts,
+) {
+	log := zerolog.Ctx(ctx)
+	data := &gloas.PayloadAttestationMessage{}
+
+	err := json.Unmarshal(msg.Data, data)
+	if err != nil {
+		log.Error().Err(err).RawJSON("data", msg.Data).Msg("Failed to parse payload attestation message event")
+
+		return
+	}
+
+	switch {
+	case opts.PayloadAttestationMessageHandler != nil:
+		opts.PayloadAttestationMessageHandler(ctx, data)
+	case opts.Handler != nil:
+		opts.Handler(&apiv1.Event{
+			Topic: string(msg.Event),
+			Data:  data,
+		})
+	default:
+		log.Debug().Msg("No specific or generic handler supplied; ignoring")
+	}
+}
+
+func (*Service) handleProposerPreferencesEvent(ctx context.Context,
+	msg *sse.Event,
+	opts *api.EventsOpts,
+) {
+	log := zerolog.Ctx(ctx)
+	data := &gloas.SignedProposerPreferences{}
+
+	err := json.Unmarshal(msg.Data, data)
+	if err != nil {
+		log.Error().Err(err).RawJSON("data", msg.Data).Msg("Failed to parse proposer preferences event")
+
+		return
+	}
+
+	switch {
+	case opts.ProposerPreferencesHandler != nil:
+		opts.ProposerPreferencesHandler(ctx, data)
 	case opts.Handler != nil:
 		opts.Handler(&apiv1.Event{
 			Topic: string(msg.Event),
