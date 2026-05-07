@@ -45,8 +45,10 @@ var SupportedEventTopics = map[string]bool{
 	"chain_reorg":                 true,
 	"contribution_and_proof":      true,
 	"data_column_sidecar":         true,
+	"execution_payload":           true,
 	"execution_payload_available": true,
 	"execution_payload_bid":       true,
+	"execution_payload_gossip":    true,
 	"finalized_checkpoint":        true,
 	"head":                        true,
 	"inclusion_list":              true,
@@ -121,6 +123,8 @@ func (e *Event) UnmarshalJSON(input []byte) error {
 		e.Data = &altair.SignedContributionAndProof{}
 	case "data_column_sidecar":
 		e.Data = &DataColumnSidecarEvent{}
+	case "execution_payload", "execution_payload_gossip":
+		e.Data = &gloas.SignedExecutionPayloadEnvelope{}
 	case "execution_payload_available":
 		e.Data = &ExecutionPayloadAvailableEvent{}
 	case "execution_payload_bid":
